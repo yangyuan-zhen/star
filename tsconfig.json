@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "isolatedModules": true,
+    "types": ["@dcloudio/types", "@vue/runtime-core"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "exclude": ["node_modules"]
+}

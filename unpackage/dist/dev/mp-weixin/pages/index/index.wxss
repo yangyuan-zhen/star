@@ -1,0 +1,158 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 颜色变量 */
+/* 行为相关颜色 */
+/* 文字基本颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 尺寸变量 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+.home.data-v-1cf27b2a {
+  padding: 32rpx;
+}
+.home .search-box.data-v-1cf27b2a {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5;
+  padding: 16rpx 32rpx;
+  border-radius: 40rpx;
+  margin-bottom: 40rpx;
+}
+.home .search-box input.data-v-1cf27b2a {
+  border: none;
+  background: none;
+  width: 100%;
+  padding-left: 16rpx;
+  font-size: 28rpx;
+}
+.home .search-box .icon-close.data-v-1cf27b2a {
+  font-size: 32rpx;
+  color: #999;
+  padding: 8rpx;
+}
+.home .category-tabs.data-v-1cf27b2a {
+  display: flex;
+  margin: 40rpx 0;
+  border-bottom: 1rpx solid #eee;
+}
+.home .category-tabs .tab.data-v-1cf27b2a {
+  flex: 1;
+  text-align: center;
+  font-size: 28rpx;
+  color: #666;
+  padding: 24rpx 0;
+  position: relative;
+}
+.home .category-tabs .tab.active.data-v-1cf27b2a {
+  color: #333;
+  font-weight: bold;
+}
+.home .category-tabs .tab.active.data-v-1cf27b2a::after {
+  content: "";
+  position: absolute;
+  bottom: -2rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 4rpx;
+  background: #ff6b6b;
+}
+.home .resource-list .resource-grid.data-v-1cf27b2a {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32rpx;
+  padding-bottom: 40rpx;
+}
+.home .resource-list .resource-item.data-v-1cf27b2a {
+  border: 2rpx solid #eee;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+.home .resource-list .resource-item .resource-image.data-v-1cf27b2a {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 16rpx 16rpx 0 0;
+}
+.home .resource-list .resource-item .resource-info.data-v-1cf27b2a {
+  padding: 24rpx;
+}
+.home .resource-list .resource-item .resource-info .title.data-v-1cf27b2a {
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-bottom: 16rpx;
+  line-height: 40rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.home .resource-list .resource-item .resource-info .title.data-v-1cf27b2a .text-4k {
+  color: #ff4444;
+}
+.home .resource-list .resource-item .resource-info .size.data-v-1cf27b2a {
+  font-size: 24rpx;
+  color: #999;
+}
+.home .pagination.data-v-1cf27b2a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40rpx 0;
+  gap: 32rpx;
+}
+.home .pagination .page-btn.data-v-1cf27b2a {
+  padding: 16rpx 32rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #333;
+}
+.home .pagination .page-btn.disabled.data-v-1cf27b2a {
+  color: #999;
+  background: #eee;
+}
+.home .pagination .page-number.data-v-1cf27b2a {
+  font-size: 28rpx;
+  color: #666;
+}
+.home .under-construction.data-v-1cf27b2a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+}
+.home .under-construction .construction-image.data-v-1cf27b2a {
+  width: 200px;
+  height: 200px;
+  margin-bottom: 20px;
+}
+.home .under-construction .construction-text.data-v-1cf27b2a {
+  font-size: 16px;
+  color: #999;
+  text-align: center;
+}
+.resource-item.data-v-1cf27b2a {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.resource-item.data-v-1cf27b2a:active {
+  transform: scale(0.98);
+}
