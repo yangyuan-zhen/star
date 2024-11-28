@@ -6,14 +6,15 @@
   "versionCode": "100",
   "transformPx": false,
   "mp-weixin": {
-    "appid": "wx9652b8bd8ff5fdd2",
+    "appid": "你的小程序appid",
     "setting": {
       "urlCheck": false,
       "es6": true,
       "postcss": true,
       "minified": true
     },
-    "usingComponents": true
+    "usingComponents": true,
+    "entryPagePath": "pages/video/index"
   },
   "vueVersion": "3"
 }

@@ -1,2 +1,4 @@
 <!--pages/index/index.wxml-->
-<text>pages/index/index.wxml</text>
+<view class="container">
+  <!-- 页面内容 -->
+</view>
