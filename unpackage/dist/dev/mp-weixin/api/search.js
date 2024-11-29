@@ -1,5 +1,6 @@
 "use strict";
 const common_vendor = require("../common/vendor.js");
+require("../common/vendor.js");
 const getLastRequestTime = () => {
   return common_vendor.index.getStorageSync("lastRequestTime") || 0;
 };
@@ -52,13 +53,35 @@ const searchResources = () => {
     });
   });
 };
-const videoResources = () => {
+const historyToday = () => {
   return new Promise((resolve, reject) => {
     common_vendor.index.request({
-      url: "https://api.kuleu.com/api/xjj?type=json",
+      url: "https://www.mxnzp.com/api/history/today",
       method: "GET",
+      data: {
+        type: 0,
+        app_id: "0amkrpktjgnqorxr",
+        app_secret: "1W9TGrscBM21Vqu4rsTQK2c8PbY0kRdM"
+      },
       success: (res) => {
-        resolve(res.data);
+        if (res.data.code === 1) {
+          const formattedData = {
+            code: 1,
+            data: res.data.data.map((item) => ({
+              year: item.year,
+              month: item.month,
+              day: item.day,
+              title: item.title,
+              picUrl: item.picUrl || ""
+            }))
+          };
+          resolve(formattedData);
+        } else {
+          reject({
+            code: -1,
+            message: res.data.msg || "获取数据失败"
+          });
+        }
       },
       fail: (err) => {
         reject(err);
@@ -66,5 +89,5 @@ const videoResources = () => {
     });
   });
 };
+exports.historyToday = historyToday;
 exports.searchResources = searchResources;
-exports.videoResources = videoResources;

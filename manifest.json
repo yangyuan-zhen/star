@@ -13,8 +13,7 @@
       "postcss": true,
       "minified": true
     },
-    "usingComponents": true,
-    "entryPagePath": "pages/video/index"
+    "usingComponents": true
   },
   "vueVersion": "3"
 }

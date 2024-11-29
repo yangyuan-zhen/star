@@ -1,3 +1,6 @@
+"use strict";
+const common_vendor = require("../common/vendor.js");
+
 // 使用 localStorage 来存储最后请求时间
 const getLastRequestTime = () => {
     return uni.getStorageSync('lastRequestTime') || 0
@@ -64,18 +67,40 @@ export const searchResources = () => {
     })
 }
 
-// 视频接口
-export const videoResources = () => {
+//历史上的今天
+export const historyToday = () => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url: 'https://api.kuleu.com/api/xjj?type=json',
-            method: 'GET',
+            url: "https://www.mxnzp.com/api/history/today",
+            method: "GET",
+            data: {
+                type: 0,
+                app_id: '0amkrpktjgnqorxr',
+                app_secret: '1W9TGrscBM21Vqu4rsTQK2c8PbY0kRdM'
+            },
             success: (res) => {
-                resolve(res.data)
+                if (res.data.code === 1) {
+                    const formattedData = {
+                        code: 1,
+                        data: res.data.data.map(item => ({
+                            year: item.year,
+                            month: item.month,
+                            day: item.day,
+                            title: item.title,
+                            picUrl: item.picUrl || ''
+                        }))
+                    };
+                    resolve(formattedData);
+                } else {
+                    reject({
+                        code: -1,
+                        message: res.data.msg || '获取数据失败'
+                    });
+                }
             },
             fail: (err) => {
-                reject(err)
+                reject(err);
             }
-        })
-    })
+        });
+    });
 }
