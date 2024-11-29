@@ -12,6 +12,9 @@
   },
   "dependencies": {
     "@dcloudio/uni-app": "^2.0.2-4020420240722004",
-    "@dcloudio/uni-app-plus": "^2.0.2-4020420240722004"
+    "@dcloudio/uni-app-plus": "^2.0.2-4020420240722004",
+    "file-saver": "^2.0.5",
+    "highlight.js": "^11.10.0",
+    "html2canvas": "^1.4.1"
   }
 }

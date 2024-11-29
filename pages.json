@@ -13,6 +13,18 @@
         "navigationBarTextStyle": "black",
         "navigationBarBackgroundColor": "#ffffff"
       }
+    },
+    {
+      "path": "pages/more/index",
+      "style": {
+        "navigationBarTitleText": "更多"
+      }
+    },
+    {
+      "path": "pages/textSnap/index",
+      "style": {
+        "navigationBarTitleText": "文字转图片"
+      }
     }
   ],
   "tabBar": {
@@ -28,10 +40,10 @@
         "selectedIconPath": "static/tabs/home-active.png"
       },
       {
-        "pagePath": "pages/history/index",
-        "text": "历史",
-        "iconPath": "static/tabs/history.png",
-        "selectedIconPath": "static/tabs/history-active.png"
+        "pagePath": "pages/more/index",
+        "text": "更多",
+        "iconPath": "static/tabs/more.png",
+        "selectedIconPath": "static/tabs/more-active.png"
       }
     ]
   },

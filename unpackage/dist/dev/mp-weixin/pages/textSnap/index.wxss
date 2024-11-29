@@ -1,0 +1,125 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 主要颜色 */
+/* 文字颜色 */
+/* 背景颜色 */
+/* 文字尺寸 */
+/* 间距 */
+/* 圆角 */
+.container.data-v-d8f14a53 {
+  padding: 20rpx;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+.preview-section.data-v-d8f14a53 {
+  margin-bottom: 30rpx;
+  background: #fff;
+  border-radius: 8rpx;
+  padding: 20rpx;
+}
+.preview-section .code-input.data-v-d8f14a53 {
+  width: 100%;
+  min-height: 200rpx;
+  padding: 20rpx;
+  border-radius: 8rpx;
+  border: 1px solid #ddd;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  background-color: #fff;
+}
+.settings-section.data-v-d8f14a53 {
+  background-color: #fff;
+  padding: 20rpx;
+  border-radius: 8rpx;
+  margin-bottom: 30rpx;
+}
+.settings-section .setting-item.data-v-d8f14a53 {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.settings-section .setting-item.data-v-d8f14a53:last-child {
+  border-bottom: none;
+}
+.settings-section .setting-item .setting-label.data-v-d8f14a53 {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+.settings-section .setting-item .theme-picker.data-v-d8f14a53 {
+  flex: 1;
+}
+.settings-section .setting-item .picker-text.data-v-d8f14a53 {
+  font-size: 28rpx;
+  color: #666;
+}
+.settings-section .setting-item .slider.data-v-d8f14a53 {
+  flex: 1;
+  margin: 0 20rpx;
+}
+.button-section.data-v-d8f14a53 {
+  padding: 20rpx 0;
+  display: flex;
+  gap: 20rpx;
+}
+.button-section .preview-btn.data-v-d8f14a53,
+.button-section .share-btn.data-v-d8f14a53,
+.button-section .save-btn.data-v-d8f14a53 {
+  flex: 1;
+  height: 80rpx;
+  line-height: 80rpx;
+  color: #fff;
+  border-radius: 40rpx;
+  font-size: 32rpx;
+  border: none;
+}
+.button-section .preview-btn.data-v-d8f14a53 {
+  background: linear-gradient(to right, #4a90e2, #63bfff);
+}
+.button-section .share-btn.data-v-d8f14a53 {
+  background: linear-gradient(to right, #4caf50, #8bc34a);
+}
+.button-section .save-btn.data-v-d8f14a53 {
+  background: linear-gradient(to right, #67c23a, #95d475);
+}
+.preview-modal.data-v-d8f14a53 {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+.preview-modal .preview-image.data-v-d8f14a53 {
+  width: 80%;
+  max-height: 80vh;
+  border-radius: 8rpx;
+}
+.preview-modal .preview-close.data-v-d8f14a53 {
+  position: absolute;
+  top: 40rpx;
+  right: 40rpx;
+  width: 60rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  text-align: center;
+  font-size: 40rpx;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 30rpx;
+}

@@ -1,7 +1,9 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/history/index"
+    "pages/history/index",
+    "pages/more/index",
+    "pages/textSnap/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -20,10 +22,10 @@
         "selectedIconPath": "static/tabs/home-active.png"
       },
       {
-        "pagePath": "pages/history/index",
-        "text": "历史",
-        "iconPath": "static/tabs/history.png",
-        "selectedIconPath": "static/tabs/history-active.png"
+        "pagePath": "pages/more/index",
+        "text": "更多",
+        "iconPath": "static/tabs/more.png",
+        "selectedIconPath": "static/tabs/more-active.png"
       }
     ]
   },
