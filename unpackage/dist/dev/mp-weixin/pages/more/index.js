@@ -7,7 +7,8 @@ const _sfc_main = {
     const handleNavigate = (type) => {
       const routes = {
         history: "/pages/history/index",
-        textSnap: "/pages/textSnap/index"
+        textSnap: "/pages/textSnap/index",
+        weather: "/pages/weather/index"
       };
       if (routes[type]) {
         common_vendor.index.navigateTo({
@@ -20,7 +21,9 @@ const _sfc_main = {
         a: common_assets._imports_0,
         b: common_vendor.o(($event) => handleNavigate("history")),
         c: common_assets._imports_1,
-        d: common_vendor.o(($event) => handleNavigate("textSnap"))
+        d: common_vendor.o(($event) => handleNavigate("textSnap")),
+        e: common_assets._imports_2,
+        f: common_vendor.o(($event) => handleNavigate("weather"))
       };
     };
   }

@@ -6,6 +6,7 @@ if (!Math) {
   "./pages/history/index.js";
   "./pages/more/index.js";
   "./pages/textSnap/index.js";
+  "./pages/weather/index.js";
 }
 const _sfc_main = {
   onLaunch: function() {

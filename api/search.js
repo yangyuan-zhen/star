@@ -104,3 +104,65 @@ export const historyToday = () => {
         });
     });
 }
+
+// 天气画报接口
+export const getWeatherReport = (city) => {
+    return new Promise((resolve, reject) => {
+        uni.request({
+            url: 'https://api.coze.cn/v1/workflow/run',
+            method: 'POST',
+            header: {
+                'Authorization': 'Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65',
+                'Content-Type': 'application/json'
+            },
+            data: {
+                "workflow_id": "7442954002298388492",
+                "parameters": {
+                    "city": city
+                }
+            },
+            success: (res) => {
+                if (res.data.code === 0) {
+                    try {
+                        // 解析字符串格式的 data
+                        const weatherData = JSON.parse(res.data.data);
+                        resolve(weatherData);
+                    } catch (error) {
+                        reject({
+                            code: -1,
+                            message: '数据解析失败'
+                        });
+                    }
+                } else {
+                    reject({
+                        code: -1,
+                        message: res.data.msg || '获取天气数据失败'
+                    });
+                }
+            },
+            fail: (err) => {
+                reject(err);
+            }
+        })
+    })
+}
+
+// 添加一个新方法来获取base64图片
+export const getImageBase64 = (url) => {
+    return new Promise((resolve, reject) => {
+        uni.request({
+            url,
+            method: 'GET',
+            responseType: 'arraybuffer',
+            success: (res) => {
+                if (res.statusCode === 200) {
+                    const base64 = uni.arrayBufferToBase64(res.data);
+                    resolve('data:image/jpeg;base64,' + base64);
+                } else {
+                    reject(new Error('获取图片失败'));
+                }
+            },
+            fail: reject
+        });
+    });
+};

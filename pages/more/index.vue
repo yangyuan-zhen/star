@@ -10,6 +10,11 @@
         <image class="icon" src="../../static/tabs/textSnap.png" />
         <text>文字转图片</text>
       </view>
+
+      <view class="grid-item" @tap="handleNavigate('weather')">
+        <image class="icon" src="../../static/tabs/weather.png" />
+        <text>天气画报</text>
+      </view>
     </view>
   </view>
 </template>
@@ -19,6 +24,7 @@ const handleNavigate = (type) => {
   const routes = {
     history: "/pages/history/index",
     textSnap: "/pages/textSnap/index",
+    weather: "/pages/weather/index",
   };
 
   if (routes[type]) {

@@ -3,7 +3,8 @@
     "pages/index/index",
     "pages/history/index",
     "pages/more/index",
-    "pages/textSnap/index"
+    "pages/textSnap/index",
+    "pages/weather/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",
