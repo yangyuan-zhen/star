@@ -4,7 +4,8 @@
     "pages/history/index",
     "pages/more/index",
     "pages/textSnap/index",
-    "pages/weather/index"
+    "pages/weather/index",
+    "pages/book/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

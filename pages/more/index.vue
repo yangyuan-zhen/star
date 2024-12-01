@@ -1,11 +1,6 @@
 <template>
   <view class="more-container">
     <view class="grid-container">
-      <view class="grid-item" @tap="handleNavigate('history')">
-        <image class="icon" src="../../static/tabs/today.png" />
-        <text>历史上的今天</text>
-      </view>
-
       <view class="grid-item" @tap="handleNavigate('textSnap')">
         <image class="icon" src="../../static/tabs/textSnap.png" />
         <text>文字转图片</text>
@@ -14,6 +9,11 @@
       <view class="grid-item" @tap="handleNavigate('weather')">
         <image class="icon" src="../../static/tabs/weather.png" />
         <text>天气画报</text>
+      </view>
+
+      <view class="grid-item" @tap="handleNavigate('book')">
+        <image class="icon" src="../../static/tabs/book.png" />
+        <text>AI荐书</text>
       </view>
     </view>
   </view>
@@ -25,6 +25,7 @@ const handleNavigate = (type) => {
     history: "/pages/history/index",
     textSnap: "/pages/textSnap/index",
     weather: "/pages/weather/index",
+    book: "/pages/book/index",
   };
 
   if (routes[type]) {

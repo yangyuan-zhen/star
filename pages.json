@@ -31,6 +31,12 @@
       "style": {
         "navigationBarTitleText": "每日天气壁纸"
       }
+    },
+    {
+      "path": "pages/book/index",
+      "style": {
+        "navigationBarTitleText": "AI荐书"
+      }
     }
   ],
   "tabBar": {

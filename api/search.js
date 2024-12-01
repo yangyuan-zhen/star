@@ -146,23 +146,44 @@ export const getWeatherReport = (city) => {
         })
     })
 }
-
-// 添加一个新方法来获取base64图片
-export const getImageBase64 = (url) => {
+// AI荐书接口   
+export const getBookRecommend = (bookName) => {
     return new Promise((resolve, reject) => {
         uni.request({
-            url,
-            method: 'GET',
-            responseType: 'arraybuffer',
-            success: (res) => {
-                if (res.statusCode === 200) {
-                    const base64 = uni.arrayBufferToBase64(res.data);
-                    resolve('data:image/jpeg;base64,' + base64);
-                } else {
-                    reject(new Error('获取图片失败'));
+            url: 'https://api.coze.cn/v1/workflow/run',
+            method: 'POST',
+            header: {
+                'Authorization': 'Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65',
+                'Content-Type': 'application/json'
+            },
+            data: {
+                "workflow_id": "7443436905217835019",
+                "parameters": {
+                    "BOT_USER_INPUT": bookName
                 }
             },
-            fail: reject
-        });
-    });
-};
+            success: (res) => {
+                if (res.data.code === 0) {
+                    try {
+                        // 解析返回的数据
+                        const bookData = JSON.parse(res.data.data);
+                        resolve(bookData);
+                    } catch (error) {
+                        reject({
+                            code: -1,
+                            message: '数据解析失败'
+                        });
+                    }
+                } else {
+                    reject({
+                        code: -1,
+                        message: res.data.msg || '获取图书推荐失败'
+                    });
+                }
+            },
+            fail: (err) => {
+                reject(err);
+            }
+        })
+    })
+}

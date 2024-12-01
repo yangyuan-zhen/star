@@ -7,6 +7,7 @@ if (!Math) {
   "./pages/more/index.js";
   "./pages/textSnap/index.js";
   "./pages/weather/index.js";
+  "./pages/book/index.js";
 }
 const _sfc_main = {
   onLaunch: function() {

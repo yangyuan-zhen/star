@@ -128,6 +128,46 @@ const getWeatherReport = (city) => {
     });
   });
 };
+const getBookRecommend = (bookName) => {
+  return new Promise((resolve, reject) => {
+    common_vendor.index.request({
+      url: "https://api.coze.cn/v1/workflow/run",
+      method: "POST",
+      header: {
+        "Authorization": "Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65",
+        "Content-Type": "application/json"
+      },
+      data: {
+        "workflow_id": "7443436905217835019",
+        "parameters": {
+          "BOT_USER_INPUT": bookName
+        }
+      },
+      success: (res) => {
+        if (res.data.code === 0) {
+          try {
+            const bookData = JSON.parse(res.data.data);
+            resolve(bookData);
+          } catch (error) {
+            reject({
+              code: -1,
+              message: "数据解析失败"
+            });
+          }
+        } else {
+          reject({
+            code: -1,
+            message: res.data.msg || "获取图书推荐失败"
+          });
+        }
+      },
+      fail: (err) => {
+        reject(err);
+      }
+    });
+  });
+};
+exports.getBookRecommend = getBookRecommend;
 exports.getWeatherReport = getWeatherReport;
 exports.historyToday = historyToday;
 exports.searchResources = searchResources;
