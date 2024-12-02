@@ -50,74 +50,48 @@ const _sfc_main = {
     };
     const handleSaveImage = async () => {
       try {
+        if (!imageUrl.value) {
+          throw new Error("图片地址不能为空");
+        }
+        await common_vendor.index.showLoading({ title: "处理中..." });
+        const callFunctionResult = await common_vendor.Zs.callFunction({
+          name: "downloadImage",
+          data: {
+            imageUrl: imageUrl.value
+          }
+        });
+        console.log("云函数调用结果:", callFunctionResult);
+        if (!callFunctionResult || !callFunctionResult.result) {
+          throw new Error("云函数返回结果为空");
+        }
+        const result = callFunctionResult.result;
+        console.log("云函数返回数据:", result);
+        if (result.code !== 0) {
+          throw new Error(result.msg || "处理图片失败");
+        }
         const settingRes = await common_vendor.index.getSetting({});
         if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
-          try {
-            await common_vendor.index.authorize({
-              scope: "scope.writePhotosAlbum"
-            });
-          } catch (authError) {
-            common_vendor.index.showModal({
-              title: "提示",
-              content: "需要您授权保存图片到相册",
-              success: (res) => {
-                if (res.confirm) {
-                  common_vendor.index.openSetting();
-                }
-              }
-            });
-            return;
-          }
+          await common_vendor.index.authorize({ scope: "scope.writePhotosAlbum" });
         }
-        try {
-          await common_vendor.index.showLoading({ title: "保存中..." });
-          const downloadRes = await common_vendor.index.downloadFile({
-            url: imageUrl.value
-          });
-          if (downloadRes.statusCode === 200) {
-            await common_vendor.index.saveImageToPhotosAlbum({
-              filePath: downloadRes.tempFilePath
-            });
-            common_vendor.index.showToast({
-              title: "保存成功",
-              icon: "success"
-            });
-          } else {
-            throw new Error("下载失败");
-          }
-        } catch (saveError) {
-          console.error("保存过程错误:", saveError);
-          try {
-            const ctx = common_vendor.index.createCanvasContext("saveCanvas");
-            ctx.drawImage(imageUrl.value, 0, 0, 300, 300);
-            ctx.draw(false, async () => {
-              try {
-                const canvasRes = await common_vendor.index.canvasToTempFilePath({
-                  canvasId: "saveCanvas"
-                });
-                await common_vendor.index.saveImageToPhotosAlbum({
-                  filePath: canvasRes.tempFilePath
-                });
-                common_vendor.index.showToast({
-                  title: "保存成功",
-                  icon: "success"
-                });
-              } catch (err) {
-                throw new Error("canvas保存失败");
-              }
-            });
-          } catch (canvasError) {
-            common_vendor.index.showToast({
-              title: "保存失败，请截图保存",
-              icon: "none"
-            });
-          }
+        const downloadRes = await common_vendor.index.downloadFile({
+          url: result.data.tempFileURL
+        });
+        if (downloadRes.statusCode !== 200) {
+          throw new Error("下载图片失败");
         }
-      } catch (error) {
-        console.error("整体错误:", error);
+        await common_vendor.index.saveImageToPhotosAlbum({
+          filePath: downloadRes.tempFilePath
+        });
         common_vendor.index.showToast({
-          title: "保存失败",
-          icon: "none"
+          title: "保存成功",
+          icon: "success"
+        });
+      } catch (error) {
+        console.error("保存失败:", error);
+        common_vendor.index.showToast({
+          title: error.message || "保存失败",
+          icon: "none",
+          duration: 3e3
         });
       } finally {
         common_vendor.index.hideLoading();

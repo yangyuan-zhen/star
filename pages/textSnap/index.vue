@@ -5,9 +5,11 @@
       <textarea
         v-model="content"
         class="code-input"
-        placeholder="请在此输入您的文字..."
+        placeholder="请输入您的文字..."
         :style="inputStyle"
         auto-height
+        :maxlength="-1"
+        :show-confirm-bar="false"
       />
     </view>
 
@@ -197,26 +199,49 @@ const drawText = async () => {
   // 分行处理
   const lines = [];
   let currentLine = "";
-  for (let char of text.split("")) {
-    const testLine = currentLine + char;
-    const metrics = ctx.measureText(testLine);
 
-    if (metrics.width > maxWidth && currentLine) {
+  // 处理手动换行
+  const paragraphs = text.split("\n");
+  for (let paragraph of paragraphs) {
+    if (paragraph === "") {
+      lines.push(""); // 保留空行
+      continue;
+    }
+
+    // 处理每一段的自动换行
+    for (let char of paragraph) {
+      const testLine = currentLine + char;
+      const metrics = ctx.measureText(testLine);
+
+      if (metrics.width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = char;
+      } else {
+        currentLine = testLine;
+      }
+    }
+
+    if (currentLine) {
       lines.push(currentLine);
-      currentLine = char;
-    } else {
-      currentLine = testLine;
+      currentLine = "";
     }
   }
-  if (currentLine) {
-    lines.push(currentLine);
-  }
 
-  // 从顶部开始绘制文字，而不是居中
+  // 绘制文字
   lines.forEach((line, index) => {
     const y = topMargin + index * lineHeight;
     ctx.fillText(line, 150, y); // 水平居中 (300/2)
   });
+
+  // 添加 Free 水印
+  ctx.save();
+  ctx.font = "14px sans-serif";
+  ctx.fillStyle =
+    themeIndex.value === 1 ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)";
+  ctx.textAlign = "right";
+  ctx.textBaseline = "bottom";
+  ctx.fillText("Free信息", canvas.width / dpr - 20, canvas.height / dpr - 20);
+  ctx.restore();
 
   return canvas;
 };
@@ -344,13 +369,15 @@ onShareTimeline(() => {
 
   .code-input {
     width: 100%;
-    min-height: 200rpx; // 设置最小高度
+    min-height: 200rpx;
     padding: 20rpx;
     border-radius: 8rpx;
     border: 1px solid #ddd;
     box-sizing: border-box;
     transition: all 0.3s ease;
     background-color: #fff;
+    white-space: pre-wrap;
+    word-break: break-all;
   }
 }
 

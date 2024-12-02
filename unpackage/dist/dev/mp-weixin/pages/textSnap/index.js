@@ -75,23 +75,38 @@ const _sfc_main = {
       const topMargin = 40;
       const lines = [];
       let currentLine = "";
-      for (let char of text.split("")) {
-        const testLine = currentLine + char;
-        const metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth && currentLine) {
-          lines.push(currentLine);
-          currentLine = char;
-        } else {
-          currentLine = testLine;
+      const paragraphs = text.split("\n");
+      for (let paragraph of paragraphs) {
+        if (paragraph === "") {
+          lines.push("");
+          continue;
         }
-      }
-      if (currentLine) {
-        lines.push(currentLine);
+        for (let char of paragraph) {
+          const testLine = currentLine + char;
+          const metrics = ctx.measureText(testLine);
+          if (metrics.width > maxWidth && currentLine) {
+            lines.push(currentLine);
+            currentLine = char;
+          } else {
+            currentLine = testLine;
+          }
+        }
+        if (currentLine) {
+          lines.push(currentLine);
+          currentLine = "";
+        }
       }
       lines.forEach((line, index) => {
         const y = topMargin + index * lineHeight;
         ctx.fillText(line, 150, y);
       });
+      ctx.save();
+      ctx.font = "14px sans-serif";
+      ctx.fillStyle = themeIndex.value === 1 ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "bottom";
+      ctx.fillText("Free信息", canvas.width / dpr - 20, canvas.height / dpr - 20);
+      ctx.restore();
       return canvas;
     };
     const generatePreview = async () => {
@@ -186,34 +201,35 @@ const _sfc_main = {
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: common_vendor.s(inputStyle.value),
-        b: content.value,
-        c: common_vendor.o(($event) => content.value = $event.detail.value),
-        d: common_vendor.t(themes[themeIndex.value]),
-        e: themeIndex.value,
-        f: themes,
-        g: common_vendor.o(onThemeChange),
-        h: common_vendor.t(fontSize.value),
-        i: fontSize.value,
-        j: common_vendor.o(onFontSizeChange),
-        k: common_vendor.t(Math.round(opacity.value * 100)),
-        l: opacity.value * 100,
-        m: common_vendor.o(onOpacityChange),
-        n: common_vendor.o(generatePreview),
-        o: previewImage.value
+        b: -1,
+        c: content.value,
+        d: common_vendor.o(($event) => content.value = $event.detail.value),
+        e: common_vendor.t(themes[themeIndex.value]),
+        f: themeIndex.value,
+        g: themes,
+        h: common_vendor.o(onThemeChange),
+        i: common_vendor.t(fontSize.value),
+        j: fontSize.value,
+        k: common_vendor.o(onFontSizeChange),
+        l: common_vendor.t(Math.round(opacity.value * 100)),
+        m: opacity.value * 100,
+        n: common_vendor.o(onOpacityChange),
+        o: common_vendor.o(generatePreview),
+        p: previewImage.value
       }, previewImage.value ? {
-        p: common_vendor.o(shareToWechat)
+        q: common_vendor.o(shareToWechat)
       } : {}, {
-        q: previewImage.value
+        r: previewImage.value
       }, previewImage.value ? {
-        r: common_vendor.o(saveImage)
+        s: common_vendor.o(saveImage)
       } : {}, {
-        s: showPreview.value
+        t: showPreview.value
       }, showPreview.value ? {
-        t: previewImage.value,
-        v: common_vendor.o(() => {
+        v: previewImage.value,
+        w: common_vendor.o(() => {
         }),
-        w: common_vendor.o(closePreview),
-        x: common_vendor.o(closePreview)
+        x: common_vendor.o(closePreview),
+        y: common_vendor.o(closePreview)
       } : {});
     };
   }

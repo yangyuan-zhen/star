@@ -36,6 +36,8 @@
   box-sizing: border-box;
   transition: all 0.3s ease;
   background-color: #fff;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 .settings-section.data-v-d8f14a53 {
   background-color: #fff;

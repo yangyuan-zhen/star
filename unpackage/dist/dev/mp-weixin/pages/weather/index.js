@@ -37,129 +37,38 @@ const _sfc_main = {
     // 修改保存图片方法
     async saveImage() {
       try {
-        const auth = await new Promise((resolve) => {
-          common_vendor.index.authorize({
-            scope: "scope.writePhotosAlbum",
-            success: () => resolve(true),
-            fail: () => resolve(false)
-          });
-        });
-        if (!auth) {
-          common_vendor.index.showModal({
-            title: "提示",
-            content: "需要您授权保存图片到相册",
-            success: (res) => {
-              if (res.confirm) {
-                common_vendor.index.openSetting();
-              }
-            }
-          });
-          return;
+        if (!this.weatherData || !this.weatherData.img) {
+          throw new Error("图片数据不存在");
         }
-        common_vendor.index.showLoading({
+        await common_vendor.index.showLoading({
           title: "保存中...",
           mask: true
         });
-        const cardNode = await new Promise((resolve) => {
-          const query = common_vendor.index.createSelectorQuery().in(this);
-          query.select("#shareCard").boundingClientRect((data) => {
-            resolve(data);
-          }).exec();
+        const { result } = await common_vendor.Zs.callFunction({
+          name: "downloadImage",
+          data: {
+            imageUrl: this.weatherData.img
+          }
         });
-        const canvas = await new Promise((resolve) => {
-          const query = common_vendor.index.createSelectorQuery().in(this);
-          query.select("#tempCanvas").fields({ node: true, size: true }).exec((res) => {
-            resolve(res[0].node);
-          });
-        });
-        const ctx = canvas.getContext("2d");
-        const scale = 3;
-        const imageWidth = cardNode.width;
-        const imageHeight = Math.round(imageWidth * 0.75);
-        const totalHeight = imageHeight + 150;
-        canvas.width = imageWidth * scale;
-        canvas.height = totalHeight * scale;
-        ctx.scale(scale, scale);
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const image = canvas.createImage();
-        await new Promise((resolve, reject) => {
-          image.onload = resolve;
-          image.onerror = reject;
-          image.src = this.weatherData.img;
-        });
-        let drawWidth = imageWidth;
-        let drawHeight = imageHeight;
-        let offsetX = 0;
-        let offsetY = 0;
-        const imageRatio = image.width / image.height;
-        const targetRatio = imageWidth / imageHeight;
-        if (imageRatio > targetRatio) {
-          drawHeight = imageHeight;
-          drawWidth = imageHeight * imageRatio;
-          offsetX = (imageWidth - drawWidth) / 2;
-        } else {
-          drawWidth = imageWidth;
-          drawHeight = imageWidth / imageRatio;
-          offsetY = (imageHeight - drawHeight) / 2;
+        console.log("云函数调用结果:", result);
+        if (!result || !result.data) {
+          throw new Error("云函数返回结果为空");
         }
-        ctx.drawImage(image, offsetX, offsetY, drawWidth, drawHeight);
-        ctx.textAlign = "center";
-        const centerX = imageWidth / 2;
-        const textStartY = imageHeight + 30;
-        ctx.fillStyle = "#333333";
-        ctx.font = `normal ${15 * scale / 3}px sans-serif`;
-        const poetry = this.weatherData.poetry;
-        if (poetry.length > 20) {
-          const mid = Math.ceil(poetry.length / 2);
-          const firstLine = poetry.substring(0, mid);
-          const secondLine = poetry.substring(mid);
-          ctx.fillText(firstLine, centerX, textStartY);
-          ctx.fillText(secondLine, centerX, textStartY + 25);
-          ctx.font = `bold ${18 * scale / 3}px sans-serif`;
-          ctx.fillText(this.weatherData.city, centerX, textStartY + 60);
-          ctx.fillStyle = "#666666";
-          ctx.font = `normal ${14 * scale / 3}px sans-serif`;
-          ctx.fillText(
-            `${this.weatherData.date} ${this.weatherData.condition}`,
-            centerX,
-            textStartY + 85
-          );
-          ctx.fillText(
-            `最高 ${this.weatherData.temp_high}°C 最低 ${this.weatherData.temp_low}°C`,
-            centerX,
-            textStartY + 105
-          );
-        } else {
-          ctx.fillText(poetry, centerX, textStartY);
-          ctx.font = `bold ${18 * scale / 3}px sans-serif`;
-          ctx.fillText(this.weatherData.city, centerX, textStartY + 35);
-          ctx.fillStyle = "#666666";
-          ctx.font = `normal ${14 * scale / 3}px sans-serif`;
-          ctx.fillText(
-            `${this.weatherData.date} ${this.weatherData.condition}`,
-            centerX,
-            textStartY + 60
-          );
-          ctx.fillText(
-            `最高 ${this.weatherData.temp_high}°C 最低 ${this.weatherData.temp_low}°C`,
-            centerX,
-            textStartY + 80
-          );
+        if (result.code !== 0) {
+          throw new Error(result.msg || "处理图片失败");
         }
-        const tempFilePath = await new Promise((resolve, reject) => {
-          common_vendor.index.canvasToTempFilePath({
-            canvas,
-            quality: 1,
-            success: (res) => resolve(res.tempFilePath),
-            fail: reject
-          });
+        const settingRes = await common_vendor.index.getSetting({});
+        if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
+          await common_vendor.index.authorize({ scope: "scope.writePhotosAlbum" });
+        }
+        const downloadRes = await common_vendor.index.downloadFile({
+          url: result.data.tempFileURL
         });
-        await new Promise((resolve, reject) => {
-          common_vendor.index.saveImageToPhotosAlbum({
-            filePath: tempFilePath,
-            success: resolve,
-            fail: reject
-          });
+        if (downloadRes.statusCode !== 200) {
+          throw new Error("下载图片失败");
+        }
+        await common_vendor.index.saveImageToPhotosAlbum({
+          filePath: downloadRes.tempFilePath
         });
         common_vendor.index.showToast({
           title: "已保存到相册",
@@ -168,9 +77,11 @@ const _sfc_main = {
       } catch (error) {
         console.error("保存失败:", error);
         common_vendor.index.showToast({
-          title: "保存失败",
-          icon: "none"
+          title: error.message || "保存失败",
+          icon: "none",
+          duration: 3e3
         });
+      } finally {
         common_vendor.index.hideLoading();
       }
     },
@@ -181,26 +92,35 @@ const _sfc_main = {
         path: "/pages/weather/index",
         imageUrl: this.weatherData.img
       };
+    },
+    handleFocus() {
+      this.$refs.cityInput && (this.$refs.cityInput.style.borderColor = "#409eff");
+    },
+    handleBlur() {
+      this.$refs.cityInput && (this.$refs.cityInput.style.borderColor = "#eee");
     }
   }
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: $data.cityName,
-    b: common_vendor.o(($event) => $data.cityName = $event.detail.value),
+    a: common_vendor.o((...args) => $options.handleFocus && $options.handleFocus(...args)),
+    b: common_vendor.o((...args) => $options.handleBlur && $options.handleBlur(...args)),
     c: common_vendor.o((...args) => $options.getWeatherReport && $options.getWeatherReport(...args)),
-    d: !$data.cityName,
-    e: $data.weatherData
+    d: $data.cityName,
+    e: common_vendor.o(($event) => $data.cityName = $event.detail.value),
+    f: common_vendor.o((...args) => $options.getWeatherReport && $options.getWeatherReport(...args)),
+    g: !$data.cityName,
+    h: $data.weatherData
   }, $data.weatherData ? {
-    f: $data.weatherData.img,
-    g: common_vendor.t($data.weatherData.poetry),
-    h: common_vendor.t($data.weatherData.city),
-    i: common_vendor.t($data.weatherData.date),
-    j: common_vendor.t($data.weatherData.condition),
-    k: common_vendor.t($data.weatherData.temp_high),
-    l: common_vendor.t($data.weatherData.temp_low),
-    m: common_vendor.o((...args) => $options.saveImage && $options.saveImage(...args)),
-    n: common_vendor.o((...args) => $options.shareImage && $options.shareImage(...args))
+    i: $data.weatherData.img,
+    j: common_vendor.t($data.weatherData.poetry),
+    k: common_vendor.t($data.weatherData.city),
+    l: common_vendor.t($data.weatherData.date),
+    m: common_vendor.t($data.weatherData.condition),
+    n: common_vendor.t($data.weatherData.temp_high),
+    o: common_vendor.t($data.weatherData.temp_low),
+    p: common_vendor.o((...args) => $options.saveImage && $options.saveImage(...args)),
+    q: common_vendor.o((...args) => $options.shareImage && $options.shareImage(...args))
   } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-37d277d7"]]);

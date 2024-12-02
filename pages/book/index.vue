@@ -29,6 +29,7 @@
     </view>
   </view>
   <canvas
+    type="2d"
     canvas-id="saveCanvas"
     style="position: fixed; left: -9999px; width: 300px; height: 300px"
   ></canvas>
@@ -92,86 +93,63 @@ const handleSearch = async () => {
 
 const handleSaveImage = async () => {
   try {
-    // 1. 先检查保存到相册的权限
+    if (!imageUrl.value) {
+      throw new Error("图片地址不能为空");
+    }
+
+    await uni.showLoading({ title: "处理中..." });
+
+    // 调用云函数下载图片
+    const callFunctionResult = await uniCloud.callFunction({
+      name: "downloadImage",
+      data: {
+        imageUrl: imageUrl.value,
+      },
+    });
+
+    console.log("云函数调用结果:", callFunctionResult);
+
+    if (!callFunctionResult || !callFunctionResult.result) {
+      throw new Error("云函数返回结果为空");
+    }
+
+    const result = callFunctionResult.result;
+    console.log("云函数返回数据:", result);
+
+    if (result.code !== 0) {
+      throw new Error(result.msg || "处理图片失败");
+    }
+
+    // 检查权限
     const settingRes = await uni.getSetting({});
     if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
-      // 如果没有权限，先获取授权
-      try {
-        await uni.authorize({
-          scope: "scope.writePhotosAlbum",
-        });
-      } catch (authError) {
-        // 用户拒绝授权，引导用户去设置页面开启
-        uni.showModal({
-          title: "提示",
-          content: "需要您授权保存图片到相册",
-          success: (res) => {
-            if (res.confirm) {
-              uni.openSetting();
-            }
-          },
-        });
-        return;
-      }
+      await uni.authorize({ scope: "scope.writePhotosAlbum" });
     }
 
-    // 2. 尝试直接保存网络图片
-    try {
-      await uni.showLoading({ title: "保存中..." });
+    // 下载云存储的图片到本地
+    const downloadRes = await uni.downloadFile({
+      url: result.data.tempFileURL,
+    });
 
-      const downloadRes = await uni.downloadFile({
-        url: imageUrl.value,
-      });
-
-      if (downloadRes.statusCode === 200) {
-        await uni.saveImageToPhotosAlbum({
-          filePath: downloadRes.tempFilePath,
-        });
-
-        uni.showToast({
-          title: "保存成功",
-          icon: "success",
-        });
-      } else {
-        throw new Error("下载失败");
-      }
-    } catch (saveError) {
-      console.error("保存过程错误:", saveError);
-
-      // 如果直接保存失败，尝试使用canvas方式
-      try {
-        const ctx = uni.createCanvasContext("saveCanvas");
-        ctx.drawImage(imageUrl.value, 0, 0, 300, 300);
-        ctx.draw(false, async () => {
-          try {
-            const canvasRes = await uni.canvasToTempFilePath({
-              canvasId: "saveCanvas",
-            });
-
-            await uni.saveImageToPhotosAlbum({
-              filePath: canvasRes.tempFilePath,
-            });
-
-            uni.showToast({
-              title: "保存成功",
-              icon: "success",
-            });
-          } catch (err) {
-            throw new Error("canvas保存失败");
-          }
-        });
-      } catch (canvasError) {
-        uni.showToast({
-          title: "保存失败，请截图保存",
-          icon: "none",
-        });
-      }
+    if (downloadRes.statusCode !== 200) {
+      throw new Error("下载图片失败");
     }
-  } catch (error) {
-    console.error("整体错误:", error);
+
+    // 保存图片到相册
+    await uni.saveImageToPhotosAlbum({
+      filePath: downloadRes.tempFilePath,
+    });
+
     uni.showToast({
-      title: "保存失败",
+      title: "保存成功",
+      icon: "success",
+    });
+  } catch (error) {
+    console.error("保存失败:", error);
+    uni.showToast({
+      title: error.message || "保存失败",
       icon: "none",
+      duration: 3000,
     });
   } finally {
     uni.hideLoading();
