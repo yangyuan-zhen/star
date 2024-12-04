@@ -5,7 +5,8 @@
     "pages/more/index",
     "pages/textSnap/index",
     "pages/weather/index",
-    "pages/book/index"
+    "pages/book/index",
+    "pages/webview/webview"
   ],
   "window": {
     "navigationBarTextStyle": "black",

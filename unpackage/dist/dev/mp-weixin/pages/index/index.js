@@ -36,15 +36,8 @@ const _sfc_main = {
       }
     };
     const handleNewsClick = (item) => {
-      common_vendor.index.setClipboardData({
-        data: item.url,
-        success: function() {
-          common_vendor.index.showModal({
-            title: "提示",
-            content: "链接已复制，请在浏览器中打开",
-            showCancel: false
-          });
-        }
+      common_vendor.index.navigateTo({
+        url: `/pages/webview/webview?url=${encodeURIComponent(item.url)}`
       });
     };
     const formatHotScore = (score) => {

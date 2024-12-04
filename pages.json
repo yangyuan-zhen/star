@@ -37,6 +37,13 @@
       "style": {
         "navigationBarTitleText": "AI荐书"
       }
+    },
+
+    {
+      "path": "pages/webview/webview",
+      "style": {
+        "navigationBarTitleText": "新闻详情"
+      }
     }
   ],
   "tabBar": {

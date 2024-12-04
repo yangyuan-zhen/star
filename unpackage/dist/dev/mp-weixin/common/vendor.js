@@ -7699,6 +7699,12 @@ const pages = [
     style: {
       navigationBarTitleText: "AI荐书"
     }
+  },
+  {
+    path: "pages/webview/webview",
+    style: {
+      navigationBarTitleText: "新闻详情"
+    }
   }
 ];
 const tabBar = {
@@ -8032,7 +8038,7 @@ class v {
 function I(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), C = b, P = I('{"address":["127.0.0.1","192.168.31.28","169.254.203.26"],"servePort":7001,"debugPort":9001,"initialLaunchType":"local","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), T = I('[{"provider":"alipay","spaceName":"free","spaceId":"env-00jxhk9ji189","spaceAppId":"2021004199605426","accessKey":"j7ZnJMTcTYPY7N6b","secretKey":"hKXUWkBWPoaRk7GP"}]') || [];
+const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), C = b, P = I('{"address":["127.0.0.1","192.168.31.28","169.254.203.26"],"servePort":7000,"debugPort":9000,"initialLaunchType":"local","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), T = I('[{"provider":"alipay","spaceName":"free","spaceId":"env-00jxhk9ji189","spaceAppId":"2021004199605426","accessKey":"j7ZnJMTcTYPY7N6b","secretKey":"hKXUWkBWPoaRk7GP"}]') || [];
 let O = "";
 try {
   O = "__UNI__920B084";

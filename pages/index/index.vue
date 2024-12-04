@@ -77,16 +77,9 @@ const fetchNews = async () => {
 };
 
 const handleNewsClick = (item) => {
-  // 复制链接到剪贴板
-  uni.setClipboardData({
-    data: item.url,
-    success: function () {
-      uni.showModal({
-        title: "提示",
-        content: "链接已复制，请在浏览器中打开",
-        showCancel: false,
-      });
-    },
+  // 使用webview打开链接
+  uni.navigateTo({
+    url: `/pages/webview/webview?url=${encodeURIComponent(item.url)}`,
   });
 };
 
