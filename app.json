@@ -11,12 +11,6 @@
         "text": "热搜",
         "iconPath": "static/tabs/home.png",
         "selectedIconPath": "static/tabs/home-active.png"
-      },
-      {
-        "pagePath": "pages/history/index",
-        "text": "历史",
-        "iconPath": "static/tabs/history.png",
-        "selectedIconPath": "static/tabs/history-active.png"
       }
     ]
   },

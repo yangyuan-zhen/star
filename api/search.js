@@ -67,44 +67,6 @@ export const searchResources = () => {
     })
 }
 
-//历史上的今天
-export const historyToday = () => {
-    return new Promise((resolve, reject) => {
-        uni.request({
-            url: "https://www.mxnzp.com/api/history/today",
-            method: "GET",
-            data: {
-                type: 0,
-                app_id: '0amkrpktjgnqorxr',
-                app_secret: '1W9TGrscBM21Vqu4rsTQK2c8PbY0kRdM'
-            },
-            success: (res) => {
-                if (res.data.code === 1) {
-                    const formattedData = {
-                        code: 1,
-                        data: res.data.data.map(item => ({
-                            year: item.year,
-                            month: item.month,
-                            day: item.day,
-                            title: item.title,
-                            picUrl: item.picUrl || ''
-                        }))
-                    };
-                    resolve(formattedData);
-                } else {
-                    reject({
-                        code: -1,
-                        message: res.data.msg || '获取数据失败'
-                    });
-                }
-            },
-            fail: (err) => {
-                reject(err);
-            }
-        });
-    });
-}
-
 // 天气画报接口
 export const getWeatherReport = (city) => {
     return new Promise((resolve, reject) => {

@@ -36,8 +36,16 @@ const _sfc_main = {
       }
     };
     const handleNewsClick = (item) => {
-      common_vendor.index.navigateTo({
-        url: `/pages/webview/webview?url=${encodeURIComponent(item.url)}`
+      common_vendor.index.setClipboardData({
+        data: item.url,
+        success: () => {
+          common_vendor.index.showModal({
+            title: "提示",
+            content: "链接已复制到剪贴板。由于微信小程序政策限制，个人小程序不支持直接打开网页，请在浏览器中粘贴链接查看。",
+            showCancel: false,
+            confirmText: "我知道了"
+          });
+        }
       });
     };
     const formatHotScore = (score) => {

@@ -16,7 +16,13 @@
     "usingComponents": true,
     "uniStatistics": {
       "enable": false
-    }
+    },
+    "requiredPrivateInfos": [
+      "chooseAddress",
+      "chooseLocation",
+      "choosePoi",
+      "getFuzzyLocation"
+    ]
   },
   "vueVersion": "3",
   "uniCloud": {

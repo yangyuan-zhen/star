@@ -7,14 +7,6 @@
       }
     },
     {
-      "path": "pages/history/index",
-      "style": {
-        "navigationBarTitleText": "历史上的今天",
-        "navigationBarTextStyle": "black",
-        "navigationBarBackgroundColor": "#ffffff"
-      }
-    },
-    {
       "path": "pages/more/index",
       "style": {
         "navigationBarTitleText": "更多"
@@ -38,11 +30,10 @@
         "navigationBarTitleText": "AI荐书"
       }
     },
-
     {
-      "path": "pages/webview/webview",
+      "path": "pages/translation/index",
       "style": {
-        "navigationBarTitleText": "新闻详情"
+        "navigationBarTitleText": "中英互译"
       }
     }
   ],
@@ -79,6 +70,9 @@
   "permission": {
     "scope.writePhotosAlbum": {
       "desc": "用于保存天气壁纸到相册"
+    },
+    "scope.userLocation": {
+      "desc": "你的位置信息将用于获取天气信息"
     }
   }
 }

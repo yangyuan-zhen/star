@@ -1,12 +1,11 @@
 {
   "pages": [
     "pages/index/index",
-    "pages/history/index",
     "pages/more/index",
     "pages/textSnap/index",
     "pages/weather/index",
     "pages/book/index",
-    "pages/webview/webview"
+    "pages/translation/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",
@@ -32,5 +31,11 @@
       }
     ]
   },
+  "requiredPrivateInfos": [
+    "chooseAddress",
+    "chooseLocation",
+    "choosePoi",
+    "getFuzzyLocation"
+  ],
   "usingComponents": {}
 }

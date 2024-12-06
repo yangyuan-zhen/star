@@ -77,9 +77,18 @@ const fetchNews = async () => {
 };
 
 const handleNewsClick = (item) => {
-  // 使用webview打开链接
-  uni.navigateTo({
-    url: `/pages/webview/webview?url=${encodeURIComponent(item.url)}`,
+  // 复制链接到剪贴板
+  uni.setClipboardData({
+    data: item.url,
+    success: () => {
+      uni.showModal({
+        title: "提示",
+        content:
+          "链接已复制到剪贴板。由于微信小程序政策限制，个人小程序不支持直接打开网页，请在浏览器中粘贴链接查看。",
+        showCancel: false,
+        confirmText: "我知道了",
+      });
+    },
   });
 };
 

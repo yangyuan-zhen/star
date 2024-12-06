@@ -15,6 +15,11 @@
         <image class="icon" src="../../static/tabs/book.png" />
         <text>AI荐书</text>
       </view>
+
+      <view class="grid-item" @tap="handleNavigate('translation')">
+        <image class="icon" src="../../static/tabs/translation.png" />
+        <text>中英互译</text>
+      </view>
     </view>
   </view>
 </template>
@@ -26,6 +31,7 @@ const handleNavigate = (type) => {
     textSnap: "/pages/textSnap/index",
     weather: "/pages/weather/index",
     book: "/pages/book/index",
+    translation: "/pages/translation/index",
   };
 
   if (routes[type]) {
