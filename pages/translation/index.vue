@@ -25,6 +25,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { translateText } from "../../api/search.js";
 
 const inputText = ref("");
 const translatedText = ref("");
@@ -41,28 +42,8 @@ const handleTranslate = async () => {
 
   isLoading.value = true;
   try {
-    const response = await uni.request({
-      url: "https://api.coze.cn/v1/workflow/run",
-      method: "POST",
-      header: {
-        Authorization:
-          "Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65",
-        "Content-Type": "application/json",
-      },
-      data: {
-        workflow_id: "7445294801782259738",
-        parameters: {
-          BOT_USER_INPUT: inputText.value,
-        },
-      },
-    });
-
-    if (response.data.code === 0) {
-      const result = JSON.parse(response.data.data);
-      translatedText.value = result.output;
-    } else {
-      throw new Error("翻译失败");
-    }
+    const result = await translateText(inputText.value);
+    translatedText.value = result.output;
   } catch (error) {
     uni.showToast({
       title: error.message || "翻译失败，请稍后重试",

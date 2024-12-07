@@ -11,10 +11,12 @@
     "miniprogram-ci": "^1.8.0"
   },
   "dependencies": {
-    "@dcloudio/uni-app": "^2.0.2-4020420240722004",
     "@dcloudio/uni-app-plus": "^2.0.2-4020420240722004",
+    "@dcloudio/uni-mp-vue": "^2.0.2-4020420240722004",
+    "@dcloudio/uni-ui": "^1.5.7",
     "file-saver": "^2.0.5",
     "highlight.js": "^11.10.0",
-    "html2canvas": "^1.4.1"
+    "html2canvas": "^1.4.1",
+    "vue": "^3.5.13"
   }
 }

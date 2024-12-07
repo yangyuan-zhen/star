@@ -5,18 +5,25 @@ exports.main = async (event, context) => {
     try {
         const { imageUrl } = event;
 
-        console.log('开始执行云函数，接收到的参数:', event);
+        // 详细的日志记录
+        console.log('开始执行云函数，环境信息:', {
+            context: context,
+            provider: context.PLATFORM,
+            spaceInfo: context.SPACEINFO
+        });
 
         if (!imageUrl) {
-            console.log('图片URL为空');
-            return {
-                code: -1,
-                msg: '图片URL不能为空'
-            }
+            throw new Error('图片URL不能为空');
         }
 
-        console.log('准备下载图片:', imageUrl);
+        // 验证URL格式
+        try {
+            new URL(imageUrl);
+        } catch (e) {
+            throw new Error('无效的图片URL');
+        }
 
+        // 添加超时和重试机制
         const response = await axios({
             method: 'get',
             url: imageUrl,
@@ -24,32 +31,40 @@ exports.main = async (event, context) => {
             timeout: 30000,
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Referer': 'https://byteimg.com',
                 'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-                'Connection': 'keep-alive'
+                'Referer': imageUrl,
+                'Origin': '*'
             },
-            maxRedirects: 5
+            maxRedirects: 5,
+            validateStatus: status => status >= 200 && status < 300
         });
 
-        console.log('图片下载成功，内容长度:', response.data.length);
+        if (!response.data || !response.data.length) {
+            throw new Error('下载的图片内容为空');
+        }
 
+        // 生成唯一文件名
         const fileName = `${Date.now()}-${Math.random().toString(36).slice(-6)}.png`;
         const cloudPath = `book_images/${fileName}`;
 
-        console.log('开始上传到云存储，路径:', cloudPath);
-
+        // 上传到云存储
         const uploadResult = await uniCloud.uploadFile({
             fileContent: response.data,
             cloudPath: cloudPath
         });
 
-        console.log('上传成功，结果:', uploadResult);
+        if (!uploadResult || !uploadResult.fileID) {
+            throw new Error('上传到云存储失败');
+        }
 
+        // 获取临时访问链接
         const tempFileURLResult = await uniCloud.getTempFileURL({
             fileList: [uploadResult.fileID]
         });
 
-        console.log('获取临时URL结果:', tempFileURLResult);
+        if (!tempFileURLResult || !tempFileURLResult.fileList || !tempFileURLResult.fileList[0]) {
+            throw new Error('获取临时访问链接失败');
+        }
 
         return {
             code: 0,
@@ -61,7 +76,12 @@ exports.main = async (event, context) => {
         }
 
     } catch (error) {
-        console.error('处理图片失败:', error);
+        console.error('云函数执行失败:', {
+            error: error,
+            stack: error.stack,
+            message: error.message
+        });
+
         return {
             code: -1,
             msg: `处理图片失败: ${error.message}`,
@@ -69,3 +89,4 @@ exports.main = async (event, context) => {
         }
     }
 }
+

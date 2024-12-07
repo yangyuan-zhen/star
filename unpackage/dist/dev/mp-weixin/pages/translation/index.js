@@ -1,5 +1,6 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const api_search = require("../../api/search.js");
 const _sfc_main = {
   __name: "index",
   setup(__props) {
@@ -16,26 +17,8 @@ const _sfc_main = {
       }
       isLoading.value = true;
       try {
-        const response = await common_vendor.index.request({
-          url: "https://api.coze.cn/v1/workflow/run",
-          method: "POST",
-          header: {
-            Authorization: "Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65",
-            "Content-Type": "application/json"
-          },
-          data: {
-            workflow_id: "7445294801782259738",
-            parameters: {
-              BOT_USER_INPUT: inputText.value
-            }
-          }
-        });
-        if (response.data.code === 0) {
-          const result = JSON.parse(response.data.data);
-          translatedText.value = result.output;
-        } else {
-          throw new Error("翻译失败");
-        }
+        const result = await api_search.translateText(inputText.value);
+        translatedText.value = result.output;
       } catch (error) {
         common_vendor.index.showToast({
           title: error.message || "翻译失败，请稍后重试",

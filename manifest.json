@@ -21,17 +21,28 @@
       "chooseAddress",
       "chooseLocation",
       "choosePoi",
-      "getFuzzyLocation"
-    ]
+      "getLocation",
+      "onLocationChange",
+      "startLocationUpdate",
+      "startLocationUpdateBackground"
+    ],
+    "cloudfunctionRoot": "cloudfunctions/",
+    "permission": {
+      "scope.writePhotosAlbum": {
+        "desc": "用于保存图片到相册"
+      }
+    }
   },
   "vueVersion": "3",
   "uniCloud": {
     "debug": true,
     "provider": "alipay",
-    "spaceId": "env-00jxhk9ji189",
+    "spaceId": "你的spaceId",
     "clientSecret": "hkXUWkBWPoaRk7GP",
     "endpoint": "https://env-00jxhk9ji189.api-hz.cloudbasefunction.cn",
-    "functionMode": "cloudenv",
+    "functionMode": {
+      "service": true
+    },
     "mp": {
       "useCloud": true,
       "cloudProvider": "alipay"

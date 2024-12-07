@@ -149,3 +149,44 @@ export const getBookRecommend = (bookName) => {
         })
     })
 }
+
+// 翻译接口
+export const translateText = (text) => {
+    return new Promise((resolve, reject) => {
+        uni.request({
+            url: 'https://api.coze.cn/v1/workflow/run',
+            method: 'POST',
+            header: {
+                'Authorization': 'Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65',
+                'Content-Type': 'application/json'
+            },
+            data: {
+                workflow_id: '7445294801782259738',
+                parameters: {
+                    BOT_USER_INPUT: text
+                }
+            },
+            success: (res) => {
+                if (res.data.code === 0) {
+                    try {
+                        const result = JSON.parse(res.data.data)
+                        resolve(result)
+                    } catch (error) {
+                        reject({
+                            code: -1,
+                            message: '数据解析失败'
+                        })
+                    }
+                } else {
+                    reject({
+                        code: -1,
+                        message: res.data.msg || '翻译失败'
+                    })
+                }
+            },
+            fail: (err) => {
+                reject(err)
+            }
+        })
+    })
+}
