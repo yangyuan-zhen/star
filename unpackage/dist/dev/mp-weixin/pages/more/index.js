@@ -10,7 +10,8 @@ const _sfc_main = {
         textSnap: "/pages/textSnap/index",
         weather: "/pages/weather/index",
         book: "/pages/book/index",
-        translation: "/pages/translation/index"
+        translation: "/pages/translation/index",
+        codeHelper: "/pages/codeHelper/index"
       };
       if (routes[type]) {
         common_vendor.index.navigateTo({
@@ -27,7 +28,9 @@ const _sfc_main = {
         e: common_assets._imports_2,
         f: common_vendor.o(($event) => handleNavigate("book")),
         g: common_assets._imports_3,
-        h: common_vendor.o(($event) => handleNavigate("translation"))
+        h: common_vendor.o(($event) => handleNavigate("translation")),
+        i: common_assets._imports_4,
+        j: common_vendor.o(($event) => handleNavigate("codeHelper"))
       };
     };
   }

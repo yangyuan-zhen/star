@@ -35,6 +35,12 @@
       "style": {
         "navigationBarTitleText": "中英互译"
       }
+    },
+    {
+      "path": "pages/codeHelper/index",
+      "style": {
+        "navigationBarTitleText": "代码prompt"
+      }
     }
   ],
   "tabBar": {
@@ -56,23 +62,5 @@
         "selectedIconPath": "static/tabs/more-active.png"
       }
     ]
-  },
-  "globalStyle": {
-    "navigationBarTextStyle": "black",
-    "navigationBarBackgroundColor": "#ffffff"
-  },
-  "easycom": {
-    "autoscan": true,
-    "custom": {
-      "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
-    }
-  },
-  "permission": {
-    "scope.writePhotosAlbum": {
-      "desc": "用于保存天气壁纸到相册"
-    },
-    "scope.userLocation": {
-      "desc": "你的位置信息将用于获取天气信息"
-    }
   }
 }

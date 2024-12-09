@@ -170,7 +170,37 @@ const translateText = (text) => {
     });
   });
 };
+const COZE_API_CONFIG = {
+  url: "https://api.coze.cn/v1/workflow/run",
+  workflowId: "7446309388979290151",
+  token: "pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65"
+};
+const getCodeSuggestion = (userInput) => {
+  return new Promise((resolve, reject) => {
+    common_vendor.index.request({
+      url: COZE_API_CONFIG.url,
+      method: "POST",
+      header: {
+        Authorization: `Bearer ${COZE_API_CONFIG.token}`,
+        "Content-Type": "application/json"
+      },
+      data: {
+        workflow_id: COZE_API_CONFIG.workflowId,
+        parameters: {
+          BOT_USER_INPUT: userInput
+        }
+      },
+      success: (res) => {
+        resolve(res.data);
+      },
+      fail: (err) => {
+        reject(err);
+      }
+    });
+  });
+};
 exports.getBookRecommend = getBookRecommend;
+exports.getCodeSuggestion = getCodeSuggestion;
 exports.getWeatherReport = getWeatherReport;
 exports.searchResources = searchResources;
 exports.translateText = translateText;

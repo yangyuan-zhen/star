@@ -1,0 +1,124 @@
+
+.container.data-v-62afe2d4 {
+  padding: 20rpx;
+}
+.input-area.data-v-62afe2d4 {
+  margin-bottom: 20rpx;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  border-radius: 8rpx;
+  padding: 10rpx;
+}
+.custom-input.data-v-62afe2d4 {
+  width: 100%;
+  min-height: 100rpx;
+  padding: 10rpx 20rpx;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  font-size: 28rpx;
+  box-sizing: border-box;
+  line-height: 1.5;
+  resize: none;
+}
+.submit-btn.data-v-62afe2d4 {
+  background-color: #007aff;
+  color: #fff;
+  margin: 20rpx 0;
+  padding: 20rpx 0;
+  border-radius: 8rpx;
+}
+.result-area.data-v-62afe2d4 {
+  margin-top: 20rpx;
+}
+.suggestion-text.data-v-62afe2d4 {
+  font-size: 28rpx;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.markdown-container.data-v-62afe2d4 {
+  margin-top: 20rpx;
+  border: 1px solid #e0e0e0;
+  border-radius: 8rpx;
+  background: #fff;
+}
+.markdown-header.data-v-62afe2d4 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 24rpx;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f8f8;
+}
+.copy-btn.data-v-62afe2d4 {
+  color: #666;
+  font-size: 24rpx;
+  cursor: pointer;
+}
+.copy-btn.data-v-62afe2d4:hover {
+  color: #007aff;
+}
+.markdown-content.data-v-62afe2d4 {
+  padding: 24rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+/* Markdown 样式 */
+.data-v-62afe2d4 .markdown-content h1 {
+  font-size: 36rpx;
+  margin-bottom: 24rpx;
+  color: #333;
+}
+.data-v-62afe2d4 .markdown-content h2 {
+  font-size: 32rpx;
+  margin: 24rpx 0;
+  color: #333;
+}
+.data-v-62afe2d4 .markdown-content p {
+  margin: 16rpx 0;
+}
+.data-v-62afe2d4 .markdown-content ul {
+  padding-left: 32rpx;
+  margin: 16rpx 0;
+}
+.data-v-62afe2d4 .markdown-content li {
+  margin: 8rpx 0;
+}
+.default-tips.data-v-62afe2d4 {
+  margin-top: 30rpx;
+  padding: 20rpx;
+}
+.tip-item.data-v-62afe2d4 {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 30rpx;
+}
+.tip-number.data-v-62afe2d4 {
+  width: 40rpx;
+  height: 40rpx;
+  background-color: #007aff;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+.tip-content.data-v-62afe2d4 {
+  flex: 1;
+}
+.tip-title.data-v-62afe2d4 {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+.tip-desc.data-v-62afe2d4 {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.4;
+}

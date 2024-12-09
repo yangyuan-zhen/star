@@ -20,6 +20,11 @@
         <image class="icon" src="../../static/tabs/translation.png" />
         <text>中英互译</text>
       </view>
+
+      <view class="grid-item" @tap="handleNavigate('codeHelper')">
+        <image class="icon" src="../../static/tabs/code.png" />
+        <text>代码prompt</text>
+      </view>
     </view>
   </view>
 </template>
@@ -32,6 +37,7 @@ const handleNavigate = (type) => {
     weather: "/pages/weather/index",
     book: "/pages/book/index",
     translation: "/pages/translation/index",
+    codeHelper: "/pages/codeHelper/index",
   };
 
   if (routes[type]) {

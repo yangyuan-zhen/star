@@ -5,12 +5,9 @@
     "pages/textSnap/index",
     "pages/weather/index",
     "pages/book/index",
-    "pages/translation/index"
+    "pages/translation/index",
+    "pages/codeHelper/index"
   ],
-  "window": {
-    "navigationBarTextStyle": "black",
-    "navigationBarBackgroundColor": "#ffffff"
-  },
   "tabBar": {
     "color": "#999999",
     "selectedColor": "#007AFF",
