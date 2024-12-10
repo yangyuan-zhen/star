@@ -13,7 +13,7 @@ const setLastRequestTime = (time) => {
 const INTERVAL = 5 * 1000 // 60秒间隔
 
 // 热搜新闻接口
-export const searchResources = () => {
+const searchResources = () => {
     return new Promise((resolve, reject) => {
         const now = Date.now()
         const lastTime = getLastRequestTime()
@@ -68,7 +68,7 @@ export const searchResources = () => {
 }
 
 // 天气画报接口
-export const getWeatherReport = (city) => {
+const getWeatherReport = (city) => {
     return new Promise((resolve, reject) => {
         uni.request({
             url: 'https://api.coze.cn/v1/workflow/run',
@@ -108,8 +108,9 @@ export const getWeatherReport = (city) => {
         })
     })
 }
+
 // AI荐书接口   
-export const getBookRecommend = (bookName) => {
+const getBookRecommend = (bookName) => {
     return new Promise((resolve, reject) => {
         uni.request({
             url: 'https://api.coze.cn/v1/workflow/run',
@@ -151,7 +152,7 @@ export const getBookRecommend = (bookName) => {
 }
 
 // 翻译接口
-export const translateText = (text) => {
+const translateText = (text) => {
     return new Promise((resolve, reject) => {
         uni.request({
             url: 'https://api.coze.cn/v1/workflow/run',
@@ -197,7 +198,7 @@ const COZE_API_CONFIG = {
     token: "pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65",
 };
 
-export const getCodeSuggestion = (userInput) => {
+const getCodeSuggestion = (userInput) => {
     return new Promise((resolve, reject) => {
         uni.request({
             url: COZE_API_CONFIG.url,
@@ -221,3 +222,81 @@ export const getCodeSuggestion = (userInput) => {
         });
     });
 };
+
+// 获取电影数据接口
+const getMovieData = () => {
+    return new Promise((resolve, reject) => {
+        const makeRequest = (retryCount = 0) => {
+            uni.request({
+                url: 'https://www.cikeee.cc/api',
+                method: 'GET',
+                timeout: 10000,
+                header: {
+                    'Cookie': 'PHPSESSID=caf3224b23f7ae7b415701a1872652bc'
+                },
+                data: {
+                    app_key: 'pub_23020990025',
+                    t: Date.now()
+                },
+                success: (res) => {
+                    console.log('API响应:', res);
+                    if (res.statusCode === 200 && res.data) {
+                        // 缓存数据
+                        try {
+                            uni.setStorageSync('movieCache', res.data);
+                            uni.setStorageSync('movieCacheTime', Date.now());
+                        } catch (e) {
+                            console.error('缓存数据失败:', e);
+                        }
+                        resolve(res.data);
+                    } else {
+                        // 尝试使用缓存数据
+                        const cachedData = uni.getStorageSync('movieCache');
+                        if (cachedData) {
+                            console.log('使用缓存数据');
+                            resolve(cachedData);
+                        } else if (retryCount < 2) {
+                            console.log(`重试请求 ${retryCount + 1}`);
+                            setTimeout(() => makeRequest(retryCount + 1), 1000);
+                        } else {
+                            reject({
+                                code: -1,
+                                message: '获取电影数据失败',
+                                detail: res
+                            });
+                        }
+                    }
+                },
+                fail: (err) => {
+                    console.error('请求失败详情:', err);
+                    const cachedData = uni.getStorageSync('movieCache');
+                    if (cachedData) {
+                        console.log('使用缓存数据');
+                        resolve(cachedData);
+                    } else if (retryCount < 2) {
+                        console.log(`重试请求 ${retryCount + 1}`);
+                        setTimeout(() => makeRequest(retryCount + 1), 1000);
+                    } else {
+                        reject({
+                            code: -1,
+                            message: '请求失败',
+                            detail: err
+                        });
+                    }
+                }
+            });
+        };
+
+        makeRequest();
+    });
+};
+
+// 统一导出所有函数
+export {
+    searchResources,
+    getWeatherReport,
+    getBookRecommend,
+    translateText,
+    getCodeSuggestion,
+    getMovieData
+}

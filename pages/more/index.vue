@@ -25,6 +25,10 @@
         <image class="icon" src="../../static/tabs/code.png" />
         <text>代码prompt</text>
       </view>
+      <view class="grid-item" @tap="handleNavigate('movie')">
+        <image class="icon" src="../../static/tabs/movie.png" />
+        <text>电影日历</text>
+      </view>
     </view>
   </view>
 </template>
@@ -38,6 +42,7 @@ const handleNavigate = (type) => {
     book: "/pages/book/index",
     translation: "/pages/translation/index",
     codeHelper: "/pages/codeHelper/index",
+    movie: "/pages/movie/index",
   };
 
   if (routes[type]) {

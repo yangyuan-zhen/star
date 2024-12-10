@@ -199,8 +199,72 @@ const getCodeSuggestion = (userInput) => {
     });
   });
 };
+const getMovieData = () => {
+  return new Promise((resolve, reject) => {
+    const makeRequest = (retryCount = 0) => {
+      common_vendor.index.request({
+        url: "https://www.cikeee.cc/api",
+        method: "GET",
+        timeout: 1e4,
+        header: {
+          "Cookie": "PHPSESSID=caf3224b23f7ae7b415701a1872652bc"
+        },
+        data: {
+          app_key: "pub_23020990025",
+          t: Date.now()
+        },
+        success: (res) => {
+          console.log("API响应:", res);
+          if (res.statusCode === 200 && res.data) {
+            try {
+              common_vendor.index.setStorageSync("movieCache", res.data);
+              common_vendor.index.setStorageSync("movieCacheTime", Date.now());
+            } catch (e) {
+              console.error("缓存数据失败:", e);
+            }
+            resolve(res.data);
+          } else {
+            const cachedData = common_vendor.index.getStorageSync("movieCache");
+            if (cachedData) {
+              console.log("使用缓存数据");
+              resolve(cachedData);
+            } else if (retryCount < 2) {
+              console.log(`重试请求 ${retryCount + 1}`);
+              setTimeout(() => makeRequest(retryCount + 1), 1e3);
+            } else {
+              reject({
+                code: -1,
+                message: "获取电影数据失败",
+                detail: res
+              });
+            }
+          }
+        },
+        fail: (err) => {
+          console.error("请求失败详情:", err);
+          const cachedData = common_vendor.index.getStorageSync("movieCache");
+          if (cachedData) {
+            console.log("使用缓存数据");
+            resolve(cachedData);
+          } else if (retryCount < 2) {
+            console.log(`重试请求 ${retryCount + 1}`);
+            setTimeout(() => makeRequest(retryCount + 1), 1e3);
+          } else {
+            reject({
+              code: -1,
+              message: "请求失败",
+              detail: err
+            });
+          }
+        }
+      });
+    };
+    makeRequest();
+  });
+};
 exports.getBookRecommend = getBookRecommend;
 exports.getCodeSuggestion = getCodeSuggestion;
+exports.getMovieData = getMovieData;
 exports.getWeatherReport = getWeatherReport;
 exports.searchResources = searchResources;
 exports.translateText = translateText;

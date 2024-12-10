@@ -9,6 +9,7 @@ if (!Math) {
   "./pages/book/index.js";
   "./pages/translation/index.js";
   "./pages/codeHelper/index.js";
+  "./pages/movie/index.js";
 }
 const _sfc_main = {
   onLaunch: function() {

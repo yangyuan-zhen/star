@@ -11,7 +11,8 @@ const _sfc_main = {
         weather: "/pages/weather/index",
         book: "/pages/book/index",
         translation: "/pages/translation/index",
-        codeHelper: "/pages/codeHelper/index"
+        codeHelper: "/pages/codeHelper/index",
+        movie: "/pages/movie/index"
       };
       if (routes[type]) {
         common_vendor.index.navigateTo({
@@ -30,7 +31,9 @@ const _sfc_main = {
         g: common_assets._imports_3,
         h: common_vendor.o(($event) => handleNavigate("translation")),
         i: common_assets._imports_4,
-        j: common_vendor.o(($event) => handleNavigate("codeHelper"))
+        j: common_vendor.o(($event) => handleNavigate("codeHelper")),
+        k: common_assets._imports_5,
+        l: common_vendor.o(($event) => handleNavigate("movie"))
       };
     };
   }
