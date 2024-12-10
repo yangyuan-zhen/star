@@ -8,10 +8,11 @@
   "mp-weixin": {
     "appid": "你的小程序appid",
     "setting": {
-      "urlCheck": false,
+      "urlCheck": true,
       "es6": true,
       "postcss": true,
-      "minified": true
+      "minified": true,
+      "compileHotReLoad": true
     },
     "usingComponents": true,
     "uniStatistics": {
@@ -37,7 +38,7 @@
   "uniCloud": {
     "debug": true,
     "provider": "alipay",
-    "spaceId": "你的spaceId",
+    "spaceId": "env-00jxhk9ji189",
     "clientSecret": "hkXUWkBWPoaRk7GP",
     "endpoint": "https://env-00jxhk9ji189.api-hz.cloudbasefunction.cn",
     "functionMode": {

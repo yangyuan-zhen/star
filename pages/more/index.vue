@@ -45,9 +45,24 @@ const handleNavigate = (type) => {
     movie: "/pages/movie/index",
   };
 
+  const preloadRoutes = {
+    textSnap: "/pages/textSnap/index",
+    weather: "/pages/weather/index",
+    book: "/pages/book/index",
+  };
+
   if (routes[type]) {
     uni.navigateTo({
       url: routes[type],
+      animationType: "slide-in-right",
+      animationDuration: 300,
+      fail: (err) => {
+        console.error("页面跳转失败:", err);
+        uni.showToast({
+          title: "页面跳转失败",
+          icon: "none",
+        });
+      },
     });
   }
 };

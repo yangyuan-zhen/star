@@ -72,5 +72,10 @@
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarBackgroundColor": "#ffffff"
+  },
+  "permission": {
+    "scope.writePhotosAlbum": {
+      "desc": "用于保存图片到相册"
+    }
   }
 }

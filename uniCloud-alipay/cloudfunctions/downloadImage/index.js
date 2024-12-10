@@ -1,5 +1,6 @@
 'use strict';
 const { default: axios } = require('axios');
+const FileType = require('file-type');
 
 exports.main = async (event, context) => {
     try {
@@ -28,19 +29,29 @@ exports.main = async (event, context) => {
             method: 'get',
             url: imageUrl,
             responseType: 'arraybuffer',
-            timeout: 30000,
+            timeout: 10000,
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+                'Accept': 'image/webp,image/jpeg,image/png',
                 'Referer': imageUrl,
                 'Origin': '*'
             },
             maxRedirects: 5,
-            validateStatus: status => status >= 200 && status < 300
+            validateStatus: status => status >= 200 && status < 300,
+            maxContentLength: 5 * 1024 * 1024
         });
 
         if (!response.data || !response.data.length) {
             throw new Error('下载的图片内容为空');
+        }
+
+        // 使用 Buffer 优化内存使用
+        const buffer = Buffer.from(response.data);
+
+        // 添加文件类型检查
+        const fileType = await FileType.fromBuffer(buffer);
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(fileType?.mime)) {
+            throw new Error('不支持的图片格式');
         }
 
         // 生成唯一文件名

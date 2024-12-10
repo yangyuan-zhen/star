@@ -7,6 +7,7 @@ const _sfc_main = {
     const bookName = common_vendor.ref("");
     const imageUrl = common_vendor.ref("");
     const loading = common_vendor.ref(false);
+    const imageLoaded = common_vendor.ref(false);
     const handleSearch = async () => {
       if (!bookName.value.trim()) {
         common_vendor.index.showToast({
@@ -98,14 +99,21 @@ const _sfc_main = {
       }
     };
     const handleImageLoad = () => {
+      imageLoaded.value = true;
       console.log("图片加载成功");
     };
-    const handleImageError = () => {
-      console.error("图片加载失败");
-      common_vendor.index.showToast({
-        title: "图片加载失败",
-        icon: "none"
-      });
+    const handleImageError = async (retryCount = 0) => {
+      if (retryCount < 3) {
+        console.log(`图片加载失败，第${retryCount + 1}次重试`);
+        await new Promise((resolve) => setTimeout(resolve, 1e3));
+        imageUrl.value = `${imageUrl.value}?retry=${retryCount}`;
+      } else {
+        console.error("图片加载失败");
+        common_vendor.index.showToast({
+          title: "图片加载失败",
+          icon: "none"
+        });
+      }
     };
     common_vendor.onShareAppMessage(() => {
       return {
@@ -131,9 +139,10 @@ const _sfc_main = {
         g: imageUrl.value
       }, imageUrl.value ? {
         h: imageUrl.value,
-        i: common_vendor.o(handleImageLoad),
-        j: common_vendor.o(handleImageError),
-        k: common_vendor.o(handleSaveImage)
+        i: imageLoaded.value ? 1 : 0,
+        j: common_vendor.o(handleImageLoad),
+        k: common_vendor.o(handleImageError),
+        l: common_vendor.o(handleSaveImage)
       } : {});
     };
   }

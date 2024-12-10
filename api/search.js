@@ -12,6 +12,34 @@ const setLastRequestTime = (time) => {
 
 const INTERVAL = 5 * 1000 // 60秒间隔
 
+// 优化缓存策略
+const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
+const RETRY_TIMES = 2;
+const RETRY_DELAY = 1000;
+
+const getCachedData = (key) => {
+    const data = uni.getStorageSync(key);
+    const time = uni.getStorageSync(`${key}_time`);
+    if (data && time && (Date.now() - time < CACHE_DURATION)) {
+        return data;
+    }
+    return null;
+};
+
+// 添加请求重试和错误处理
+const requestWithRetry = async (options, retryCount = 0) => {
+    try {
+        const response = await uni.request(options);
+        return response;
+    } catch (error) {
+        if (retryCount < RETRY_TIMES) {
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+            return requestWithRetry(options, retryCount + 1);
+        }
+        throw error;
+    }
+};
+
 // 热搜新闻接口
 const searchResources = () => {
     return new Promise((resolve, reject) => {

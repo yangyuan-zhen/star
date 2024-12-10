@@ -116,10 +116,25 @@ const handleGetSuggestion = async () => {
   }
 };
 
+// 使用防抖优化输入
+const debounce = (fn, delay) => {
+  let timer = null;
+  return (...args) => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+};
+
+// 优化 markdown 渲染
 const renderedMarkdown = computed(() => {
   if (!suggestion.value) return "";
-  console.log("渲染前的类型:", typeof suggestion.value);
   try {
+    // 配置 marked 选项提高性能
+    marked.setOptions({
+      gfm: true,
+      breaks: true,
+      sanitize: true,
+    });
     return marked(String(suggestion.value));
   } catch (error) {
     console.error("Markdown渲染错误:", error);
@@ -127,17 +142,22 @@ const renderedMarkdown = computed(() => {
   }
 });
 
-const copyText = () => {
-  if (!suggestion.value) return;
-  uni.setClipboardData({
-    data: String(suggestion.value),
-    success: () => {
-      uni.showToast({
-        title: "复制成功",
-        icon: "success",
-      });
-    },
-  });
+// 优化复制功能
+const copyText = async () => {
+  try {
+    await uni.setClipboardData({
+      data: suggestion.value,
+      success: () => {
+        uni.showToast({
+          title: "复制成功",
+          icon: "success",
+          duration: 1500,
+        });
+      },
+    });
+  } catch (error) {
+    console.error("复制失败:", error);
+  }
 };
 </script>
 

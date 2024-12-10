@@ -54,26 +54,33 @@ const _sfc_main = {
     const renderedMarkdown = common_vendor.computed(() => {
       if (!suggestion.value)
         return "";
-      console.log("渲染前的类型:", typeof suggestion.value);
       try {
+        common_vendor.marked.setOptions({
+          gfm: true,
+          breaks: true,
+          sanitize: true
+        });
         return common_vendor.marked(String(suggestion.value));
       } catch (error) {
         console.error("Markdown渲染错误:", error);
         return String(suggestion.value);
       }
     });
-    const copyText = () => {
-      if (!suggestion.value)
-        return;
-      common_vendor.index.setClipboardData({
-        data: String(suggestion.value),
-        success: () => {
-          common_vendor.index.showToast({
-            title: "复制成功",
-            icon: "success"
-          });
-        }
-      });
+    const copyText = async () => {
+      try {
+        await common_vendor.index.setClipboardData({
+          data: suggestion.value,
+          success: () => {
+            common_vendor.index.showToast({
+              title: "复制成功",
+              icon: "success",
+              duration: 1500
+            });
+          }
+        });
+      } catch (error) {
+        console.error("复制失败:", error);
+      }
     };
     return (_ctx, _cache) => {
       return common_vendor.e({

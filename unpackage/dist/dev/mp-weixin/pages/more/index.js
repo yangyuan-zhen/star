@@ -16,7 +16,16 @@ const _sfc_main = {
       };
       if (routes[type]) {
         common_vendor.index.navigateTo({
-          url: routes[type]
+          url: routes[type],
+          animationType: "slide-in-right",
+          animationDuration: 300,
+          fail: (err) => {
+            console.error("页面跳转失败:", err);
+            common_vendor.index.showToast({
+              title: "页面跳转失败",
+              icon: "none"
+            });
+          }
         });
       }
     };

@@ -6617,8 +6617,8 @@ function uniIdMixin(globalProperties) {
     return role.indexOf(roleId) > -1;
   };
   globalProperties.uniIDHasPermission = function(permissionId) {
-    const { permission } = getCurrentUserInfo();
-    return this.uniIDHasRole("admin") || permission.indexOf(permissionId) > -1;
+    const { permission: permission2 } = getCurrentUserInfo();
+    return this.uniIDHasRole("admin") || permission2.indexOf(permissionId) > -1;
   };
   globalProperties.uniIDTokenValid = function() {
     const { tokenExpired } = getCurrentUserInfo();
@@ -7741,10 +7741,16 @@ const globalStyle = {
   navigationBarTextStyle: "black",
   navigationBarBackgroundColor: "#ffffff"
 };
+const permission = {
+  "scope.writePhotosAlbum": {
+    desc: "用于保存图片到相册"
+  }
+};
 const e = {
   pages,
   tabBar,
-  globalStyle
+  globalStyle,
+  permission
 };
 var define_process_env_UNI_SECURE_NETWORK_CONFIG_default = [];
 function t(e2) {

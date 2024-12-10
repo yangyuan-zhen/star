@@ -20,6 +20,8 @@
         class="result-image"
         :src="imageUrl"
         mode="widthFix"
+        lazy-load
+        :style="{ opacity: imageLoaded ? 1 : 0 }"
         @load="handleImageLoad"
         @error="handleImageError"
       />
@@ -43,6 +45,7 @@ import { getBookRecommend } from "@/api/search.js";
 const bookName = ref("");
 const imageUrl = ref("");
 const loading = ref(false);
+const imageLoaded = ref(false);
 
 const handleSearch = async () => {
   if (!bookName.value.trim()) {
@@ -157,15 +160,22 @@ const handleSaveImage = async () => {
 };
 
 const handleImageLoad = () => {
+  imageLoaded.value = true;
   console.log("图片加载成功");
 };
 
-const handleImageError = () => {
-  console.error("图片加载失败");
-  uni.showToast({
-    title: "图片加载失败",
-    icon: "none",
-  });
+const handleImageError = async (retryCount = 0) => {
+  if (retryCount < 3) {
+    console.log(`图片加载失败，第${retryCount + 1}次重试`);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    imageUrl.value = `${imageUrl.value}?retry=${retryCount}`;
+  } else {
+    console.error("图片加载失败");
+    uni.showToast({
+      title: "图片加载失败",
+      icon: "none",
+    });
+  }
 };
 
 // 添加分享功能
