@@ -1,14 +1,14 @@
 <template>
   <div class="movie-calendar">
-    <!-- 顶部日期展示 -->
-    <div class="date-header">
-      <view class="date-number">{{ currentDay }}</view>
-      <view class="date-info">
-        <text>{{ currentMonth + 1 }}月</text>
-        <text class="ml-2">周{{ weekDayText }}</text>
-      </view>
+    <div class="header-container">
+      <div class="date-header">
+        <view class="date-number">{{ currentDay }}</view>
+        <view class="date-info">
+          <text>{{ currentMonth + 1 }}月</text>
+          <text class="ml-2">周{{ weekDayText }}</text>
+        </view>
+      </div>
     </div>
-
     <!-- 今日电影卡片 -->
     <div v-if="todayMovie" class="movie-card">
       <image :src="todayMovie.mov_pic" class="movie-poster" mode="aspectFill" />
@@ -41,7 +41,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { getMovieData } from "@/api/search.js";
-
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 const currentDate = ref(new Date());
 const weekDays = ["日", "一", "二", "三", "四", "五", "六"];
 
@@ -50,6 +50,8 @@ const currentMonth = computed(() => currentDate.value.getMonth());
 const weekDayText = computed(() => weekDays[currentDate.value.getDay()]);
 
 const todayMovie = ref(null);
+const showHistoryList = ref(false);
+const historyMovies = ref([]);
 
 // 获取电影数据
 const fetchMovieData = async () => {
@@ -78,12 +80,30 @@ const copyLink = () => {
   });
 };
 
+// 分享给好友
+onShareAppMessage(() => {
+  return {
+    title: todayMovie.value?.mov_title || "今日电影推荐",
+    path: "/pages/movie/index",
+    imageUrl: todayMovie.value?.mov_pic, // 分享图片，使用电影海报
+  };
+});
+
+// 分享到朋友圈
+onShareTimeline(() => {
+  return {
+    title: todayMovie.value?.mov_title || "今日电影推荐",
+    query: "/pages/movie/index",
+    imageUrl: todayMovie.value?.mov_pic,
+  };
+});
+
 onMounted(() => {
   fetchMovieData();
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .movie-calendar {
   min-height: 100vh;
   background: #f5f5f5;
@@ -91,11 +111,11 @@ onMounted(() => {
 }
 
 .date-header {
-  margin-bottom: 20px;
+  margin-bottom: 2px;
 }
 
 .date-number {
-  font-size: 48px;
+  font-size: 28px;
   font-weight: bold;
   color: #333;
 }
@@ -108,7 +128,7 @@ onMounted(() => {
 .movie-card {
   background: white;
   border-radius: 12px;
-  padding: 16px;
+  padding: 10px;
   margin-bottom: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 }
@@ -202,5 +222,25 @@ onMounted(() => {
   font-size: 24rpx;
   color: #999;
   text-align: center;
+}
+
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.history-icon {
+  width: 32px;
+  height: 32px;
+  padding: 10px;
+  opacity: 0.6;
+}
+
+.history-icon-hover {
+  opacity: 1;
+  transform: scale(1.1);
+  transition: transform 0.2s, opacity 0.2s;
 }
 </style>

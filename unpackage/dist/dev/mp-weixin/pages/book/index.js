@@ -117,14 +117,15 @@ const _sfc_main = {
     };
     common_vendor.onShareAppMessage(() => {
       return {
-        title: "为你推荐好书",
+        title: "AI荐书",
         path: "/pages/book/index",
         imageUrl: imageUrl.value
       };
     });
     common_vendor.onShareTimeline(() => {
       return {
-        title: "为你推荐好书",
+        title: "AI荐书",
+        query: "path=/pages/book/index",
         imageUrl: imageUrl.value
       };
     });

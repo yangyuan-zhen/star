@@ -10,6 +10,8 @@ const _sfc_main = {
     const currentMonth = common_vendor.computed(() => currentDate.value.getMonth());
     const weekDayText = common_vendor.computed(() => weekDays[currentDate.value.getDay()]);
     const todayMovie = common_vendor.ref(null);
+    common_vendor.ref(false);
+    common_vendor.ref([]);
     const fetchMovieData = async () => {
       try {
         const data = await api_search.getMovieData();
@@ -33,6 +35,23 @@ const _sfc_main = {
         }
       });
     };
+    common_vendor.onShareAppMessage(() => {
+      var _a, _b;
+      return {
+        title: ((_a = todayMovie.value) == null ? void 0 : _a.mov_title) || "今日电影推荐",
+        path: "/pages/movie/index",
+        imageUrl: (_b = todayMovie.value) == null ? void 0 : _b.mov_pic
+        // 分享图片，使用电影海报
+      };
+    });
+    common_vendor.onShareTimeline(() => {
+      var _a, _b;
+      return {
+        title: ((_a = todayMovie.value) == null ? void 0 : _a.mov_title) || "今日电影推荐",
+        query: "/pages/movie/index",
+        imageUrl: (_b = todayMovie.value) == null ? void 0 : _b.mov_pic
+      };
+    });
     common_vendor.onMounted(() => {
       fetchMovieData();
     });
@@ -62,4 +81,5 @@ const _sfc_main = {
   }
 };
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-a135a866"]]);
+_sfc_main.__runtimeHooks = 6;
 wx.createPage(MiniProgramPage);

@@ -39,8 +39,8 @@
 
 <script setup>
 import { ref } from "vue";
-import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 import { getBookRecommend } from "@/api/search.js";
+import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 
 const bookName = ref("");
 const imageUrl = ref("");
@@ -178,41 +178,9 @@ const handleImageError = async (retryCount = 0) => {
   }
 };
 
-// 添加分享功能
-const handleShare = () => {
-  // #ifdef MP-WEIXIN
-  uni.showShareMenu({
-    withShareTicket: true,
-    menus: ["shareAppMessage", "shareTimeline"],
-  });
-  // #endif
-
-  // #ifdef APP-PLUS
-  uni.share({
-    provider: "native",
-    type: 2,
-    imageUrl: imageUrl.value,
-    success: function () {
-      uni.showToast({
-        title: "分享成功",
-        icon: "success",
-      });
-    },
-    fail: function () {
-      uni.showToast({
-        title: "分享失败",
-        icon: "none",
-      });
-    },
-  });
-  // #endif
-};
-
-// 微信小程序的分享配置
-// #ifdef MP-WEIXIN
 onShareAppMessage(() => {
   return {
-    title: "为你推荐好书",
+    title: "AI荐书",
     path: "/pages/book/index",
     imageUrl: imageUrl.value,
   };
@@ -220,11 +188,11 @@ onShareAppMessage(() => {
 
 onShareTimeline(() => {
   return {
-    title: "为你推荐好书",
+    title: "AI荐书",
+    query: "path=/pages/book/index",
     imageUrl: imageUrl.value,
   };
 });
-// #endif
 </script>
 
 <style scoped lang="scss">
@@ -291,10 +259,6 @@ onShareTimeline(() => {
 
 .save-btn {
   background-color: #409eff;
-}
-
-.share-btn {
-  background-color: #67c23a;
 }
 
 .tip-text {

@@ -73,9 +73,6 @@
 .save-btn.data-v-0452ab4c {
   background-color: #409eff;
 }
-.share-btn.data-v-0452ab4c {
-  background-color: #67c23a;
-}
 .tip-text.data-v-0452ab4c {
   font-size: 24rpx;
   color: #999;

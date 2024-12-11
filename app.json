@@ -14,5 +14,6 @@
       }
     ]
   },
-  "usingComponents": {}
+  "usingComponents": {},
+  "enableShareTimeline": true
 }

@@ -319,6 +319,8 @@ const getMovieData = () => {
     });
 };
 
+
+
 // 统一导出所有函数
 export {
     searchResources,
@@ -326,5 +328,5 @@ export {
     getBookRecommend,
     translateText,
     getCodeSuggestion,
-    getMovieData
+    getMovieData,
 }

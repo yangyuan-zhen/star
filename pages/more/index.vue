@@ -3,7 +3,7 @@
     <view class="grid-container">
       <view class="grid-item" @tap="handleNavigate('textSnap')">
         <image class="icon" src="../../static/tabs/textSnap.png" />
-        <text>文字转图片</text>
+        <text>文字图片</text>
       </view>
 
       <view class="grid-item" @tap="handleNavigate('weather')">
