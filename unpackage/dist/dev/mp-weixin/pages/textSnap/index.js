@@ -186,14 +186,14 @@ const _sfc_main = {
     };
     common_vendor.onShareAppMessage(() => {
       return {
-        title: "文字转图片分享",
+        title: "文字图片",
         imageUrl: previewImage.value,
         path: "/pages/textSnap/index"
       };
     });
     common_vendor.onShareTimeline(() => {
       return {
-        title: "文字转图片分享",
+        title: "文字图片",
         imageUrl: previewImage.value,
         path: "/pages/textSnap/index"
       };

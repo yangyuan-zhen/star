@@ -189,7 +189,7 @@ onShareAppMessage(() => {
 onShareTimeline(() => {
   return {
     title: "AI荐书",
-    query: "path=/pages/book/index",
+    query: "/pages/book/index",
     imageUrl: imageUrl.value,
   };
 });

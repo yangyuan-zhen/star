@@ -111,7 +111,7 @@ onMounted(() => {
 }
 
 .date-header {
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .date-number {

@@ -12662,6 +12662,7 @@ exports.o = o$1;
 exports.onMounted = onMounted;
 exports.onShareAppMessage = onShareAppMessage;
 exports.onShareTimeline = onShareTimeline;
+exports.onUnmounted = onUnmounted;
 exports.ref = ref;
 exports.s = s$1;
 exports.t = t$1;

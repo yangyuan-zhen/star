@@ -338,7 +338,7 @@ const shareToWechat = () => {
 // 添加页面分享处理
 onShareAppMessage(() => {
   return {
-    title: "文字转图片分享",
+    title: "文字图片",
     imageUrl: previewImage.value,
     path: "/pages/textSnap/index",
   };
@@ -347,7 +347,7 @@ onShareAppMessage(() => {
 // 添加分享到朋友圈
 onShareTimeline(() => {
   return {
-    title: "文字转图片分享",
+    title: "文字图片",
     imageUrl: previewImage.value,
     path: "/pages/textSnap/index",
   };
