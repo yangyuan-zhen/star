@@ -37,10 +37,7 @@
     "chooseAddress",
     "chooseLocation",
     "choosePoi",
-    "getLocation",
-    "onLocationChange",
-    "startLocationUpdate",
-    "startLocationUpdateBackground"
+    "getFuzzyLocation"
   ],
   "permission": {
     "scope.writePhotosAlbum": {

@@ -135,6 +135,26 @@ function parseStringStyle(cssText) {
   });
   return ret;
 }
+function normalizeClass(value) {
+  let res = "";
+  if (isString(value)) {
+    res = value;
+  } else if (isArray(value)) {
+    for (let i2 = 0; i2 < value.length; i2++) {
+      const normalized = normalizeClass(value[i2]);
+      if (normalized) {
+        res += normalized + " ";
+      }
+    }
+  } else if (isObject(value)) {
+    for (const name in value) {
+      if (value[name]) {
+        res += name + " ";
+      }
+    }
+  }
+  return res.trim();
+}
 const toDisplayString = (val) => {
   return isString(val) ? val : val == null ? "" : isArray(val) || isObject(val) && (val.toString === objectToString || !isFunction(val.toString)) ? JSON.stringify(val, replacer, 2) : String(val);
 };
@@ -753,8 +773,8 @@ function promisify$1(name, fn) {
     if (hasCallback(args)) {
       return wrapperReturnValue(name, invokeApi(name, fn, args, rest));
     }
-    return wrapperReturnValue(name, handlePromise(new Promise((resolve, reject) => {
-      invokeApi(name, fn, extend(args, { success: resolve, fail: reject }), rest);
+    return wrapperReturnValue(name, handlePromise(new Promise((resolve2, reject) => {
+      invokeApi(name, fn, extend(args, { success: resolve2, fail: reject }), rest);
     })));
   };
 }
@@ -1059,7 +1079,7 @@ function invokeGetPushCidCallbacks(cid2, errMsg) {
   getPushCidCallbacks.length = 0;
 }
 const API_GET_PUSH_CLIENT_ID = "getPushClientId";
-const getPushClientId = defineAsyncApi(API_GET_PUSH_CLIENT_ID, (_2, { resolve, reject }) => {
+const getPushClientId = defineAsyncApi(API_GET_PUSH_CLIENT_ID, (_2, { resolve: resolve2, reject }) => {
   Promise.resolve().then(() => {
     if (typeof enabled === "undefined") {
       enabled = false;
@@ -1068,7 +1088,7 @@ const getPushClientId = defineAsyncApi(API_GET_PUSH_CLIENT_ID, (_2, { resolve, r
     }
     getPushCidCallbacks.push((cid2, errMsg) => {
       if (cid2) {
-        resolve({ cid: cid2 });
+        resolve2({ cid: cid2 });
       } else {
         reject(errMsg);
       }
@@ -1133,9 +1153,9 @@ function promisify(name, api) {
     if (isFunction(options.success) || isFunction(options.fail) || isFunction(options.complete)) {
       return wrapperReturnValue(name, invokeApi(name, api, options, rest));
     }
-    return wrapperReturnValue(name, handlePromise(new Promise((resolve, reject) => {
+    return wrapperReturnValue(name, handlePromise(new Promise((resolve2, reject) => {
       invokeApi(name, api, extend({}, options, {
-        success: resolve,
+        success: resolve2,
         fail: reject
       }), rest);
     })));
@@ -3011,6 +3031,9 @@ function isReadonly(value) {
 function isShallow(value) {
   return !!(value && value["__v_isShallow"]);
 }
+function isProxy(value) {
+  return isReactive(value) || isReadonly(value);
+}
 function toRaw(observed) {
   const raw = observed && observed["__v_raw"];
   return raw ? toRaw(raw) : observed;
@@ -3802,6 +3825,47 @@ function setCurrentRenderingInstance(instance) {
   instance && instance.type.__scopeId || null;
   return prev;
 }
+const COMPONENTS = "components";
+function resolveComponent(name, maybeSelfReference) {
+  return resolveAsset(COMPONENTS, name, true, maybeSelfReference) || name;
+}
+function resolveAsset(type, name, warnMissing = true, maybeSelfReference = false) {
+  const instance = currentRenderingInstance || currentInstance;
+  if (instance) {
+    const Component2 = instance.type;
+    if (type === COMPONENTS) {
+      const selfName = getComponentName(
+        Component2,
+        false
+      );
+      if (selfName && (selfName === name || selfName === camelize(name) || selfName === capitalize(camelize(name)))) {
+        return Component2;
+      }
+    }
+    const res = (
+      // local registration
+      // check instance[type] first which is resolved for options API
+      resolve(instance[type] || Component2[type], name) || // global registration
+      resolve(instance.appContext[type], name)
+    );
+    if (!res && maybeSelfReference) {
+      return Component2;
+    }
+    if (warnMissing && !res) {
+      const extra = type === COMPONENTS ? `
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement.` : ``;
+      warn$1(`Failed to resolve ${type.slice(0, -1)}: ${name}${extra}`);
+    }
+    return res;
+  } else {
+    warn$1(
+      `resolve${capitalize(type.slice(0, -1))} can only be used in render() or setup().`
+    );
+  }
+}
+function resolve(registry, name) {
+  return registry && (registry[name] || registry[camelize(name)] || registry[capitalize(camelize(name))]);
+}
 const INITIAL_WATCHER_VALUE = {};
 function watch(source, cb, options) {
   if (!isFunction(cb)) {
@@ -4061,7 +4125,7 @@ function createAppContext() {
   };
 }
 let uid$1 = 0;
-function createAppAPI(render, hydrate) {
+function createAppAPI(render2, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction(rootComponent)) {
       rootComponent = extend({}, rootComponent);
@@ -4204,6 +4268,15 @@ function inject(key, defaultValue, treatDefaultAsFactory = false) {
   } else {
     warn$1(`inject() can only be used inside setup() or functional components.`);
   }
+}
+/*! #__NO_SIDE_EFFECTS__ */
+// @__NO_SIDE_EFFECTS__
+function defineComponent(options, extraOptions) {
+  return isFunction(options) ? (
+    // #8326: extend call and options.name access are considered side-effects
+    // by Rollup, so we have to wrap it in a pure-annotated IIFE.
+    /* @__PURE__ */ (() => extend({ name: options.name }, extraOptions, { setup: options }))()
+  ) : options;
 }
 const isKeepAlive = (vnode) => vnode.type.__isKeepAlive;
 function onActivated(hook, target) {
@@ -4569,7 +4642,7 @@ function applyOptions$1(instance) {
     beforeUnmount,
     destroyed,
     unmounted,
-    render,
+    render: render2,
     renderTracked,
     renderTriggered,
     errorCaptured,
@@ -4733,8 +4806,8 @@ function applyOptions$1(instance) {
       instance.exposed = {};
     }
   }
-  if (render && instance.render === NOOP) {
-    instance.render = render;
+  if (render2 && instance.render === NOOP) {
+    instance.render = render2;
   }
   if (inheritAttrs != null) {
     instance.inheritAttrs = inheritAttrs;
@@ -5411,6 +5484,12 @@ const Comment = Symbol.for("v-cmt");
 const Static = Symbol.for("v-stc");
 function isVNode(value) {
   return value ? value.__v_isVNode === true : false;
+}
+const InternalObjectKey = `__vInternal`;
+function guardReactiveProps(props) {
+  if (!props)
+    return null;
+  return isProxy(props) || InternalObjectKey in props ? extend({}, props) : props;
 }
 const emptyAppContext = createAppContext();
 let uid = 0;
@@ -6225,7 +6304,7 @@ function renderComponentRoot(instance) {
     slots,
     attrs,
     emit: emit2,
-    render,
+    render: render2,
     renderCache,
     data,
     setupState,
@@ -6253,7 +6332,7 @@ function renderComponentRoot(instance) {
     if (vnode.shapeFlag & 4) {
       fallthroughAttrs(inheritAttrs, props, propsOptions, attrs);
       const proxyToUse = withProxy || proxy;
-      result = render.call(
+      result = render2.call(
         proxyToUse,
         proxyToUse,
         renderCache,
@@ -6269,8 +6348,8 @@ function renderComponentRoot(instance) {
         propsOptions,
         Component2.props ? attrs : getFunctionalFallthrough(attrs)
       );
-      const render2 = Component2;
-      result = render2.length > 1 ? render2(props, { attrs, slots, emit: emit2 }) : render2(
+      const render22 = Component2;
+      result = render22.length > 1 ? render22(props, { attrs, slots, emit: emit2 }) : render22(
         props,
         null
         /* we know it doesn't need it */
@@ -6643,6 +6722,11 @@ function initApp(app) {
   }
 }
 const propsCaches = /* @__PURE__ */ Object.create(null);
+function renderProps(props) {
+  const { uid: uid2, __counter } = getCurrentInstance();
+  const propsId = (propsCaches[uid2] || (propsCaches[uid2] = [])).push(guardReactiveProps(props)) - 1;
+  return uid2 + "," + propsId + "," + __counter;
+}
 function pruneComponentPropsCache(uid2) {
   delete propsCaches[uid2];
 }
@@ -6829,7 +6913,10 @@ const o$1 = (value, key) => vOn(value, key);
 const f$1 = (source, renderItem) => vFor(source, renderItem);
 const s$1 = (value) => stringifyStyle(value);
 const e$1 = (target, ...sources) => extend(target, ...sources);
+const h$1 = (str) => hyphenate(str);
+const n$1 = (value) => normalizeClass(value);
 const t$1 = (val) => toDisplayString(val);
+const p$1 = (props) => renderProps(props);
 function createApp$1(rootComponent, rootProps = null) {
   rootComponent && (rootComponent.mpType = "app");
   return createVueApp(rootComponent, rootProps).use(plugin);
@@ -7667,6 +7754,1850 @@ const createSubpackageApp = initCreateSubpackageApp();
   wx.createPluginApp = global.createPluginApp = createPluginApp;
   wx.createSubpackageApp = global.createSubpackageApp = createSubpackageApp;
 }
+const matchIconName = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const stringToIcon = (value, validate, allowSimpleName, provider = "") => {
+  const colonSeparated = value.split(":");
+  if (value.slice(0, 1) === "@") {
+    if (colonSeparated.length < 2 || colonSeparated.length > 3) {
+      return null;
+    }
+    provider = colonSeparated.shift().slice(1);
+  }
+  if (colonSeparated.length > 3 || !colonSeparated.length) {
+    return null;
+  }
+  if (colonSeparated.length > 1) {
+    const name2 = colonSeparated.pop();
+    const prefix = colonSeparated.pop();
+    const result = {
+      // Allow provider without '@': "provider:prefix:name"
+      provider: colonSeparated.length > 0 ? colonSeparated[0] : provider,
+      prefix,
+      name: name2
+    };
+    return validate && !validateIconName(result) ? null : result;
+  }
+  const name = colonSeparated[0];
+  const dashSeparated = name.split("-");
+  if (dashSeparated.length > 1) {
+    const result = {
+      provider,
+      prefix: dashSeparated.shift(),
+      name: dashSeparated.join("-")
+    };
+    return validate && !validateIconName(result) ? null : result;
+  }
+  if (allowSimpleName && provider === "") {
+    const result = {
+      provider,
+      prefix: "",
+      name
+    };
+    return validate && !validateIconName(result, allowSimpleName) ? null : result;
+  }
+  return null;
+};
+const validateIconName = (icon, allowSimpleName) => {
+  if (!icon) {
+    return false;
+  }
+  return !!// Check prefix: cannot be empty, unless allowSimpleName is enabled
+  // Check name: cannot be empty
+  ((allowSimpleName && icon.prefix === "" || !!icon.prefix) && !!icon.name);
+};
+const defaultIconDimensions = Object.freeze(
+  {
+    left: 0,
+    top: 0,
+    width: 16,
+    height: 16
+  }
+);
+const defaultIconTransformations = Object.freeze({
+  rotate: 0,
+  vFlip: false,
+  hFlip: false
+});
+const defaultIconProps = Object.freeze({
+  ...defaultIconDimensions,
+  ...defaultIconTransformations
+});
+const defaultExtendedIconProps = Object.freeze({
+  ...defaultIconProps,
+  body: "",
+  hidden: false
+});
+function mergeIconTransformations(obj1, obj2) {
+  const result = {};
+  if (!obj1.hFlip !== !obj2.hFlip) {
+    result.hFlip = true;
+  }
+  if (!obj1.vFlip !== !obj2.vFlip) {
+    result.vFlip = true;
+  }
+  const rotate = ((obj1.rotate || 0) + (obj2.rotate || 0)) % 4;
+  if (rotate) {
+    result.rotate = rotate;
+  }
+  return result;
+}
+function mergeIconData(parent, child) {
+  const result = mergeIconTransformations(parent, child);
+  for (const key in defaultExtendedIconProps) {
+    if (key in defaultIconTransformations) {
+      if (key in parent && !(key in result)) {
+        result[key] = defaultIconTransformations[key];
+      }
+    } else if (key in child) {
+      result[key] = child[key];
+    } else if (key in parent) {
+      result[key] = parent[key];
+    }
+  }
+  return result;
+}
+function getIconsTree(data, names) {
+  const icons = data.icons;
+  const aliases = data.aliases || /* @__PURE__ */ Object.create(null);
+  const resolved = /* @__PURE__ */ Object.create(null);
+  function resolve2(name) {
+    if (icons[name]) {
+      return resolved[name] = [];
+    }
+    if (!(name in resolved)) {
+      resolved[name] = null;
+      const parent = aliases[name] && aliases[name].parent;
+      const value = parent && resolve2(parent);
+      if (value) {
+        resolved[name] = [parent].concat(value);
+      }
+    }
+    return resolved[name];
+  }
+  Object.keys(icons).concat(Object.keys(aliases)).forEach(resolve2);
+  return resolved;
+}
+function internalGetIconData(data, name, tree) {
+  const icons = data.icons;
+  const aliases = data.aliases || /* @__PURE__ */ Object.create(null);
+  let currentProps = {};
+  function parse(name2) {
+    currentProps = mergeIconData(
+      icons[name2] || aliases[name2],
+      currentProps
+    );
+  }
+  parse(name);
+  tree.forEach(parse);
+  return mergeIconData(data, currentProps);
+}
+function parseIconSet(data, callback) {
+  const names = [];
+  if (typeof data !== "object" || typeof data.icons !== "object") {
+    return names;
+  }
+  if (data.not_found instanceof Array) {
+    data.not_found.forEach((name) => {
+      callback(name, null);
+      names.push(name);
+    });
+  }
+  const tree = getIconsTree(data);
+  for (const name in tree) {
+    const item = tree[name];
+    if (item) {
+      callback(name, internalGetIconData(data, name, item));
+      names.push(name);
+    }
+  }
+  return names;
+}
+const optionalPropertyDefaults = {
+  provider: "",
+  aliases: {},
+  not_found: {},
+  ...defaultIconDimensions
+};
+function checkOptionalProps(item, defaults) {
+  for (const prop in defaults) {
+    if (prop in item && typeof item[prop] !== typeof defaults[prop]) {
+      return false;
+    }
+  }
+  return true;
+}
+function quicklyValidateIconSet(obj) {
+  if (typeof obj !== "object" || obj === null) {
+    return null;
+  }
+  const data = obj;
+  if (typeof data.prefix !== "string" || !obj.icons || typeof obj.icons !== "object") {
+    return null;
+  }
+  if (!checkOptionalProps(obj, optionalPropertyDefaults)) {
+    return null;
+  }
+  const icons = data.icons;
+  for (const name in icons) {
+    const icon = icons[name];
+    if (
+      // Name cannot be empty
+      !name || // Must have body
+      typeof icon.body !== "string" || // Check other props
+      !checkOptionalProps(
+        icon,
+        defaultExtendedIconProps
+      )
+    ) {
+      return null;
+    }
+  }
+  const aliases = data.aliases || /* @__PURE__ */ Object.create(null);
+  for (const name in aliases) {
+    const icon = aliases[name];
+    const parent = icon.parent;
+    if (
+      // Name cannot be empty
+      !name || // Parent must be set and point to existing icon
+      typeof parent !== "string" || !icons[parent] && !aliases[parent] || // Check other props
+      !checkOptionalProps(
+        icon,
+        defaultExtendedIconProps
+      )
+    ) {
+      return null;
+    }
+  }
+  return data;
+}
+const dataStorage = /* @__PURE__ */ Object.create(null);
+function newStorage(provider, prefix) {
+  return {
+    provider,
+    prefix,
+    icons: /* @__PURE__ */ Object.create(null),
+    missing: /* @__PURE__ */ new Set()
+  };
+}
+function getStorage(provider, prefix) {
+  const providerStorage = dataStorage[provider] || (dataStorage[provider] = /* @__PURE__ */ Object.create(null));
+  return providerStorage[prefix] || (providerStorage[prefix] = newStorage(provider, prefix));
+}
+function addIconSet(storage2, data) {
+  if (!quicklyValidateIconSet(data)) {
+    return [];
+  }
+  return parseIconSet(data, (name, icon) => {
+    if (icon) {
+      storage2.icons[name] = icon;
+    } else {
+      storage2.missing.add(name);
+    }
+  });
+}
+function addIconToStorage(storage2, name, icon) {
+  try {
+    if (typeof icon.body === "string") {
+      storage2.icons[name] = { ...icon };
+      return true;
+    }
+  } catch (err) {
+  }
+  return false;
+}
+let simpleNames = false;
+function allowSimpleNames(allow) {
+  if (typeof allow === "boolean") {
+    simpleNames = allow;
+  }
+  return simpleNames;
+}
+function getIconData(name) {
+  const icon = typeof name === "string" ? stringToIcon(name, true, simpleNames) : name;
+  if (icon) {
+    const storage2 = getStorage(icon.provider, icon.prefix);
+    const iconName = icon.name;
+    return storage2.icons[iconName] || (storage2.missing.has(iconName) ? null : void 0);
+  }
+}
+function addIcon(name, data) {
+  const icon = stringToIcon(name, true, simpleNames);
+  if (!icon) {
+    return false;
+  }
+  const storage2 = getStorage(icon.provider, icon.prefix);
+  if (data) {
+    return addIconToStorage(storage2, icon.name, data);
+  } else {
+    storage2.missing.add(icon.name);
+    return true;
+  }
+}
+function addCollection(data, provider) {
+  if (typeof data !== "object") {
+    return false;
+  }
+  if (typeof provider !== "string") {
+    provider = data.provider || "";
+  }
+  if (simpleNames && !provider && !data.prefix) {
+    let added = false;
+    if (quicklyValidateIconSet(data)) {
+      data.prefix = "";
+      parseIconSet(data, (name, icon) => {
+        if (addIcon(name, icon)) {
+          added = true;
+        }
+      });
+    }
+    return added;
+  }
+  const prefix = data.prefix;
+  if (!validateIconName({
+    provider,
+    prefix,
+    name: "a"
+  })) {
+    return false;
+  }
+  const storage2 = getStorage(provider, prefix);
+  return !!addIconSet(storage2, data);
+}
+const defaultIconSizeCustomisations = Object.freeze({
+  width: null,
+  height: null
+});
+const defaultIconCustomisations = Object.freeze({
+  // Dimensions
+  ...defaultIconSizeCustomisations,
+  // Transformations
+  ...defaultIconTransformations
+});
+const unitsSplit = /(-?[0-9.]*[0-9]+[0-9.]*)/g;
+const unitsTest = /^-?[0-9.]*[0-9]+[0-9.]*$/g;
+function calculateSize(size2, ratio, precision) {
+  if (ratio === 1) {
+    return size2;
+  }
+  precision = precision || 100;
+  if (typeof size2 === "number") {
+    return Math.ceil(size2 * ratio * precision) / precision;
+  }
+  if (typeof size2 !== "string") {
+    return size2;
+  }
+  const oldParts = size2.split(unitsSplit);
+  if (oldParts === null || !oldParts.length) {
+    return size2;
+  }
+  const newParts = [];
+  let code = oldParts.shift();
+  let isNumber = unitsTest.test(code);
+  while (true) {
+    if (isNumber) {
+      const num = parseFloat(code);
+      if (isNaN(num)) {
+        newParts.push(code);
+      } else {
+        newParts.push(Math.ceil(num * ratio * precision) / precision);
+      }
+    } else {
+      newParts.push(code);
+    }
+    code = oldParts.shift();
+    if (code === void 0) {
+      return newParts.join("");
+    }
+    isNumber = !isNumber;
+  }
+}
+function splitSVGDefs(content, tag2 = "defs") {
+  let defs = "";
+  const index2 = content.indexOf("<" + tag2);
+  while (index2 >= 0) {
+    const start = content.indexOf(">", index2);
+    const end = content.indexOf("</" + tag2);
+    if (start === -1 || end === -1) {
+      break;
+    }
+    const endEnd = content.indexOf(">", end);
+    if (endEnd === -1) {
+      break;
+    }
+    defs += content.slice(start + 1, end).trim();
+    content = content.slice(0, index2).trim() + content.slice(endEnd + 1);
+  }
+  return {
+    defs,
+    content
+  };
+}
+function mergeDefsAndContent(defs, content) {
+  return defs ? "<defs>" + defs + "</defs>" + content : content;
+}
+function wrapSVGContent(body, start, end) {
+  const split = splitSVGDefs(body);
+  return mergeDefsAndContent(split.defs, start + split.content + end);
+}
+const isUnsetKeyword = (value) => value === "unset" || value === "undefined" || value === "none";
+function iconToSVG(icon, customisations) {
+  const fullIcon = {
+    ...defaultIconProps,
+    ...icon
+  };
+  const fullCustomisations = {
+    ...defaultIconCustomisations,
+    ...customisations
+  };
+  const box = {
+    left: fullIcon.left,
+    top: fullIcon.top,
+    width: fullIcon.width,
+    height: fullIcon.height
+  };
+  let body = fullIcon.body;
+  [fullIcon, fullCustomisations].forEach((props) => {
+    const transformations = [];
+    const hFlip = props.hFlip;
+    const vFlip = props.vFlip;
+    let rotation = props.rotate;
+    if (hFlip) {
+      if (vFlip) {
+        rotation += 2;
+      } else {
+        transformations.push(
+          "translate(" + (box.width + box.left).toString() + " " + (0 - box.top).toString() + ")"
+        );
+        transformations.push("scale(-1 1)");
+        box.top = box.left = 0;
+      }
+    } else if (vFlip) {
+      transformations.push(
+        "translate(" + (0 - box.left).toString() + " " + (box.height + box.top).toString() + ")"
+      );
+      transformations.push("scale(1 -1)");
+      box.top = box.left = 0;
+    }
+    let tempValue;
+    if (rotation < 0) {
+      rotation -= Math.floor(rotation / 4) * 4;
+    }
+    rotation = rotation % 4;
+    switch (rotation) {
+      case 1:
+        tempValue = box.height / 2 + box.top;
+        transformations.unshift(
+          "rotate(90 " + tempValue.toString() + " " + tempValue.toString() + ")"
+        );
+        break;
+      case 2:
+        transformations.unshift(
+          "rotate(180 " + (box.width / 2 + box.left).toString() + " " + (box.height / 2 + box.top).toString() + ")"
+        );
+        break;
+      case 3:
+        tempValue = box.width / 2 + box.left;
+        transformations.unshift(
+          "rotate(-90 " + tempValue.toString() + " " + tempValue.toString() + ")"
+        );
+        break;
+    }
+    if (rotation % 2 === 1) {
+      if (box.left !== box.top) {
+        tempValue = box.left;
+        box.left = box.top;
+        box.top = tempValue;
+      }
+      if (box.width !== box.height) {
+        tempValue = box.width;
+        box.width = box.height;
+        box.height = tempValue;
+      }
+    }
+    if (transformations.length) {
+      body = wrapSVGContent(
+        body,
+        '<g transform="' + transformations.join(" ") + '">',
+        "</g>"
+      );
+    }
+  });
+  const customisationsWidth = fullCustomisations.width;
+  const customisationsHeight = fullCustomisations.height;
+  const boxWidth = box.width;
+  const boxHeight = box.height;
+  let width;
+  let height;
+  if (customisationsWidth === null) {
+    height = customisationsHeight === null ? "1em" : customisationsHeight === "auto" ? boxHeight : customisationsHeight;
+    width = calculateSize(height, boxWidth / boxHeight);
+  } else {
+    width = customisationsWidth === "auto" ? boxWidth : customisationsWidth;
+    height = customisationsHeight === null ? calculateSize(width, boxHeight / boxWidth) : customisationsHeight === "auto" ? boxHeight : customisationsHeight;
+  }
+  const attributes = {};
+  const setAttr = (prop, value) => {
+    if (!isUnsetKeyword(value)) {
+      attributes[prop] = value.toString();
+    }
+  };
+  setAttr("width", width);
+  setAttr("height", height);
+  const viewBox = [box.left, box.top, boxWidth, boxHeight];
+  attributes.viewBox = viewBox.join(" ");
+  return {
+    attributes,
+    viewBox,
+    body
+  };
+}
+const regex = /\sid="(\S+)"/g;
+const randomPrefix = "IconifyId" + Date.now().toString(16) + (Math.random() * 16777216 | 0).toString(16);
+let counter = 0;
+function replaceIDs(body, prefix = randomPrefix) {
+  const ids = [];
+  let match;
+  while (match = regex.exec(body)) {
+    ids.push(match[1]);
+  }
+  if (!ids.length) {
+    return body;
+  }
+  const suffix = "suffix" + (Math.random() * 16777216 | Date.now()).toString(16);
+  ids.forEach((id) => {
+    const newID = typeof prefix === "function" ? prefix(id) : prefix + (counter++).toString();
+    const escapedID = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    body = body.replace(
+      // Allowed characters before id: [#;"]
+      // Allowed characters after id: [)"], .[a-z]
+      new RegExp('([#;"])(' + escapedID + ')([")]|\\.[a-z])', "g"),
+      "$1" + newID + suffix + "$3"
+    );
+  });
+  body = body.replace(new RegExp(suffix, "g"), "");
+  return body;
+}
+const storage = /* @__PURE__ */ Object.create(null);
+function setAPIModule(provider, item) {
+  storage[provider] = item;
+}
+function getAPIModule(provider) {
+  return storage[provider] || storage[""];
+}
+function createAPIConfig(source) {
+  let resources;
+  if (typeof source.resources === "string") {
+    resources = [source.resources];
+  } else {
+    resources = source.resources;
+    if (!(resources instanceof Array) || !resources.length) {
+      return null;
+    }
+  }
+  const result = {
+    // API hosts
+    resources,
+    // Root path
+    path: source.path || "/",
+    // URL length limit
+    maxURL: source.maxURL || 500,
+    // Timeout before next host is used.
+    rotate: source.rotate || 750,
+    // Timeout before failing query.
+    timeout: source.timeout || 5e3,
+    // Randomise default API end point.
+    random: source.random === true,
+    // Start index
+    index: source.index || 0,
+    // Receive data after time out (used if time out kicks in first, then API module sends data anyway).
+    dataAfterTimeout: source.dataAfterTimeout !== false
+  };
+  return result;
+}
+const configStorage = /* @__PURE__ */ Object.create(null);
+const fallBackAPISources = [
+  "https://api.simplesvg.com",
+  "https://api.unisvg.com"
+];
+const fallBackAPI = [];
+while (fallBackAPISources.length > 0) {
+  if (fallBackAPISources.length === 1) {
+    fallBackAPI.push(fallBackAPISources.shift());
+  } else {
+    if (Math.random() > 0.5) {
+      fallBackAPI.push(fallBackAPISources.shift());
+    } else {
+      fallBackAPI.push(fallBackAPISources.pop());
+    }
+  }
+}
+configStorage[""] = createAPIConfig({
+  resources: ["https://api.iconify.design"].concat(fallBackAPI)
+});
+function addAPIProvider(provider, customConfig) {
+  const config = createAPIConfig(customConfig);
+  if (config === null) {
+    return false;
+  }
+  configStorage[provider] = config;
+  return true;
+}
+function getAPIConfig(provider) {
+  return configStorage[provider];
+}
+const detectFetch = () => {
+  let callback;
+  try {
+    callback = fetch;
+    if (typeof callback === "function") {
+      return callback;
+    }
+  } catch (err) {
+  }
+};
+let fetchModule = detectFetch();
+function calculateMaxLength(provider, prefix) {
+  const config = getAPIConfig(provider);
+  if (!config) {
+    return 0;
+  }
+  let result;
+  if (!config.maxURL) {
+    result = 0;
+  } else {
+    let maxHostLength = 0;
+    config.resources.forEach((item) => {
+      const host2 = item;
+      maxHostLength = Math.max(maxHostLength, host2.length);
+    });
+    const url = prefix + ".json?icons=";
+    result = config.maxURL - maxHostLength - config.path.length - url.length;
+  }
+  return result;
+}
+function shouldAbort(status) {
+  return status === 404;
+}
+const prepare = (provider, prefix, icons) => {
+  const results = [];
+  const maxLength = calculateMaxLength(provider, prefix);
+  const type = "icons";
+  let item = {
+    type,
+    provider,
+    prefix,
+    icons: []
+  };
+  let length = 0;
+  icons.forEach((name, index2) => {
+    length += name.length + 1;
+    if (length >= maxLength && index2 > 0) {
+      results.push(item);
+      item = {
+        type,
+        provider,
+        prefix,
+        icons: []
+      };
+      length = name.length;
+    }
+    item.icons.push(name);
+  });
+  results.push(item);
+  return results;
+};
+function getPath(provider) {
+  if (typeof provider === "string") {
+    const config = getAPIConfig(provider);
+    if (config) {
+      return config.path;
+    }
+  }
+  return "/";
+}
+const send = (host2, params, callback) => {
+  if (!fetchModule) {
+    callback("abort", 424);
+    return;
+  }
+  let path = getPath(params.provider);
+  switch (params.type) {
+    case "icons": {
+      const prefix = params.prefix;
+      const icons = params.icons;
+      const iconsList = icons.join(",");
+      const urlParams = new URLSearchParams({
+        icons: iconsList
+      });
+      path += prefix + ".json?" + urlParams.toString();
+      break;
+    }
+    case "custom": {
+      const uri = params.uri;
+      path += uri.slice(0, 1) === "/" ? uri.slice(1) : uri;
+      break;
+    }
+    default:
+      callback("abort", 400);
+      return;
+  }
+  let defaultError = 503;
+  fetchModule(host2 + path).then((response) => {
+    const status = response.status;
+    if (status !== 200) {
+      setTimeout(() => {
+        callback(shouldAbort(status) ? "abort" : "next", status);
+      });
+      return;
+    }
+    defaultError = 501;
+    return response.json();
+  }).then((data) => {
+    if (typeof data !== "object" || data === null) {
+      setTimeout(() => {
+        if (data === 404) {
+          callback("abort", data);
+        } else {
+          callback("next", defaultError);
+        }
+      });
+      return;
+    }
+    setTimeout(() => {
+      callback("success", data);
+    });
+  }).catch(() => {
+    callback("next", defaultError);
+  });
+};
+const fetchAPIModule = {
+  prepare,
+  send
+};
+function sortIcons(icons) {
+  const result = {
+    loaded: [],
+    missing: [],
+    pending: []
+  };
+  const storage2 = /* @__PURE__ */ Object.create(null);
+  icons.sort((a2, b2) => {
+    if (a2.provider !== b2.provider) {
+      return a2.provider.localeCompare(b2.provider);
+    }
+    if (a2.prefix !== b2.prefix) {
+      return a2.prefix.localeCompare(b2.prefix);
+    }
+    return a2.name.localeCompare(b2.name);
+  });
+  let lastIcon = {
+    provider: "",
+    prefix: "",
+    name: ""
+  };
+  icons.forEach((icon) => {
+    if (lastIcon.name === icon.name && lastIcon.prefix === icon.prefix && lastIcon.provider === icon.provider) {
+      return;
+    }
+    lastIcon = icon;
+    const provider = icon.provider;
+    const prefix = icon.prefix;
+    const name = icon.name;
+    const providerStorage = storage2[provider] || (storage2[provider] = /* @__PURE__ */ Object.create(null));
+    const localStorage = providerStorage[prefix] || (providerStorage[prefix] = getStorage(provider, prefix));
+    let list2;
+    if (name in localStorage.icons) {
+      list2 = result.loaded;
+    } else if (prefix === "" || localStorage.missing.has(name)) {
+      list2 = result.missing;
+    } else {
+      list2 = result.pending;
+    }
+    const item = {
+      provider,
+      prefix,
+      name
+    };
+    list2.push(item);
+  });
+  return result;
+}
+function removeCallback(storages, id) {
+  storages.forEach((storage2) => {
+    const items = storage2.loaderCallbacks;
+    if (items) {
+      storage2.loaderCallbacks = items.filter((row) => row.id !== id);
+    }
+  });
+}
+function updateCallbacks(storage2) {
+  if (!storage2.pendingCallbacksFlag) {
+    storage2.pendingCallbacksFlag = true;
+    setTimeout(() => {
+      storage2.pendingCallbacksFlag = false;
+      const items = storage2.loaderCallbacks ? storage2.loaderCallbacks.slice(0) : [];
+      if (!items.length) {
+        return;
+      }
+      let hasPending = false;
+      const provider = storage2.provider;
+      const prefix = storage2.prefix;
+      items.forEach((item) => {
+        const icons = item.icons;
+        const oldLength = icons.pending.length;
+        icons.pending = icons.pending.filter((icon) => {
+          if (icon.prefix !== prefix) {
+            return true;
+          }
+          const name = icon.name;
+          if (storage2.icons[name]) {
+            icons.loaded.push({
+              provider,
+              prefix,
+              name
+            });
+          } else if (storage2.missing.has(name)) {
+            icons.missing.push({
+              provider,
+              prefix,
+              name
+            });
+          } else {
+            hasPending = true;
+            return true;
+          }
+          return false;
+        });
+        if (icons.pending.length !== oldLength) {
+          if (!hasPending) {
+            removeCallback([storage2], item.id);
+          }
+          item.callback(
+            icons.loaded.slice(0),
+            icons.missing.slice(0),
+            icons.pending.slice(0),
+            item.abort
+          );
+        }
+      });
+    });
+  }
+}
+let idCounter = 0;
+function storeCallback(callback, icons, pendingSources) {
+  const id = idCounter++;
+  const abort = removeCallback.bind(null, pendingSources, id);
+  if (!icons.pending.length) {
+    return abort;
+  }
+  const item = {
+    id,
+    icons,
+    callback,
+    abort
+  };
+  pendingSources.forEach((storage2) => {
+    (storage2.loaderCallbacks || (storage2.loaderCallbacks = [])).push(item);
+  });
+  return abort;
+}
+function listToIcons(list2, validate = true, simpleNames2 = false) {
+  const result = [];
+  list2.forEach((item) => {
+    const icon = typeof item === "string" ? stringToIcon(item, validate, simpleNames2) : item;
+    if (icon) {
+      result.push(icon);
+    }
+  });
+  return result;
+}
+var defaultConfig = {
+  resources: [],
+  index: 0,
+  timeout: 2e3,
+  rotate: 750,
+  random: false,
+  dataAfterTimeout: false
+};
+function sendQuery(config, payload, query, done) {
+  const resourcesCount = config.resources.length;
+  const startIndex = config.random ? Math.floor(Math.random() * resourcesCount) : config.index;
+  let resources;
+  if (config.random) {
+    let list2 = config.resources.slice(0);
+    resources = [];
+    while (list2.length > 1) {
+      const nextIndex = Math.floor(Math.random() * list2.length);
+      resources.push(list2[nextIndex]);
+      list2 = list2.slice(0, nextIndex).concat(list2.slice(nextIndex + 1));
+    }
+    resources = resources.concat(list2);
+  } else {
+    resources = config.resources.slice(startIndex).concat(config.resources.slice(0, startIndex));
+  }
+  const startTime = Date.now();
+  let status = "pending";
+  let queriesSent = 0;
+  let lastError;
+  let timer = null;
+  let queue2 = [];
+  let doneCallbacks = [];
+  if (typeof done === "function") {
+    doneCallbacks.push(done);
+  }
+  function resetTimer() {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
+  }
+  function abort() {
+    if (status === "pending") {
+      status = "aborted";
+    }
+    resetTimer();
+    queue2.forEach((item) => {
+      if (item.status === "pending") {
+        item.status = "aborted";
+      }
+    });
+    queue2 = [];
+  }
+  function subscribe(callback, overwrite) {
+    if (overwrite) {
+      doneCallbacks = [];
+    }
+    if (typeof callback === "function") {
+      doneCallbacks.push(callback);
+    }
+  }
+  function getQueryStatus() {
+    return {
+      startTime,
+      payload,
+      status,
+      queriesSent,
+      queriesPending: queue2.length,
+      subscribe,
+      abort
+    };
+  }
+  function failQuery() {
+    status = "failed";
+    doneCallbacks.forEach((callback) => {
+      callback(void 0, lastError);
+    });
+  }
+  function clearQueue() {
+    queue2.forEach((item) => {
+      if (item.status === "pending") {
+        item.status = "aborted";
+      }
+    });
+    queue2 = [];
+  }
+  function moduleResponse(item, response, data) {
+    const isError = response !== "success";
+    queue2 = queue2.filter((queued) => queued !== item);
+    switch (status) {
+      case "pending":
+        break;
+      case "failed":
+        if (isError || !config.dataAfterTimeout) {
+          return;
+        }
+        break;
+      default:
+        return;
+    }
+    if (response === "abort") {
+      lastError = data;
+      failQuery();
+      return;
+    }
+    if (isError) {
+      lastError = data;
+      if (!queue2.length) {
+        if (!resources.length) {
+          failQuery();
+        } else {
+          execNext();
+        }
+      }
+      return;
+    }
+    resetTimer();
+    clearQueue();
+    if (!config.random) {
+      const index2 = config.resources.indexOf(item.resource);
+      if (index2 !== -1 && index2 !== config.index) {
+        config.index = index2;
+      }
+    }
+    status = "completed";
+    doneCallbacks.forEach((callback) => {
+      callback(data);
+    });
+  }
+  function execNext() {
+    if (status !== "pending") {
+      return;
+    }
+    resetTimer();
+    const resource = resources.shift();
+    if (resource === void 0) {
+      if (queue2.length) {
+        timer = setTimeout(() => {
+          resetTimer();
+          if (status === "pending") {
+            clearQueue();
+            failQuery();
+          }
+        }, config.timeout);
+        return;
+      }
+      failQuery();
+      return;
+    }
+    const item = {
+      status: "pending",
+      resource,
+      callback: (status2, data) => {
+        moduleResponse(item, status2, data);
+      }
+    };
+    queue2.push(item);
+    queriesSent++;
+    timer = setTimeout(execNext, config.rotate);
+    query(resource, payload, item.callback);
+  }
+  setTimeout(execNext);
+  return getQueryStatus;
+}
+function initRedundancy(cfg) {
+  const config = {
+    ...defaultConfig,
+    ...cfg
+  };
+  let queries = [];
+  function cleanup() {
+    queries = queries.filter((item) => item().status === "pending");
+  }
+  function query(payload, queryCallback, doneCallback) {
+    const query2 = sendQuery(
+      config,
+      payload,
+      queryCallback,
+      (data, error) => {
+        cleanup();
+        if (doneCallback) {
+          doneCallback(data, error);
+        }
+      }
+    );
+    queries.push(query2);
+    return query2;
+  }
+  function find(callback) {
+    return queries.find((value) => {
+      return callback(value);
+    }) || null;
+  }
+  const instance = {
+    query,
+    find,
+    setIndex: (index2) => {
+      config.index = index2;
+    },
+    getIndex: () => config.index,
+    cleanup
+  };
+  return instance;
+}
+function emptyCallback$1() {
+}
+const redundancyCache = /* @__PURE__ */ Object.create(null);
+function getRedundancyCache(provider) {
+  if (!redundancyCache[provider]) {
+    const config = getAPIConfig(provider);
+    if (!config) {
+      return;
+    }
+    const redundancy = initRedundancy(config);
+    const cachedReundancy = {
+      config,
+      redundancy
+    };
+    redundancyCache[provider] = cachedReundancy;
+  }
+  return redundancyCache[provider];
+}
+function sendAPIQuery(target, query, callback) {
+  let redundancy;
+  let send2;
+  if (typeof target === "string") {
+    const api = getAPIModule(target);
+    if (!api) {
+      callback(void 0, 424);
+      return emptyCallback$1;
+    }
+    send2 = api.send;
+    const cached = getRedundancyCache(target);
+    if (cached) {
+      redundancy = cached.redundancy;
+    }
+  } else {
+    const config = createAPIConfig(target);
+    if (config) {
+      redundancy = initRedundancy(config);
+      const moduleKey = target.resources ? target.resources[0] : "";
+      const api = getAPIModule(moduleKey);
+      if (api) {
+        send2 = api.send;
+      }
+    }
+  }
+  if (!redundancy || !send2) {
+    callback(void 0, 424);
+    return emptyCallback$1;
+  }
+  return redundancy.query(query, send2, callback)().abort;
+}
+const browserCacheVersion = "iconify2";
+const browserCachePrefix = "iconify";
+const browserCacheCountKey = browserCachePrefix + "-count";
+const browserCacheVersionKey = browserCachePrefix + "-version";
+const browserStorageHour = 36e5;
+const browserStorageCacheExpiration = 168;
+const browserStorageLimit = 50;
+function getStoredItem(func, key) {
+  try {
+    return func.getItem(key);
+  } catch (err) {
+  }
+}
+function setStoredItem(func, key, value) {
+  try {
+    func.setItem(key, value);
+    return true;
+  } catch (err) {
+  }
+}
+function removeStoredItem(func, key) {
+  try {
+    func.removeItem(key);
+  } catch (err) {
+  }
+}
+function setBrowserStorageItemsCount(storage2, value) {
+  return setStoredItem(storage2, browserCacheCountKey, value.toString());
+}
+function getBrowserStorageItemsCount(storage2) {
+  return parseInt(getStoredItem(storage2, browserCacheCountKey)) || 0;
+}
+const browserStorageConfig = {
+  local: true,
+  session: true
+};
+const browserStorageEmptyItems = {
+  local: /* @__PURE__ */ new Set(),
+  session: /* @__PURE__ */ new Set()
+};
+let browserStorageStatus = false;
+function setBrowserStorageStatus(status) {
+  browserStorageStatus = status;
+}
+let _window = typeof window === "undefined" ? {} : window;
+function getBrowserStorage(key) {
+  const attr = key + "Storage";
+  try {
+    if (_window && _window[attr] && typeof _window[attr].length === "number") {
+      return _window[attr];
+    }
+  } catch (err) {
+  }
+  browserStorageConfig[key] = false;
+}
+function iterateBrowserStorage(key, callback) {
+  const func = getBrowserStorage(key);
+  if (!func) {
+    return;
+  }
+  const version2 = getStoredItem(func, browserCacheVersionKey);
+  if (version2 !== browserCacheVersion) {
+    if (version2) {
+      const total2 = getBrowserStorageItemsCount(func);
+      for (let i2 = 0; i2 < total2; i2++) {
+        removeStoredItem(func, browserCachePrefix + i2.toString());
+      }
+    }
+    setStoredItem(func, browserCacheVersionKey, browserCacheVersion);
+    setBrowserStorageItemsCount(func, 0);
+    return;
+  }
+  const minTime = Math.floor(Date.now() / browserStorageHour) - browserStorageCacheExpiration;
+  const parseItem = (index2) => {
+    const name = browserCachePrefix + index2.toString();
+    const item = getStoredItem(func, name);
+    if (typeof item !== "string") {
+      return;
+    }
+    try {
+      const data = JSON.parse(item);
+      if (typeof data === "object" && typeof data.cached === "number" && data.cached > minTime && typeof data.provider === "string" && typeof data.data === "object" && typeof data.data.prefix === "string" && // Valid item: run callback
+      callback(data, index2)) {
+        return true;
+      }
+    } catch (err) {
+    }
+    removeStoredItem(func, name);
+  };
+  let total = getBrowserStorageItemsCount(func);
+  for (let i2 = total - 1; i2 >= 0; i2--) {
+    if (!parseItem(i2)) {
+      if (i2 === total - 1) {
+        total--;
+        setBrowserStorageItemsCount(func, total);
+      } else {
+        browserStorageEmptyItems[key].add(i2);
+      }
+    }
+  }
+}
+function initBrowserStorage() {
+  if (browserStorageStatus) {
+    return;
+  }
+  setBrowserStorageStatus(true);
+  for (const key in browserStorageConfig) {
+    iterateBrowserStorage(key, (item) => {
+      const iconSet = item.data;
+      const provider = item.provider;
+      const prefix = iconSet.prefix;
+      const storage2 = getStorage(
+        provider,
+        prefix
+      );
+      if (!addIconSet(storage2, iconSet).length) {
+        return false;
+      }
+      const lastModified = iconSet.lastModified || -1;
+      storage2.lastModifiedCached = storage2.lastModifiedCached ? Math.min(storage2.lastModifiedCached, lastModified) : lastModified;
+      return true;
+    });
+  }
+}
+function updateLastModified(storage2, lastModified) {
+  const lastValue = storage2.lastModifiedCached;
+  if (
+    // Matches or newer
+    lastValue && lastValue >= lastModified
+  ) {
+    return lastValue === lastModified;
+  }
+  storage2.lastModifiedCached = lastModified;
+  if (lastValue) {
+    for (const key in browserStorageConfig) {
+      iterateBrowserStorage(key, (item) => {
+        const iconSet = item.data;
+        return item.provider !== storage2.provider || iconSet.prefix !== storage2.prefix || iconSet.lastModified === lastModified;
+      });
+    }
+  }
+  return true;
+}
+function storeInBrowserStorage(storage2, data) {
+  if (!browserStorageStatus) {
+    initBrowserStorage();
+  }
+  function store(key) {
+    let func;
+    if (!browserStorageConfig[key] || !(func = getBrowserStorage(key))) {
+      return;
+    }
+    const set2 = browserStorageEmptyItems[key];
+    let index2;
+    if (set2.size) {
+      set2.delete(index2 = Array.from(set2).shift());
+    } else {
+      index2 = getBrowserStorageItemsCount(func);
+      if (index2 >= browserStorageLimit || !setBrowserStorageItemsCount(func, index2 + 1)) {
+        return;
+      }
+    }
+    const item = {
+      cached: Math.floor(Date.now() / browserStorageHour),
+      provider: storage2.provider,
+      data
+    };
+    return setStoredItem(
+      func,
+      browserCachePrefix + index2.toString(),
+      JSON.stringify(item)
+    );
+  }
+  if (data.lastModified && !updateLastModified(storage2, data.lastModified)) {
+    return;
+  }
+  if (!Object.keys(data.icons).length) {
+    return;
+  }
+  if (data.not_found) {
+    data = Object.assign({}, data);
+    delete data.not_found;
+  }
+  if (!store("local")) {
+    store("session");
+  }
+}
+function emptyCallback() {
+}
+function loadedNewIcons(storage2) {
+  if (!storage2.iconsLoaderFlag) {
+    storage2.iconsLoaderFlag = true;
+    setTimeout(() => {
+      storage2.iconsLoaderFlag = false;
+      updateCallbacks(storage2);
+    });
+  }
+}
+function checkIconNamesForAPI(icons) {
+  const valid = [];
+  const invalid = [];
+  icons.forEach((name) => {
+    (name.match(matchIconName) ? valid : invalid).push(name);
+  });
+  return {
+    valid,
+    invalid
+  };
+}
+function parseLoaderResponse(storage2, icons, data, isAPIResponse) {
+  function checkMissing() {
+    const pending = storage2.pendingIcons;
+    icons.forEach((name) => {
+      if (pending) {
+        pending.delete(name);
+      }
+      if (!storage2.icons[name]) {
+        storage2.missing.add(name);
+      }
+    });
+  }
+  if (data && typeof data === "object") {
+    try {
+      const parsed = addIconSet(storage2, data);
+      if (!parsed.length) {
+        checkMissing();
+        return;
+      }
+      if (isAPIResponse) {
+        storeInBrowserStorage(storage2, data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  checkMissing();
+  loadedNewIcons(storage2);
+}
+function parsePossiblyAsyncResponse(response, callback) {
+  if (response instanceof Promise) {
+    response.then((data) => {
+      callback(data);
+    }).catch(() => {
+      callback(null);
+    });
+  } else {
+    callback(response);
+  }
+}
+function loadNewIcons(storage2, icons) {
+  if (!storage2.iconsToLoad) {
+    storage2.iconsToLoad = icons;
+  } else {
+    storage2.iconsToLoad = storage2.iconsToLoad.concat(icons).sort();
+  }
+  if (!storage2.iconsQueueFlag) {
+    storage2.iconsQueueFlag = true;
+    setTimeout(() => {
+      storage2.iconsQueueFlag = false;
+      const { provider, prefix } = storage2;
+      const icons2 = storage2.iconsToLoad;
+      delete storage2.iconsToLoad;
+      if (!icons2 || !icons2.length) {
+        return;
+      }
+      const customIconLoader = storage2.loadIcon;
+      if (storage2.loadIcons && (icons2.length > 1 || !customIconLoader)) {
+        parsePossiblyAsyncResponse(
+          storage2.loadIcons(icons2, prefix, provider),
+          (data) => {
+            parseLoaderResponse(storage2, icons2, data, false);
+          }
+        );
+        return;
+      }
+      if (customIconLoader) {
+        icons2.forEach((name) => {
+          const response = customIconLoader(name, prefix, provider);
+          parsePossiblyAsyncResponse(response, (data) => {
+            const iconSet = data ? {
+              prefix,
+              icons: {
+                [name]: data
+              }
+            } : null;
+            parseLoaderResponse(storage2, [name], iconSet, false);
+          });
+        });
+        return;
+      }
+      const { valid, invalid } = checkIconNamesForAPI(icons2);
+      if (invalid.length) {
+        parseLoaderResponse(storage2, invalid, null, false);
+      }
+      if (!valid.length) {
+        return;
+      }
+      const api = prefix.match(matchIconName) ? getAPIModule(provider) : null;
+      if (!api) {
+        parseLoaderResponse(storage2, valid, null, false);
+        return;
+      }
+      const params = api.prepare(provider, prefix, valid);
+      params.forEach((item) => {
+        sendAPIQuery(provider, item, (data) => {
+          parseLoaderResponse(storage2, item.icons, data, true);
+        });
+      });
+    });
+  }
+}
+const loadIcons = (icons, callback) => {
+  const cleanedIcons = listToIcons(icons, true, allowSimpleNames());
+  const sortedIcons = sortIcons(cleanedIcons);
+  if (!sortedIcons.pending.length) {
+    let callCallback = true;
+    if (callback) {
+      setTimeout(() => {
+        if (callCallback) {
+          callback(
+            sortedIcons.loaded,
+            sortedIcons.missing,
+            sortedIcons.pending,
+            emptyCallback
+          );
+        }
+      });
+    }
+    return () => {
+      callCallback = false;
+    };
+  }
+  const newIcons = /* @__PURE__ */ Object.create(null);
+  const sources = [];
+  let lastProvider, lastPrefix;
+  sortedIcons.pending.forEach((icon) => {
+    const { provider, prefix } = icon;
+    if (prefix === lastPrefix && provider === lastProvider) {
+      return;
+    }
+    lastProvider = provider;
+    lastPrefix = prefix;
+    sources.push(getStorage(provider, prefix));
+    const providerNewIcons = newIcons[provider] || (newIcons[provider] = /* @__PURE__ */ Object.create(null));
+    if (!providerNewIcons[prefix]) {
+      providerNewIcons[prefix] = [];
+    }
+  });
+  sortedIcons.pending.forEach((icon) => {
+    const { provider, prefix, name } = icon;
+    const storage2 = getStorage(provider, prefix);
+    const pendingQueue = storage2.pendingIcons || (storage2.pendingIcons = /* @__PURE__ */ new Set());
+    if (!pendingQueue.has(name)) {
+      pendingQueue.add(name);
+      newIcons[provider][prefix].push(name);
+    }
+  });
+  sources.forEach((storage2) => {
+    const list2 = newIcons[storage2.provider][storage2.prefix];
+    if (list2.length) {
+      loadNewIcons(storage2, list2);
+    }
+  });
+  return callback ? storeCallback(callback, sortedIcons, sources) : emptyCallback;
+};
+function mergeCustomisations(defaults, item) {
+  const result = {
+    ...defaults
+  };
+  for (const key in item) {
+    const value = item[key];
+    const valueType = typeof value;
+    if (key in defaultIconSizeCustomisations) {
+      if (value === null || value && (valueType === "string" || valueType === "number")) {
+        result[key] = value;
+      }
+    } else if (valueType === typeof result[key]) {
+      result[key] = key === "rotate" ? value % 4 : value;
+    }
+  }
+  return result;
+}
+const separator = /[\s,]+/;
+function flipFromString(custom, flip) {
+  flip.split(separator).forEach((str) => {
+    const value = str.trim();
+    switch (value) {
+      case "horizontal":
+        custom.hFlip = true;
+        break;
+      case "vertical":
+        custom.vFlip = true;
+        break;
+    }
+  });
+}
+function rotateFromString(value, defaultValue = 0) {
+  const units = value.replace(/^-?[0-9.]*/, "");
+  function cleanup(value2) {
+    while (value2 < 0) {
+      value2 += 4;
+    }
+    return value2 % 4;
+  }
+  if (units === "") {
+    const num = parseInt(value);
+    return isNaN(num) ? 0 : cleanup(num);
+  } else if (units !== value) {
+    let split = 0;
+    switch (units) {
+      case "%":
+        split = 25;
+        break;
+      case "deg":
+        split = 90;
+    }
+    if (split) {
+      let num = parseFloat(value.slice(0, value.length - units.length));
+      if (isNaN(num)) {
+        return 0;
+      }
+      num = num / split;
+      return num % 1 === 0 ? cleanup(num) : 0;
+    }
+  }
+  return defaultValue;
+}
+function iconToHTML(body, attributes) {
+  let renderAttribsHTML = body.indexOf("xlink:") === -1 ? "" : ' xmlns:xlink="http://www.w3.org/1999/xlink"';
+  for (const attr in attributes) {
+    renderAttribsHTML += " " + attr + '="' + attributes[attr] + '"';
+  }
+  return '<svg xmlns="http://www.w3.org/2000/svg"' + renderAttribsHTML + ">" + body + "</svg>";
+}
+function encodeSVGforURL(svg) {
+  return svg.replace(/"/g, "'").replace(/%/g, "%25").replace(/#/g, "%23").replace(/</g, "%3C").replace(/>/g, "%3E").replace(/\s+/g, " ");
+}
+function svgToData(svg) {
+  return "data:image/svg+xml," + encodeSVGforURL(svg);
+}
+function svgToURL(svg) {
+  return 'url("' + svgToData(svg) + '")';
+}
+const defaultExtendedIconCustomisations = {
+  ...defaultIconCustomisations,
+  inline: false
+};
+const svgDefaults = {
+  "xmlns": "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  "aria-hidden": true,
+  "role": "img"
+};
+const commonProps = {
+  display: "inline-block"
+};
+const monotoneProps = {
+  backgroundColor: "currentColor"
+};
+const coloredProps = {
+  backgroundColor: "transparent"
+};
+const propsToAdd = {
+  Image: "var(--svg)",
+  Repeat: "no-repeat",
+  Size: "100% 100%"
+};
+const propsToAddTo = {
+  webkitMask: monotoneProps,
+  mask: monotoneProps,
+  background: coloredProps
+};
+for (const prefix in propsToAddTo) {
+  const list2 = propsToAddTo[prefix];
+  for (const prop in propsToAdd) {
+    list2[prefix + prop] = propsToAdd[prop];
+  }
+}
+const customisationAliases = {};
+["horizontal", "vertical"].forEach((prefix) => {
+  const attr = prefix.slice(0, 1) + "Flip";
+  customisationAliases[prefix + "-flip"] = attr;
+  customisationAliases[prefix.slice(0, 1) + "-flip"] = attr;
+  customisationAliases[prefix + "Flip"] = attr;
+});
+function fixSize(value) {
+  return value + (value.match(/^[-0-9.]+$/) ? "px" : "");
+}
+const render = (icon, props) => {
+  const customisations = mergeCustomisations(defaultExtendedIconCustomisations, props);
+  const componentProps = { ...svgDefaults };
+  const mode = props.mode || "svg";
+  const style = {};
+  const propsStyle = props.style;
+  const customStyle = typeof propsStyle === "object" && !(propsStyle instanceof Array) ? propsStyle : {};
+  for (let key in props) {
+    const value = props[key];
+    if (value === void 0) {
+      continue;
+    }
+    switch (key) {
+      case "icon":
+      case "style":
+      case "onLoad":
+      case "mode":
+      case "ssr":
+        break;
+      case "inline":
+      case "hFlip":
+      case "vFlip":
+        customisations[key] = value === true || value === "true" || value === 1;
+        break;
+      case "flip":
+        if (typeof value === "string") {
+          flipFromString(customisations, value);
+        }
+        break;
+      case "color":
+        style.color = value;
+        break;
+      case "rotate":
+        if (typeof value === "string") {
+          customisations[key] = rotateFromString(value);
+        } else if (typeof value === "number") {
+          customisations[key] = value;
+        }
+        break;
+      case "ariaHidden":
+      case "aria-hidden":
+        if (value !== true && value !== "true") {
+          delete componentProps["aria-hidden"];
+        }
+        break;
+      default: {
+        const alias = customisationAliases[key];
+        if (alias) {
+          if (value === true || value === "true" || value === 1) {
+            customisations[alias] = true;
+          }
+        } else if (defaultExtendedIconCustomisations[key] === void 0) {
+          componentProps[key] = value;
+        }
+      }
+    }
+  }
+  const item = iconToSVG(icon, customisations);
+  const renderAttribs = item.attributes;
+  if (customisations.inline) {
+    style.verticalAlign = "-0.125em";
+  }
+  if (mode === "svg") {
+    componentProps.style = {
+      ...style,
+      ...customStyle
+    };
+    Object.assign(componentProps, renderAttribs);
+    let localCounter = 0;
+    let id = props.id;
+    if (typeof id === "string") {
+      id = id.replace(/-/g, "_");
+    }
+    componentProps["innerHTML"] = replaceIDs(item.body, id ? () => id + "ID" + localCounter++ : "iconifyVue");
+    return h$1("svg");
+  }
+  const { body, width, height } = icon;
+  const useMask = mode === "mask" || (mode === "bg" ? false : body.indexOf("currentColor") !== -1);
+  const html2 = iconToHTML(body, {
+    ...renderAttribs,
+    width: width + "",
+    height: height + ""
+  });
+  componentProps.style = {
+    ...style,
+    "--svg": svgToURL(html2),
+    "width": fixSize(renderAttribs.width),
+    "height": fixSize(renderAttribs.height),
+    ...commonProps,
+    ...useMask ? monotoneProps : coloredProps,
+    ...customStyle
+  };
+  return h$1("span");
+};
+allowSimpleNames(true);
+setAPIModule("", fetchAPIModule);
+if (typeof document !== "undefined" && typeof window !== "undefined") {
+  initBrowserStorage();
+  const _window2 = window;
+  if (_window2.IconifyPreload !== void 0) {
+    const preload = _window2.IconifyPreload;
+    const err = "Invalid IconifyPreload syntax.";
+    if (typeof preload === "object" && preload !== null) {
+      (preload instanceof Array ? preload : [preload]).forEach((item) => {
+        try {
+          if (
+            // Check if item is an object and not null/array
+            typeof item !== "object" || item === null || item instanceof Array || // Check for 'icons' and 'prefix'
+            typeof item.icons !== "object" || typeof item.prefix !== "string" || // Add icon set
+            !addCollection(item)
+          ) {
+            console.error(err);
+          }
+        } catch (e2) {
+          console.error(err);
+        }
+      });
+    }
+  }
+  if (_window2.IconifyProviders !== void 0) {
+    const providers = _window2.IconifyProviders;
+    if (typeof providers === "object" && providers !== null) {
+      for (let key in providers) {
+        const err = "IconifyProviders[" + key + "] is invalid.";
+        try {
+          const value = providers[key];
+          if (typeof value !== "object" || !value || value.resources === void 0) {
+            continue;
+          }
+          if (!addAPIProvider(key, value)) {
+            console.error(err);
+          }
+        } catch (e2) {
+          console.error(err);
+        }
+      }
+    }
+  }
+}
+const emptyIcon = {
+  ...defaultIconProps,
+  body: ""
+};
+const Icon = /* @__PURE__ */ defineComponent({
+  // Do not inherit other attributes: it is handled by render()
+  inheritAttrs: false,
+  // Set initial data
+  data() {
+    return {
+      // Current icon name
+      _name: "",
+      // Loading
+      _loadingIcon: null,
+      // Mounted status
+      iconMounted: false,
+      // Callback counter to trigger re-render
+      counter: 0
+    };
+  },
+  mounted() {
+    this.iconMounted = true;
+  },
+  unmounted() {
+    this.abortLoading();
+  },
+  methods: {
+    abortLoading() {
+      if (this._loadingIcon) {
+        this._loadingIcon.abort();
+        this._loadingIcon = null;
+      }
+    },
+    // Get data for icon to render or null
+    getIcon(icon, onload, customise) {
+      if (typeof icon === "object" && icon !== null && typeof icon.body === "string") {
+        this._name = "";
+        this.abortLoading();
+        return {
+          data: icon
+        };
+      }
+      let iconName;
+      if (typeof icon !== "string" || (iconName = stringToIcon(icon, false, true)) === null) {
+        this.abortLoading();
+        return null;
+      }
+      let data = getIconData(iconName);
+      if (!data) {
+        if (!this._loadingIcon || this._loadingIcon.name !== icon) {
+          this.abortLoading();
+          this._name = "";
+          if (data !== null) {
+            this._loadingIcon = {
+              name: icon,
+              abort: loadIcons([iconName], () => {
+                this.counter++;
+              })
+            };
+          }
+        }
+        return null;
+      }
+      this.abortLoading();
+      if (this._name !== icon) {
+        this._name = icon;
+        if (onload) {
+          onload(icon);
+        }
+      }
+      if (customise) {
+        data = Object.assign({}, data);
+        const customised = customise(data.body, iconName.name, iconName.prefix, iconName.provider);
+        if (typeof customised === "string") {
+          data.body = customised;
+        }
+      }
+      const classes = ["iconify"];
+      if (iconName.prefix !== "") {
+        classes.push("iconify--" + iconName.prefix);
+      }
+      if (iconName.provider !== "") {
+        classes.push("iconify--" + iconName.provider);
+      }
+      return { data, classes };
+    }
+  },
+  // Render icon
+  render() {
+    this.counter;
+    const props = this.$attrs;
+    const icon = this.iconMounted || props.ssr ? this.getIcon(props.icon, props.onLoad, props.customise) : null;
+    if (!icon) {
+      return render(emptyIcon, props);
+    }
+    let newProps = props;
+    if (icon.classes) {
+      newProps = {
+        ...props,
+        class: (typeof props["class"] === "string" ? props["class"] + " " : "") + icon.classes.join(" ")
+      };
+    }
+    return render({
+      ...defaultIconProps,
+      ...icon.data
+    }, newProps);
+  }
+});
 const pages = [
   {
     path: "pages/index/index",
@@ -7746,11 +9677,18 @@ const permission = {
     desc: "用于保存图片到相册"
   }
 };
+const easycom = {
+  autoscan: true,
+  custom: {
+    "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+  }
+};
 const e = {
   pages,
   tabBar,
   globalStyle,
-  permission
+  permission,
+  easycom
 };
 var define_process_env_UNI_SECURE_NETWORK_CONFIG_default = [];
 function t(e2) {
@@ -8041,7 +9979,7 @@ class v {
 function I(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), C = b, P = I('{"address":["127.0.0.1","192.168.31.20","169.254.203.26"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), T = I('[{"provider":"alipay","spaceName":"free","spaceId":"env-00jxhk9ji189","spaceAppId":"2021004199605426","accessKey":"j7ZnJMTcTYPY7N6b","secretKey":"hKXUWkBWPoaRk7GP"}]') || [];
+const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), C = b, P = I('{"address":["127.0.0.1","192.168.31.88","169.254.203.26"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), T = I('[{"provider":"alipay","spaceName":"free","spaceId":"env-00jxhk9ji189","spaceAppId":"2021004199605426","accessKey":"j7ZnJMTcTYPY7N6b","secretKey":"hKXUWkBWPoaRk7GP"}]') || [];
 let O = "";
 try {
   O = "__UNI__920B084";
@@ -10543,8 +12481,8 @@ function changeDefaults(newDefaults) {
   _defaults = newDefaults;
 }
 const noopTest = { exec: () => null };
-function edit(regex, opt = "") {
-  let source = typeof regex === "string" ? regex : regex.source;
+function edit(regex2, opt = "") {
+  let source = typeof regex2 === "string" ? regex2 : regex2.source;
   const obj = {
     replace: (name, val) => {
       let valSource = typeof val === "string" ? val : val.source;
@@ -12650,20 +14588,670 @@ marked.walkTokens;
 marked.parseInline;
 _Parser.parse;
 _Lexer.lex;
+const fontData = [
+  {
+    "font_class": "arrow-down",
+    "unicode": ""
+  },
+  {
+    "font_class": "arrow-left",
+    "unicode": ""
+  },
+  {
+    "font_class": "arrow-right",
+    "unicode": ""
+  },
+  {
+    "font_class": "arrow-up",
+    "unicode": ""
+  },
+  {
+    "font_class": "auth",
+    "unicode": ""
+  },
+  {
+    "font_class": "auth-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "back",
+    "unicode": ""
+  },
+  {
+    "font_class": "bars",
+    "unicode": ""
+  },
+  {
+    "font_class": "calendar",
+    "unicode": ""
+  },
+  {
+    "font_class": "calendar-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "camera",
+    "unicode": ""
+  },
+  {
+    "font_class": "camera-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "cart",
+    "unicode": ""
+  },
+  {
+    "font_class": "cart-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "chat",
+    "unicode": ""
+  },
+  {
+    "font_class": "chat-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "chatboxes",
+    "unicode": ""
+  },
+  {
+    "font_class": "chatboxes-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "chatbubble",
+    "unicode": ""
+  },
+  {
+    "font_class": "chatbubble-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "checkbox",
+    "unicode": ""
+  },
+  {
+    "font_class": "checkbox-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "checkmarkempty",
+    "unicode": ""
+  },
+  {
+    "font_class": "circle",
+    "unicode": ""
+  },
+  {
+    "font_class": "circle-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "clear",
+    "unicode": ""
+  },
+  {
+    "font_class": "close",
+    "unicode": ""
+  },
+  {
+    "font_class": "closeempty",
+    "unicode": ""
+  },
+  {
+    "font_class": "cloud-download",
+    "unicode": ""
+  },
+  {
+    "font_class": "cloud-download-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "cloud-upload",
+    "unicode": ""
+  },
+  {
+    "font_class": "cloud-upload-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "color",
+    "unicode": ""
+  },
+  {
+    "font_class": "color-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "compose",
+    "unicode": ""
+  },
+  {
+    "font_class": "contact",
+    "unicode": ""
+  },
+  {
+    "font_class": "contact-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "down",
+    "unicode": ""
+  },
+  {
+    "font_class": "bottom",
+    "unicode": ""
+  },
+  {
+    "font_class": "download",
+    "unicode": ""
+  },
+  {
+    "font_class": "download-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "email",
+    "unicode": ""
+  },
+  {
+    "font_class": "email-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "eye",
+    "unicode": ""
+  },
+  {
+    "font_class": "eye-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "eye-slash",
+    "unicode": ""
+  },
+  {
+    "font_class": "eye-slash-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "fire",
+    "unicode": ""
+  },
+  {
+    "font_class": "fire-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "flag",
+    "unicode": ""
+  },
+  {
+    "font_class": "flag-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "folder-add",
+    "unicode": ""
+  },
+  {
+    "font_class": "folder-add-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "font",
+    "unicode": ""
+  },
+  {
+    "font_class": "forward",
+    "unicode": ""
+  },
+  {
+    "font_class": "gear",
+    "unicode": ""
+  },
+  {
+    "font_class": "gear-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "gift",
+    "unicode": ""
+  },
+  {
+    "font_class": "gift-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "hand-down",
+    "unicode": ""
+  },
+  {
+    "font_class": "hand-down-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "hand-up",
+    "unicode": ""
+  },
+  {
+    "font_class": "hand-up-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "headphones",
+    "unicode": ""
+  },
+  {
+    "font_class": "heart",
+    "unicode": ""
+  },
+  {
+    "font_class": "heart-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "help",
+    "unicode": ""
+  },
+  {
+    "font_class": "help-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "home",
+    "unicode": ""
+  },
+  {
+    "font_class": "home-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "image",
+    "unicode": ""
+  },
+  {
+    "font_class": "image-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "images",
+    "unicode": ""
+  },
+  {
+    "font_class": "images-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "info",
+    "unicode": ""
+  },
+  {
+    "font_class": "info-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "left",
+    "unicode": ""
+  },
+  {
+    "font_class": "link",
+    "unicode": ""
+  },
+  {
+    "font_class": "list",
+    "unicode": ""
+  },
+  {
+    "font_class": "location",
+    "unicode": ""
+  },
+  {
+    "font_class": "location-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "locked",
+    "unicode": ""
+  },
+  {
+    "font_class": "locked-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "loop",
+    "unicode": ""
+  },
+  {
+    "font_class": "mail-open",
+    "unicode": ""
+  },
+  {
+    "font_class": "mail-open-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "map",
+    "unicode": ""
+  },
+  {
+    "font_class": "map-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "map-pin",
+    "unicode": ""
+  },
+  {
+    "font_class": "map-pin-ellipse",
+    "unicode": ""
+  },
+  {
+    "font_class": "medal",
+    "unicode": ""
+  },
+  {
+    "font_class": "medal-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "mic",
+    "unicode": ""
+  },
+  {
+    "font_class": "mic-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "micoff",
+    "unicode": ""
+  },
+  {
+    "font_class": "micoff-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "minus",
+    "unicode": ""
+  },
+  {
+    "font_class": "minus-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "more",
+    "unicode": ""
+  },
+  {
+    "font_class": "more-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "navigate",
+    "unicode": ""
+  },
+  {
+    "font_class": "navigate-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "notification",
+    "unicode": ""
+  },
+  {
+    "font_class": "notification-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "paperclip",
+    "unicode": ""
+  },
+  {
+    "font_class": "paperplane",
+    "unicode": ""
+  },
+  {
+    "font_class": "paperplane-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "person",
+    "unicode": ""
+  },
+  {
+    "font_class": "person-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "personadd",
+    "unicode": ""
+  },
+  {
+    "font_class": "personadd-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "personadd-filled-copy",
+    "unicode": ""
+  },
+  {
+    "font_class": "phone",
+    "unicode": ""
+  },
+  {
+    "font_class": "phone-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "plus",
+    "unicode": ""
+  },
+  {
+    "font_class": "plus-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "plusempty",
+    "unicode": ""
+  },
+  {
+    "font_class": "pulldown",
+    "unicode": ""
+  },
+  {
+    "font_class": "pyq",
+    "unicode": ""
+  },
+  {
+    "font_class": "qq",
+    "unicode": ""
+  },
+  {
+    "font_class": "redo",
+    "unicode": ""
+  },
+  {
+    "font_class": "redo-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "refresh",
+    "unicode": ""
+  },
+  {
+    "font_class": "refresh-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "refreshempty",
+    "unicode": ""
+  },
+  {
+    "font_class": "reload",
+    "unicode": ""
+  },
+  {
+    "font_class": "right",
+    "unicode": ""
+  },
+  {
+    "font_class": "scan",
+    "unicode": ""
+  },
+  {
+    "font_class": "search",
+    "unicode": ""
+  },
+  {
+    "font_class": "settings",
+    "unicode": ""
+  },
+  {
+    "font_class": "settings-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "shop",
+    "unicode": ""
+  },
+  {
+    "font_class": "shop-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "smallcircle",
+    "unicode": ""
+  },
+  {
+    "font_class": "smallcircle-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "sound",
+    "unicode": ""
+  },
+  {
+    "font_class": "sound-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "spinner-cycle",
+    "unicode": ""
+  },
+  {
+    "font_class": "staff",
+    "unicode": ""
+  },
+  {
+    "font_class": "staff-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "star",
+    "unicode": ""
+  },
+  {
+    "font_class": "star-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "starhalf",
+    "unicode": ""
+  },
+  {
+    "font_class": "trash",
+    "unicode": ""
+  },
+  {
+    "font_class": "trash-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "tune",
+    "unicode": ""
+  },
+  {
+    "font_class": "tune-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "undo",
+    "unicode": ""
+  },
+  {
+    "font_class": "undo-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "up",
+    "unicode": ""
+  },
+  {
+    "font_class": "top",
+    "unicode": ""
+  },
+  {
+    "font_class": "upload",
+    "unicode": ""
+  },
+  {
+    "font_class": "upload-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "videocam",
+    "unicode": ""
+  },
+  {
+    "font_class": "videocam-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "vip",
+    "unicode": ""
+  },
+  {
+    "font_class": "vip-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "wallet",
+    "unicode": ""
+  },
+  {
+    "font_class": "wallet-filled",
+    "unicode": ""
+  },
+  {
+    "font_class": "weibo",
+    "unicode": ""
+  },
+  {
+    "font_class": "weixin",
+    "unicode": ""
+  }
+];
+exports.Icon = Icon;
 exports.Zs = Zs;
 exports._export_sfc = _export_sfc;
 exports.computed = computed;
 exports.createSSRApp = createSSRApp;
 exports.e = e$1;
 exports.f = f$1;
+exports.fontData = fontData;
 exports.index = index;
 exports.marked = marked;
+exports.n = n$1;
 exports.o = o$1;
 exports.onMounted = onMounted;
 exports.onShareAppMessage = onShareAppMessage;
 exports.onShareTimeline = onShareTimeline;
-exports.onUnmounted = onUnmounted;
+exports.p = p$1;
 exports.ref = ref;
+exports.resolveComponent = resolveComponent;
 exports.s = s$1;
 exports.t = t$1;
 exports.watch = watch;

@@ -1,13 +1,3 @@
 "use strict";
-const _imports_0 = "/static/tabs/textSnap.png";
-const _imports_1 = "/static/tabs/weather.png";
-const _imports_2 = "/static/tabs/book.png";
-const _imports_3 = "/static/tabs/translation.png";
-const _imports_4 = "/static/tabs/code.png";
-const _imports_5 = "/static/tabs/movie.png";
+const _imports_0 = "/static/tabs/offwork.png";
 exports._imports_0 = _imports_0;
-exports._imports_1 = _imports_1;
-exports._imports_2 = _imports_2;
-exports._imports_3 = _imports_3;
-exports._imports_4 = _imports_4;
-exports._imports_5 = _imports_5;

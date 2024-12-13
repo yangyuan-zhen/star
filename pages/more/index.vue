@@ -1,127 +1,131 @@
 <template>
   <view class="more-container">
-    <!-- 年度进度卡片 -->
-    <view class="progress-card" :style="backgroundStyle">
-      <view class="content-wrapper">
-        <view class="year-info">
-          <text class="year">{{ currentYear }}年余额</text>
-          <view class="days-wrapper">
-            <text class="days">{{ remainingDays }}</text>
-            <text class="days-unit">天</text>
+    <view class="rest-card">
+      <view class="card-header">
+        <text class="title">休息时间</text>
+        <view class="badge">工作日</view>
+      </view>
+      <view class="content">
+        <view class="rest-info">
+          <view class="info-item">
+            <text class="value">28</text>
+            <text class="label">发薪</text>
+            <text class="unit">天</text>
           </view>
-          <view class="time-details">
-            {{ hours }}时{{ minutes }}分{{ seconds }}秒
+          <view class="info-item">
+            <text class="value">0</text>
+            <text class="label">周五</text>
+            <text class="unit">天</text>
           </view>
-        </view>
-        <view class="progress-circle">
-          <view class="circle-wrapper">
-            <view class="circle-bg"></view>
-            <view
-              class="circle-progress"
-              :style="{
-                transform: `rotate(${progressDegrees}deg)`,
-              }"
-            ></view>
-            <view class="percentage-wrapper">
-              <text class="percentage-number">{{ progressPercentage }}</text>
-              <text class="percentage-sign">%</text>
-            </view>
+          <view class="info-item">
+            <!-- 下一个节日 -->
+            <text class="value">11</text>
+            <text class="label">平安夜</text>
+            <text class="unit">天</text>
           </view>
+          <view class="money-info">
+            <text class="money-label">今天赚了</text>
+            <text class="money">1000.00</text>
+            <text class="unit">¥</text>
+          </view>
+          <image
+            class="icon"
+            src="../../static/tabs/offwork.png"
+            mode="aspectFit"
+          />
         </view>
       </view>
     </view>
-    <!-- 原有的网格布局 -->
+
     <view class="grid-container">
-      <view class="grid-item" @tap="handleNavigate('textSnap')">
-        <image class="icon" src="../../static/tabs/textSnap.png" />
-        <text class="grid-text">文字图片</text>
+      <view class="grid-card" @tap="handleNavigate('textSnap')">
+        <view class="card-content">
+          <view class="icon-wrapper">
+            <uni-icons
+              type="compose"
+              size="30"
+              :color="getIconColor(1)"
+            ></uni-icons>
+          </view>
+          <text class="card-title">文字图片</text>
+          <text class="card-desc">快速生成文字图片</text>
+        </view>
       </view>
 
-      <view class="grid-item" @tap="handleNavigate('weather')">
-        <image class="icon" src="../../static/tabs/weather.png" />
-        <text class="grid-text">天气画报</text>
+      <view class="grid-card" @tap="handleNavigate('weather')">
+        <view class="card-content">
+          <view class="icon-wrapper">
+            <uni-icons
+              type="image"
+              size="30"
+              :color="getIconColor(2)"
+            ></uni-icons>
+          </view>
+          <text class="card-title">天气画报</text>
+          <text class="card-desc">今日天气预报</text>
+        </view>
       </view>
 
-      <view class="grid-item" @tap="handleNavigate('book')">
-        <image class="icon" src="../../static/tabs/book.png" />
-        <text class="grid-text">AI荐书</text>
+      <view class="grid-card" @tap="handleNavigate('book')">
+        <view class="card-content">
+          <view class="icon-wrapper">
+            <uni-icons
+              type="bars"
+              size="30"
+              :color="getIconColor(3)"
+            ></uni-icons>
+          </view>
+          <text class="card-title">AI荐书</text>
+          <text class="card-desc">智能图书推荐</text>
+        </view>
       </view>
 
-      <view class="grid-item" @tap="handleNavigate('translation')">
-        <image class="icon" src="../../static/tabs/translation.png" />
-        <text class="grid-text">中英互译</text>
+      <view class="grid-card" @tap="handleNavigate('translation')">
+        <view class="card-content">
+          <view class="icon-wrapper">
+            <uni-icons
+              type="chat"
+              size="30"
+              :color="getIconColor(4)"
+            ></uni-icons>
+          </view>
+          <text class="card-title">中英互译</text>
+          <text class="card-desc">智能翻译助手</text>
+        </view>
       </view>
 
-      <view class="grid-item" @tap="handleNavigate('codeHelper')">
-        <image class="icon" src="../../static/tabs/code.png" />
-        <text class="grid-text">代码prompt</text>
+      <view class="grid-card" @tap="handleNavigate('codeHelper')">
+        <view class="card-content">
+          <view class="icon-wrapper">
+            <uni-icons
+              type="settings"
+              size="30"
+              :color="getIconColor(5)"
+            ></uni-icons>
+          </view>
+          <text class="card-title">代码prompt</text>
+          <text class="card-desc">编程助手</text>
+        </view>
       </view>
-      <view class="grid-item" @tap="handleNavigate('movie')">
-        <image class="icon" src="../../static/tabs/movie.png" />
-        <text class="grid-text">电影日历</text>
+
+      <view class="grid-card" @tap="handleNavigate('movie')">
+        <view class="card-content">
+          <view class="icon-wrapper">
+            <uni-icons
+              type="videocam"
+              size="30"
+              :color="getIconColor(6)"
+            ></uni-icons>
+          </view>
+          <text class="card-title">电影日历</text>
+          <text class="card-desc">每日电影推荐</text>
+        </view>
       </view>
     </view>
   </view>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-
-const currentYear = ref(new Date().getFullYear());
-const remainingDays = ref(0);
-const hours = ref(0);
-const minutes = ref(0);
-const seconds = ref(0);
-const progressPercentage = ref(0);
-const progressDegrees = ref(0);
-let timer = null;
-
-// 直接使用本地图片路径
-const backgroundStyle = computed(() => ({
-  backgroundImage: "url(../../static/tabs/background03_larg.jpg)",
-}));
-
-// 计算年度进度
-const calculateProgress = () => {
-  const now = new Date();
-  currentYear.value = now.getFullYear(); // 更新当前年份
-  const startOfYear = new Date(currentYear.value, 0, 1);
-  const endOfYear = new Date(currentYear.value, 11, 31, 23, 59, 59, 999);
-
-  // 计算剩余时间（精确到毫秒）
-  const timeLeft = endOfYear - now;
-  remainingDays.value = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-  hours.value = Math.floor(
-    (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-  );
-  minutes.value = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-  seconds.value = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-  // 计算进度百分比（精确到毫秒）
-  const totalMilliseconds = endOfYear - startOfYear;
-  const elapsedMilliseconds = now - startOfYear;
-
-  // 计算精确的百分比，包括小时、分钟和秒的影响
-  const percentage = (elapsedMilliseconds / totalMilliseconds) * 100;
-  progressPercentage.value = percentage.toFixed(2);
-
-  // 计算精确的角度
-  progressDegrees.value = (percentage / 100) * 360;
-};
-
-onMounted(() => {
-  calculateProgress(); // 初始计算
-  // 每秒更新一次
-  timer = setInterval(calculateProgress, 1000);
-});
-
-onUnmounted(() => {
-  if (timer) {
-    clearInterval(timer);
-    timer = null;
-  }
-});
-
 const handleNavigate = (type) => {
   const routes = {
     history: "/pages/history/index",
@@ -131,12 +135,6 @@ const handleNavigate = (type) => {
     translation: "/pages/translation/index",
     codeHelper: "/pages/codeHelper/index",
     movie: "/pages/movie/index",
-  };
-
-  const preloadRoutes = {
-    textSnap: "/pages/textSnap/index",
-    weather: "/pages/weather/index",
-    book: "/pages/book/index",
   };
 
   if (routes[type]) {
@@ -154,6 +152,18 @@ const handleNavigate = (type) => {
     });
   }
 };
+
+const getIconColor = (index) => {
+  const colors = {
+    1: "#007aff",
+    2: "#ff6b6b",
+    3: "#4caf50",
+    4: "#9c27b0",
+    5: "#ff9800",
+    6: "#795548",
+  };
+  return colors[index] || "#007aff";
+};
 </script>
 
 <style scoped lang="scss">
@@ -162,151 +172,229 @@ const handleNavigate = (type) => {
   padding: 20rpx;
 }
 
-.progress-card {
+// 添加休息时间卡片样式
+.rest-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  border-radius: 24rpx;
+  padding: 30rpx;
+  margin: 20rpx;
+  box-shadow: 0 8rpx 32rpx -4rpx rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   position: relative;
-  border-radius: 32rpx;
-  padding: 40rpx;
-  margin-bottom: 30rpx;
   overflow: hidden;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  height: 260rpx;
 
-  .content-wrapper {
-    height: 100%;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6rpx;
+    background: linear-gradient(90deg, #007aff 0%, #00bcd4 100%);
+  }
+
+  .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-  }
-}
+    margin-bottom: 24rpx;
 
-.year-info {
-  position: relative;
-  z-index: 2;
-
-  .year {
-    font-size: 32rpx;
-    color: #ffffff;
-    margin-bottom: 16rpx;
-    display: block;
-    opacity: 0.9;
-  }
-
-  .days-wrapper {
-    display: flex;
-    align-items: baseline;
-    margin-bottom: 16rpx;
-
-    .days {
-      font-size: 80rpx;
-      font-weight: bold;
-      color: #ffffff;
-      line-height: 1;
+    .title {
+      font-size: 34rpx;
+      color: #333;
+      font-weight: 600;
     }
 
-    .days-unit {
-      font-size: 32rpx;
-      color: #ffffff;
-      margin-left: 8rpx;
-      opacity: 0.9;
+    .badge {
+      background: rgba(0, 122, 255, 0.1);
+      color: #007aff;
+      font-size: 24rpx;
+      padding: 4rpx 16rpx;
+      border-radius: 20rpx;
     }
   }
 
-  .time-details {
-    font-size: 28rpx;
-    color: rgba(255, 255, 255, 0.9);
-  }
-}
-
-.progress-circle {
-  position: relative;
-  z-index: 2;
-  margin-right: -20rpx;
-
-  .circle-wrapper {
-    position: relative;
+  .icon {
+    position: absolute;
+    right: -20rpx;
+    bottom: -30rpx;
     width: 140rpx;
     height: 140rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    opacity: 0.8;
+    transform: rotate(-5deg);
+  }
+}
+
+.content {
+  position: relative;
+}
+
+.rest-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16rpx;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 16rpx;
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s;
+
+  &:active {
+    transform: scale(0.98);
   }
 
-  .circle-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 6rpx solid rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    box-sizing: border-box;
+  .value {
+    font-size: 32rpx;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 8rpx;
   }
 
-  .circle-progress {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    border: 6rpx solid #ffffff;
-    border-radius: 50%;
-    box-sizing: border-box;
-    clip: rect(0, 70rpx, 140rpx, 0);
-    transform-origin: center;
+  .label {
+    font-size: 24rpx;
+    color: #666;
+    margin-bottom: 4rpx;
   }
 
-  .percentage-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+  .unit {
+    font-size: 22rpx;
+    color: #999;
+  }
+}
 
-    .percentage-number {
-      font-size: 36rpx;
-      color: #ffffff;
-      font-weight: bold;
-      line-height: 1;
-    }
+.money-info {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 12rpx 24rpx;
+  border-radius: 30rpx;
+  margin-top: 20rpx;
 
-    .percentage-sign {
-      font-size: 24rpx;
-      color: #ffffff;
-      margin-top: 4rpx;
-    }
+  .money-label {
+    font-size: 26rpx;
+    color: #666;
+  }
+
+  .money {
+    font-size: 32rpx;
+    color: #ff6b6b;
+    font-weight: 600;
+    margin: 0 8rpx;
+  }
+
+  .unit {
+    font-size: 26rpx;
+    color: #ff6b6b;
   }
 }
 
 .grid-container {
-  position: relative;
-  z-index: 2;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20rpx;
-  padding: 10rpx;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24rpx;
+  padding: 20rpx;
+  margin-top: 30rpx;
 }
 
-.grid-item {
-  background: rgba(255, 255, 255, 0.1);
+.grid-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.8) 100%
+  );
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(10px);
-  border-radius: 16rpx;
-  padding: 20rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
 
-  .icon {
-    width: 60rpx;
-    height: 60rpx;
-    margin-bottom: 10rpx;
+  &:active {
+    transform: scale(0.98);
+    box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.03);
   }
 
-  .grid-text {
-    font-size: 24rpx;
-    color: #333333;
-    margin-top: 8rpx;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4rpx;
+    background: linear-gradient(
+      90deg,
+      var(--card-color, #007aff) 0%,
+      var(--card-color-secondary, #00bcd4) 100%
+    );
+    opacity: 0.8;
+  }
+
+  .card-content {
+    padding: 30rpx 20rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12rpx;
+  }
+
+  .icon-wrapper {
+    width: 80rpx;
+    height: 80rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 122, 255, 0.1);
+    border-radius: 16rpx;
+    margin-bottom: 8rpx;
+  }
+
+  .card-title {
+    font-size: 28rpx;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .card-desc {
+    font-size: 22rpx;
+    color: #666;
+    margin-top: 4rpx;
+  }
+}
+
+// 为不同卡片设置不同的主题色
+.grid-card {
+  &:nth-child(1) {
+    --card-color: #007aff;
+    --card-color-secondary: #00bcd4;
+  }
+  &:nth-child(2) {
+    --card-color: #ff6b6b;
+    --card-color-secondary: #ffd93d;
+  }
+  &:nth-child(3) {
+    --card-color: #4caf50;
+    --card-color-secondary: #8bc34a;
+  }
+  &:nth-child(4) {
+    --card-color: #9c27b0;
+    --card-color-secondary: #e91e63;
+  }
+  &:nth-child(5) {
+    --card-color: #ff9800;
+    --card-color-secondary: #ff5722;
+  }
+  &:nth-child(6) {
+    --card-color: #795548;
+    --card-color-secondary: #8d6e63;
   }
 }
 </style>
