@@ -36,8 +36,7 @@
   "requiredPrivateInfos": [
     "chooseAddress",
     "chooseLocation",
-    "choosePoi",
-    "getFuzzyLocation"
+    "choosePoi"
   ],
   "permission": {
     "scope.writePhotosAlbum": {

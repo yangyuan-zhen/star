@@ -6,7 +6,7 @@
   "versionCode": "100",
   "transformPx": false,
   "mp-weixin": {
-    "appid": "你的小程序appid",
+    "appid": "wx9652b8bd8ff5fdd2",
     "setting": {
       "urlCheck": true,
       "es6": true,
@@ -18,12 +18,7 @@
     "uniStatistics": {
       "enable": false
     },
-    "requiredPrivateInfos": [
-      "chooseAddress",
-      "chooseLocation",
-      "choosePoi",
-      "getFuzzyLocation"
-    ],
+    "requiredPrivateInfos": ["chooseAddress", "chooseLocation", "choosePoi"],
     "cloudfunctionRoot": "cloudfunctions/",
     "permission": {
       "scope.writePhotosAlbum": {

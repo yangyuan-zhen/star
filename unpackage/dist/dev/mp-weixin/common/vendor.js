@@ -6909,6 +6909,10 @@ function stringify(styles) {
   }
   return ret;
 }
+function setRef(ref2, id, opts = {}) {
+  const { $templateRefs } = getCurrentInstance();
+  $templateRefs.push({ i: id, r: ref2, k: opts.k, f: opts.f });
+}
 const o$1 = (value, key) => vOn(value, key);
 const f$1 = (source, renderItem) => vFor(source, renderItem);
 const s$1 = (value) => stringifyStyle(value);
@@ -6917,6 +6921,7 @@ const h$1 = (str) => hyphenate(str);
 const n$1 = (value) => normalizeClass(value);
 const t$1 = (val) => toDisplayString(val);
 const p$1 = (props) => renderProps(props);
+const sr = (ref2, id, opts) => setRef(ref2, id, opts);
 function createApp$1(rootComponent, rootProps = null) {
   rootComponent && (rootComponent.mpType = "app");
   return createVueApp(rootComponent, rootProps).use(plugin);
@@ -9680,7 +9685,8 @@ const permission = {
 const easycom = {
   autoscan: true,
   custom: {
-    "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+    "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
+    "^my-(.*)": "@/components/my-$1/my-$1.vue"
   }
 };
 const e = {
@@ -9979,7 +9985,7 @@ class v {
 function I(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), C = b, P = I('{"address":["127.0.0.1","192.168.31.88","169.254.203.26"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), T = I('[{"provider":"alipay","spaceName":"free","spaceId":"env-00jxhk9ji189","spaceAppId":"2021004199605426","accessKey":"j7ZnJMTcTYPY7N6b","secretKey":"hKXUWkBWPoaRk7GP"}]') || [];
+const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), C = b, P = I('{"address":["127.0.0.1","192.168.31.220","169.254.203.26"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), T = I('[{"provider":"alipay","spaceName":"free","spaceId":"env-00jxhk9ji189","spaceAppId":"2021004199605426","accessKey":"j7ZnJMTcTYPY7N6b","secretKey":"hKXUWkBWPoaRk7GP"}]') || [];
 let O = "";
 try {
   O = "__UNI__920B084";
@@ -15245,6 +15251,7 @@ exports.fontData = fontData;
 exports.index = index;
 exports.marked = marked;
 exports.n = n$1;
+exports.nextTick$1 = nextTick$1;
 exports.o = o$1;
 exports.onMounted = onMounted;
 exports.onShareAppMessage = onShareAppMessage;
@@ -15253,5 +15260,6 @@ exports.p = p$1;
 exports.ref = ref;
 exports.resolveComponent = resolveComponent;
 exports.s = s$1;
+exports.sr = sr;
 exports.t = t$1;
 exports.watch = watch;
