@@ -318,6 +318,61 @@ const getMovieData = () => {
         makeRequest();
     });
 };
+// 获取节假日数据接口
+const getHolidayData = () => {
+    return new Promise((resolve, reject) => {
+        // 先检查缓存
+        const cachedData = getCachedData('holidayCache');
+        if (cachedData) {
+            resolve(cachedData);
+            return;
+        }
+
+        uni.request({
+            url: `https://timor.tech/api/holiday/year/${new Date().getFullYear()}`,
+            method: 'GET',
+            success: (res) => {
+                if (res.statusCode === 200 && res.data) {
+                    // 缓存数据
+                    try {
+                        uni.setStorageSync('holidayCache', res.data);
+                        uni.setStorageSync('holidayCache_time', Date.now());
+                    } catch (e) {
+                        console.error('缓存节假日数据失败:', e);
+                    }
+                    resolve(res.data);
+                } else {
+                    // 如果请求失败，尝试使用缓存
+                    const cachedData = uni.getStorageSync('holidayCache');
+                    if (cachedData) {
+                        resolve(cachedData);
+                    } else {
+                        reject({
+                            code: -1,
+                            message: '获取节假日数据失败',
+                            detail: res
+                        });
+                    }
+                }
+            },
+            fail: (err) => {
+                console.error('请求失败详情:', err);
+                // 请求失败时尝试使用缓存
+                const cachedData = uni.getStorageSync('holidayCache');
+                if (cachedData) {
+                    resolve(cachedData);
+                } else {
+                    reject({
+                        code: -1,
+                        message: '请求失败',
+                        detail: err
+                    });
+                }
+            }
+        });
+    });
+};
+
 
 
 
@@ -329,4 +384,5 @@ export {
     translateText,
     getCodeSuggestion,
     getMovieData,
+    getHolidayData
 }

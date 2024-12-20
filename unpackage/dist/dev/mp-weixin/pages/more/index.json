@@ -2,6 +2,7 @@
   "navigationBarTitleText": "更多",
   "usingComponents": {
     "uni-icons": "../../node-modules/@dcloudio/uni-ui/lib/uni-icons/uni-icons",
-    "my-popup": "../../components/my-popup/my-popup"
+    "my-popup": "../../components/my-popup/my-popup",
+    "rest-card": "../../components/rest-card/rest-card"
   }
 }

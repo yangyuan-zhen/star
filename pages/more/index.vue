@@ -1,43 +1,11 @@
 <template>
   <view class="more-container">
-    <view class="rest-card" @tap="showCustomDialog">
-      <view class="card-header">
-        <text class="title">休息时间</text>
-        <view class="badge">工作日</view>
-      </view>
-      <view class="content">
-        <view class="rest-info">
-          <view class="info-item">
-            <text class="value">{{ displaySettings.payday }}</text>
-            <text class="label">发薪</text>
-            <text class="unit">天</text>
-          </view>
-          <view class="info-item">
-            <text class="value">{{ daysUntilFriday }}</text>
-            <text class="label">周五</text>
-            <text class="unit">天</text>
-          </view>
-          <view class="info-item">
-            <!-- 下一个节日 -->
-            <text class="value">11</text>
-            <text class="label">平安夜</text>
-            <text class="unit">天</text>
-          </view>
-          <view class="money-info">
-            <text class="money-label">今天赚了</text>
-            <text class="money">{{
-              displaySettings.dailyIncome.toFixed(2)
-            }}</text>
-            <text class="unit">¥</text>
-          </view>
-          <image
-            class="icon"
-            src="../../static/tabs/offwork.png"
-            mode="aspectFit"
-          />
-        </view>
-      </view>
-    </view>
+    <rest-card
+      :display-settings="displaySettings"
+      :days-until-friday="daysUntilFriday"
+      :next-holiday="nextHoliday"
+      @tap="showCustomDialog"
+    />
 
     <view class="grid-container">
       <view class="grid-card" @tap="handleNavigate('textSnap')">
@@ -91,7 +59,7 @@
               :color="getIconColor(4)"
             ></uni-icons>
           </view>
-          <text class="card-title">中英互译</text>
+          <text class="card-title">AI智能翻译</text>
           <text class="card-desc">智能翻译助手</text>
         </view>
       </view>
@@ -165,6 +133,8 @@
 <script setup>
 import { ref, onMounted, nextTick, computed } from "vue";
 import MyPopup from "../../components/my-popup/my-popup.vue";
+import RestCard from "../../components/rest-card/rest-card.vue";
+import { getHolidayData } from "../../api/search.js";
 
 const handleNavigate = (type) => {
   const routes = {
@@ -319,6 +289,110 @@ const daysUntilFriday = computed(() => {
   }
 });
 
+const holidayData = ref(null);
+
+// 获取节假日数据
+const fetchHolidayData = async () => {
+  try {
+    const response = await getHolidayData();
+    if (response.code === 0) {
+      holidayData.value = response.holiday;
+    }
+  } catch (error) {
+    console.error("获取节假日数据失败:", error);
+  }
+};
+
+// 计算下一个节日
+const nextHoliday = computed(() => {
+  if (!holidayData.value) {
+    return { name: "加载中", days: "-" };
+  }
+
+  const today = new Date();
+  const todayStr = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(
+    today.getDate()
+  ).padStart(2, "0")}`;
+  const currentYear = today.getFullYear();
+
+  // 找出所有节假日
+  const holidays = Object.entries(holidayData.value)
+    .filter(
+      ([_, info]) =>
+        info.holiday &&
+        !info.name.includes("后补班") &&
+        !info.name.includes("前补班")
+    )
+    .map(([date, info]) => ({
+      date: date,
+      fullDate: `${currentYear}-${date}`,
+      name: info.name.replace(/[初一二三四五六七八九十]/, ""),
+      rest: info.rest,
+    }))
+    .filter((holiday) => {
+      const holidayDate = new Date(holiday.fullDate);
+      return holidayDate >= today;
+    });
+
+  // 按日期排序
+  holidays.sort((a, b) => new Date(a.fullDate) - new Date(b.fullDate));
+
+  if (holidays.length === 0) {
+    // 如果当年没有节假日了，计算到下一年元旦的天数
+    const nextNewYear = new Date(currentYear + 1, 0, 1);
+    const daysUntilNewYear = Math.ceil(
+      (nextNewYear - today) / (1000 * 60 * 60 * 24)
+    );
+    return {
+      name: "元旦",
+      days: daysUntilNewYear,
+    };
+  }
+
+  const nextHoliday = holidays[0];
+  const days =
+    nextHoliday.rest ||
+    Math.ceil((new Date(nextHoliday.fullDate) - today) / (1000 * 60 * 60 * 24));
+
+  return {
+    name: nextHoliday.name,
+    days: days,
+  };
+});
+
+const shareInfo = {
+  title: "工具小助手",
+  path: "/pages/more/index",
+  imageUrl: "", // 确保你有这个分享图片
+  desc: "查看节假日、其他工具等信息",
+};
+
+// 分享给朋友
+const onShareAppMessage = () => {
+  return {
+    title: shareInfo.title,
+    path: shareInfo.path,
+    imageUrl: shareInfo.imageUrl,
+    desc: shareInfo.desc,
+  };
+};
+
+// 分享到朋友圈
+const onShareTimeline = () => {
+  return {
+    title: shareInfo.title,
+    path: shareInfo.path,
+    imageUrl: shareInfo.imageUrl,
+    query: "", // 可选：分享时携带的查询参数
+  };
+};
+
+// 将这两个方法定义为页面选项
+defineExpose({
+  onShareAppMessage,
+  onShareTimeline,
+});
+
 onMounted(() => {
   const savedSettings = uni.getStorageSync("customSettings");
   if (savedSettings) {
@@ -329,6 +403,7 @@ onMounted(() => {
     };
   }
   console.log("popup ref:", popup.value);
+  fetchHolidayData();
 });
 </script>
 
@@ -336,130 +411,6 @@ onMounted(() => {
 .more-container {
   min-height: 100vh;
   padding: 20rpx;
-}
-
-// 添加休息时间卡片样式
-.rest-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-  border-radius: 24rpx;
-  padding: 30rpx;
-  margin: 20rpx;
-  box-shadow: 0 8rpx 32rpx -4rpx rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6rpx;
-    background: linear-gradient(90deg, #007aff 0%, #00bcd4 100%);
-  }
-
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24rpx;
-
-    .title {
-      font-size: 34rpx;
-      color: #333;
-      font-weight: 600;
-    }
-
-    .badge {
-      background: rgba(0, 122, 255, 0.1);
-      color: #007aff;
-      font-size: 24rpx;
-      padding: 4rpx 16rpx;
-      border-radius: 20rpx;
-    }
-  }
-
-  .icon {
-    position: absolute;
-    right: -20rpx;
-    bottom: -30rpx;
-    width: 140rpx;
-    height: 140rpx;
-    opacity: 0.8;
-    transform: rotate(-5deg);
-  }
-}
-
-.content {
-  position: relative;
-}
-
-.rest-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 40rpx;
-  position: relative;
-  z-index: 1;
-}
-
-.info-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16rpx;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 16rpx;
-  backdrop-filter: blur(10px);
-  transition: transform 0.2s;
-
-  &:active {
-    transform: scale(0.98);
-  }
-
-  .value {
-    font-size: 32rpx;
-    color: #333;
-    font-weight: 600;
-    margin-bottom: 8rpx;
-  }
-
-  .label {
-    font-size: 24rpx;
-    color: #666;
-    margin-bottom: 4rpx;
-  }
-
-  .unit {
-    font-size: 22rpx;
-    color: #999;
-  }
-}
-
-.money-info {
-  display: flex;
-  align-items: center;
-  background: rgba(255, 107, 107, 0.1);
-  padding: 12rpx 24rpx;
-  border-radius: 30rpx;
-  margin-top: 20rpx;
-
-  .money-label {
-    font-size: 26rpx;
-    color: #666;
-  }
-
-  .money {
-    font-size: 32rpx;
-    color: #ff6b6b;
-    font-weight: 600;
-    margin: 0 8rpx;
-  }
-
-  .unit {
-    font-size: 26rpx;
-    color: #ff6b6b;
-  }
 }
 
 .grid-container {

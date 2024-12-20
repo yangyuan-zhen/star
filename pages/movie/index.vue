@@ -9,8 +9,21 @@
         </view>
       </div>
     </div>
+    <!-- 添加 loading 骨架屏 -->
+    <div v-if="isLoading" class="movie-card skeleton">
+      <view class="skeleton-poster"></view>
+      <view class="skeleton-content">
+        <view class="skeleton-title"></view>
+        <view class="skeleton-tags">
+          <view class="skeleton-tag" v-for="i in 3" :key="i"></view>
+        </view>
+        <view class="skeleton-text"></view>
+        <view class="skeleton-text"></view>
+        <view class="skeleton-meta"></view>
+      </view>
+    </div>
     <!-- 今日电影卡片 -->
-    <div v-if="todayMovie" class="movie-card">
+    <div v-else-if="todayMovie" class="movie-card">
       <image :src="todayMovie.mov_pic" class="movie-poster" mode="aspectFill" />
       <div class="movie-content">
         <view class="movie-title">{{ todayMovie.mov_title }}</view>
@@ -27,7 +40,7 @@
         </view>
         <view class="movie-quote">{{ todayMovie.mov_text }}</view>
         <view class="movie-meta">
-          <text>导演：{{ todayMovie.mov_director }}</text>
+          <text>导演：{{ todayMovie.mov_director }} &nbsp</text>
           <text class="ml-2">地区：{{ todayMovie.mov_area }}</text>
         </view>
       </div>
@@ -52,9 +65,11 @@ const weekDayText = computed(() => weekDays[currentDate.value.getDay()]);
 const todayMovie = ref(null);
 const showHistoryList = ref(false);
 const historyMovies = ref([]);
+const isLoading = ref(true);
 
 // 获取电影数据
 const fetchMovieData = async () => {
+  isLoading.value = true;
   try {
     const data = await getMovieData();
     todayMovie.value = data;
@@ -64,6 +79,8 @@ const fetchMovieData = async () => {
       title: "获取电影数据失败",
       icon: "none",
     });
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -242,5 +259,93 @@ onMounted(() => {
   opacity: 1;
   transform: scale(1.1);
   transition: transform 0.2s, opacity 0.2s;
+}
+
+// 添加骨架屏样式
+.skeleton {
+  .skeleton-poster {
+    width: 100%;
+    height: 900rpx;
+    background: #f0f0f0;
+    border-radius: 8rpx;
+    margin-bottom: 16rpx;
+  }
+
+  .skeleton-content {
+    padding: 10px;
+  }
+
+  .skeleton-title {
+    height: 24px;
+    background: #f0f0f0;
+    margin-bottom: 12px;
+    width: 60%;
+    border-radius: 4px;
+  }
+
+  .skeleton-tags {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .skeleton-tag {
+    width: 60px;
+    height: 20px;
+    background: #f0f0f0;
+    border-radius: 4px;
+  }
+
+  .skeleton-text {
+    height: 16px;
+    background: #f0f0f0;
+    margin-bottom: 8px;
+    border-radius: 4px;
+
+    &:nth-child(2) {
+      width: 90%;
+    }
+  }
+
+  .skeleton-meta {
+    height: 14px;
+    background: #f0f0f0;
+    width: 70%;
+    border-radius: 4px;
+  }
+
+  .skeleton-poster,
+  .skeleton-title,
+  .skeleton-tag,
+  .skeleton-text,
+  .skeleton-meta {
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+      );
+      animation: shimmer 1.5s infinite;
+    }
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 </style>

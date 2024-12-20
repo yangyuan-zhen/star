@@ -1,11 +1,23 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
 const api_search = require("../../api/search.js");
+if (!Math) {
+  PageLoading();
+}
+const PageLoading = () => "../../components/page-loading/page-loading.js";
 const _sfc_main = {
   __name: "index",
   setup(__props, { expose: __expose }) {
     const newsList = common_vendor.ref([]);
     const isLoading = common_vendor.ref(false);
+    const isPageLoading = common_vendor.ref(true);
+    const shareInfo = {
+      title: "实时热搜榜",
+      path: "/pages/index/index",
+      imageUrl: "",
+      // 可以添加分享图片的路径
+      desc: "查看最新热搜话题"
+    };
     const checkLastFetchTime = () => {
       const lastFetchTime = common_vendor.index.getStorageSync("lastFetchTime");
       const currentTime = (/* @__PURE__ */ new Date()).getTime();
@@ -22,7 +34,10 @@ const _sfc_main = {
       try {
         const response = await api_search.searchResources();
         if (response.code === 200) {
-          newsList.value = response.data;
+          newsList.value = response.data.map((item) => ({
+            ...item,
+            isExpanded: false
+          }));
         }
       } catch (error) {
         common_vendor.index.showToast({
@@ -32,6 +47,7 @@ const _sfc_main = {
         });
       } finally {
         isLoading.value = false;
+        isPageLoading.value = false;
         common_vendor.index.stopPullDownRefresh();
       }
     };
@@ -55,8 +71,36 @@ const _sfc_main = {
       }
       return score;
     };
+    const toggleExpand = (index) => {
+      newsList.value[index] = {
+        ...newsList.value[index],
+        isExpanded: !newsList.value[index].isExpanded
+      };
+    };
+    const onShareAppMessage = () => {
+      return {
+        title: shareInfo.title,
+        path: shareInfo.path,
+        imageUrl: shareInfo.imageUrl,
+        desc: shareInfo.desc
+      };
+    };
+    const onShareTimeline = () => {
+      return {
+        title: shareInfo.title,
+        path: shareInfo.path,
+        imageUrl: shareInfo.imageUrl,
+        query: ""
+        // 可选：分享��携带的查询参数
+      };
+    };
     common_vendor.onMounted(() => {
-      fetchNews();
+      Promise.all([
+        fetchNews(),
+        new Promise((resolve) => setTimeout(resolve, 1500))
+      ]).then(() => {
+        isPageLoading.value = false;
+      });
     });
     __expose({
       onPullDownRefresh() {
@@ -69,30 +113,45 @@ const _sfc_main = {
           });
           common_vendor.index.stopPullDownRefresh();
         }
-      }
+      },
+      onShareAppMessage,
+      onShareTimeline
     });
     return (_ctx, _cache) => {
-      return common_vendor.e({
-        a: common_vendor.f(newsList.value, (item, index, i0) => {
+      return {
+        a: common_vendor.p({
+          show: isPageLoading.value,
+          title: "热搜榜"
+        }),
+        b: common_vendor.f(newsList.value, (item, index, i0) => {
           return common_vendor.e({
             a: common_vendor.t(index + 1),
-            b: common_vendor.t(item.word),
-            c: common_vendor.t(formatHotScore(item.hotScore)),
-            d: item.hotTagImg
+            b: index < 3 ? 1 : "",
+            c: item.isExpanded ? 1 : "",
+            d: common_vendor.o(($event) => toggleExpand(index), index),
+            e: common_vendor.t(item.word),
+            f: common_vendor.t(formatHotScore(item.hotScore)),
+            g: item.hotTagImg
           }, item.hotTagImg ? {
-            e: item.hotTagImg
+            h: item.hotTagImg
           } : {}, {
-            f: item.img
+            i: item.img
           }, item.img ? {
-            g: item.img
+            j: item.img
           } : {}, {
-            h: index,
-            i: common_vendor.o(($event) => handleNewsClick(item), index)
+            k: common_vendor.o(($event) => handleNewsClick(item), index),
+            l: item.isExpanded
+          }, item.isExpanded ? {
+            m: common_vendor.t(item.desc || "暂无描述")
+          } : {}, {
+            n: index,
+            o: item.isExpanded ? 1 : ""
           });
         }),
-        b: isLoading.value
-      }, isLoading.value ? {} : {});
+        c: !isPageLoading.value
+      };
     };
   }
 };
+_sfc_main.__runtimeHooks = 6;
 wx.createPage(_sfc_main);

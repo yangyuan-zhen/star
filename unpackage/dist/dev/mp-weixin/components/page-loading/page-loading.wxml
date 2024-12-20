@@ -1,0 +1,1 @@
+<view wx:if="{{a}}" class="loading-container data-v-e598955a"><image class="logo data-v-e598955a" src="{{b}}" mode="aspectFit"/><text class="title data-v-e598955a">{{c}}</text><view class="loading-dots data-v-e598955a"><text wx:for="{{d}}" wx:for-item="i" wx:key="a" class="dot data-v-e598955a"></text></view></view>

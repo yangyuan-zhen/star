@@ -8,6 +8,15 @@ const setLastRequestTime = (time) => {
   common_vendor.index.setStorageSync("lastRequestTime", time);
 };
 const INTERVAL = 5 * 1e3;
+const CACHE_DURATION = 5 * 60 * 1e3;
+const getCachedData = (key) => {
+  const data = common_vendor.index.getStorageSync(key);
+  const time = common_vendor.index.getStorageSync(`${key}_time`);
+  if (data && time && Date.now() - time < CACHE_DURATION) {
+    return data;
+  }
+  return null;
+};
 const searchResources = () => {
   return new Promise((resolve, reject) => {
     const now = Date.now();
@@ -262,8 +271,57 @@ const getMovieData = () => {
     makeRequest();
   });
 };
+const getHolidayData = () => {
+  return new Promise((resolve, reject) => {
+    const cachedData = getCachedData("holidayCache");
+    if (cachedData) {
+      resolve(cachedData);
+      return;
+    }
+    common_vendor.index.request({
+      url: `https://timor.tech/api/holiday/year/${(/* @__PURE__ */ new Date()).getFullYear()}`,
+      method: "GET",
+      success: (res) => {
+        if (res.statusCode === 200 && res.data) {
+          try {
+            common_vendor.index.setStorageSync("holidayCache", res.data);
+            common_vendor.index.setStorageSync("holidayCache_time", Date.now());
+          } catch (e) {
+            console.error("缓存节假日数据失败:", e);
+          }
+          resolve(res.data);
+        } else {
+          const cachedData2 = common_vendor.index.getStorageSync("holidayCache");
+          if (cachedData2) {
+            resolve(cachedData2);
+          } else {
+            reject({
+              code: -1,
+              message: "获取节假日数据失败",
+              detail: res
+            });
+          }
+        }
+      },
+      fail: (err) => {
+        console.error("请求失败详情:", err);
+        const cachedData2 = common_vendor.index.getStorageSync("holidayCache");
+        if (cachedData2) {
+          resolve(cachedData2);
+        } else {
+          reject({
+            code: -1,
+            message: "请求失败",
+            detail: err
+          });
+        }
+      }
+    });
+  });
+};
 exports.getBookRecommend = getBookRecommend;
 exports.getCodeSuggestion = getCodeSuggestion;
+exports.getHolidayData = getHolidayData;
 exports.getMovieData = getMovieData;
 exports.getWeatherReport = getWeatherReport;
 exports.searchResources = searchResources;

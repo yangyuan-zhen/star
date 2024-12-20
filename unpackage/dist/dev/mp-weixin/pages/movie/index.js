@@ -12,7 +12,9 @@ const _sfc_main = {
     const todayMovie = common_vendor.ref(null);
     common_vendor.ref(false);
     common_vendor.ref([]);
+    const isLoading = common_vendor.ref(true);
     const fetchMovieData = async () => {
+      isLoading.value = true;
       try {
         const data = await api_search.getMovieData();
         todayMovie.value = data;
@@ -22,6 +24,8 @@ const _sfc_main = {
           title: "获取电影数据失败",
           icon: "none"
         });
+      } finally {
+        isLoading.value = false;
       }
     };
     const copyLink = () => {
@@ -60,23 +64,31 @@ const _sfc_main = {
         a: common_vendor.t(currentDay.value),
         b: common_vendor.t(currentMonth.value + 1),
         c: common_vendor.t(weekDayText.value),
-        d: todayMovie.value
-      }, todayMovie.value ? {
-        e: todayMovie.value.mov_pic,
-        f: common_vendor.t(todayMovie.value.mov_title),
-        g: common_vendor.t(todayMovie.value.mov_rating),
-        h: common_vendor.t(todayMovie.value.mov_year),
-        i: common_vendor.f(todayMovie.value.mov_type, (type, k0, i0) => {
+        d: isLoading.value
+      }, isLoading.value ? {
+        e: common_vendor.f(3, (i, k0, i0) => {
+          return {
+            a: i
+          };
+        })
+      } : todayMovie.value ? {
+        g: todayMovie.value.mov_pic,
+        h: common_vendor.t(todayMovie.value.mov_title),
+        i: common_vendor.t(todayMovie.value.mov_rating),
+        j: common_vendor.t(todayMovie.value.mov_year),
+        k: common_vendor.f(todayMovie.value.mov_type, (type, k0, i0) => {
           return {
             a: common_vendor.t(type),
             b: type
           };
         }),
-        j: common_vendor.t(todayMovie.value.mov_text),
-        k: common_vendor.t(todayMovie.value.mov_director),
-        l: common_vendor.t(todayMovie.value.mov_area),
-        m: common_vendor.o(copyLink)
-      } : {});
+        l: common_vendor.t(todayMovie.value.mov_text),
+        m: common_vendor.t(todayMovie.value.mov_director),
+        n: common_vendor.t(todayMovie.value.mov_area),
+        o: common_vendor.o(copyLink)
+      } : {}, {
+        f: todayMovie.value
+      });
     };
   }
 };

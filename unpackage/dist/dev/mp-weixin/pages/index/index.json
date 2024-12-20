@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "热搜",
-  "usingComponents": {}
+  "usingComponents": {
+    "page-loading": "../../components/page-loading/page-loading"
+  }
 }

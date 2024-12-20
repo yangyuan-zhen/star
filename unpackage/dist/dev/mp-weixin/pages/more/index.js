@@ -1,18 +1,19 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-const common_assets = require("../../common/assets.js");
+const api_search = require("../../api/search.js");
 if (!Array) {
   const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
   _easycom_uni_icons2();
 }
 const _easycom_uni_icons = () => "../../node-modules/@dcloudio/uni-ui/lib/uni-icons/uni-icons.js";
 if (!Math) {
-  (_easycom_uni_icons + MyPopup)();
+  (RestCard + _easycom_uni_icons + MyPopup)();
 }
 const MyPopup = () => "../../components/my-popup/my-popup.js";
+const RestCard = () => "../../components/rest-card/rest-card.js";
 const _sfc_main = {
   __name: "index",
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
     const handleNavigate = (type) => {
       const routes = {
         history: "/pages/history/index",
@@ -132,6 +133,83 @@ const _sfc_main = {
         return 5 + (7 - currentDay);
       }
     });
+    const holidayData = common_vendor.ref(null);
+    const fetchHolidayData = async () => {
+      try {
+        const response = await api_search.getHolidayData();
+        if (response.code === 0) {
+          holidayData.value = response.holiday;
+        }
+      } catch (error) {
+        console.error("获取节假日数据失败:", error);
+      }
+    };
+    const nextHoliday = common_vendor.computed(() => {
+      if (!holidayData.value) {
+        return { name: "加载中", days: "-" };
+      }
+      const today = /* @__PURE__ */ new Date();
+      `${String(today.getMonth() + 1).padStart(2, "0")}-${String(
+        today.getDate()
+      ).padStart(2, "0")}`;
+      const currentYear = today.getFullYear();
+      const holidays = Object.entries(holidayData.value).filter(
+        ([_, info]) => info.holiday && !info.name.includes("后补班") && !info.name.includes("前补班")
+      ).map(([date, info]) => ({
+        date,
+        fullDate: `${currentYear}-${date}`,
+        name: info.name.replace(/[初一二三四五六七八九十]/, ""),
+        rest: info.rest
+      })).filter((holiday) => {
+        const holidayDate = new Date(holiday.fullDate);
+        return holidayDate >= today;
+      });
+      holidays.sort((a, b) => new Date(a.fullDate) - new Date(b.fullDate));
+      if (holidays.length === 0) {
+        const nextNewYear = new Date(currentYear + 1, 0, 1);
+        const daysUntilNewYear = Math.ceil(
+          (nextNewYear - today) / (1e3 * 60 * 60 * 24)
+        );
+        return {
+          name: "元旦",
+          days: daysUntilNewYear
+        };
+      }
+      const nextHoliday2 = holidays[0];
+      const days = nextHoliday2.rest || Math.ceil((new Date(nextHoliday2.fullDate) - today) / (1e3 * 60 * 60 * 24));
+      return {
+        name: nextHoliday2.name,
+        days
+      };
+    });
+    const shareInfo = {
+      title: "工具小助手",
+      path: "/pages/more/index",
+      imageUrl: "",
+      // 确保你有这个分享图片
+      desc: "查看节假日、其他工具等信息"
+    };
+    const onShareAppMessage = () => {
+      return {
+        title: shareInfo.title,
+        path: shareInfo.path,
+        imageUrl: shareInfo.imageUrl,
+        desc: shareInfo.desc
+      };
+    };
+    const onShareTimeline = () => {
+      return {
+        title: shareInfo.title,
+        path: shareInfo.path,
+        imageUrl: shareInfo.imageUrl,
+        query: ""
+        // 可选：分享时携带的查询参数
+      };
+    };
+    __expose({
+      onShareAppMessage,
+      onShareTimeline
+    });
     common_vendor.onMounted(() => {
       const savedSettings = common_vendor.index.getStorageSync("customSettings");
       if (savedSettings) {
@@ -142,60 +220,62 @@ const _sfc_main = {
         };
       }
       console.log("popup ref:", popup.value);
+      fetchHolidayData();
     });
     return (_ctx, _cache) => {
       return {
-        a: common_vendor.t(displaySettings.value.payday),
-        b: common_vendor.t(daysUntilFriday.value),
-        c: common_vendor.t(displaySettings.value.dailyIncome.toFixed(2)),
-        d: common_assets._imports_0,
-        e: common_vendor.o(showCustomDialog),
-        f: common_vendor.p({
+        a: common_vendor.o(showCustomDialog),
+        b: common_vendor.p({
+          ["display-settings"]: displaySettings.value,
+          ["days-until-friday"]: daysUntilFriday.value,
+          ["next-holiday"]: nextHoliday.value
+        }),
+        c: common_vendor.p({
           type: "compose",
           size: "30",
           color: getIconColor(1)
         }),
-        g: common_vendor.o(($event) => handleNavigate("textSnap")),
-        h: common_vendor.p({
+        d: common_vendor.o(($event) => handleNavigate("textSnap")),
+        e: common_vendor.p({
           type: "image",
           size: "30",
           color: getIconColor(2)
         }),
-        i: common_vendor.o(($event) => handleNavigate("weather")),
-        j: common_vendor.p({
+        f: common_vendor.o(($event) => handleNavigate("weather")),
+        g: common_vendor.p({
           type: "bars",
           size: "30",
           color: getIconColor(3)
         }),
-        k: common_vendor.o(($event) => handleNavigate("book")),
-        l: common_vendor.p({
+        h: common_vendor.o(($event) => handleNavigate("book")),
+        i: common_vendor.p({
           type: "chat",
           size: "30",
           color: getIconColor(4)
         }),
-        m: common_vendor.o(($event) => handleNavigate("translation")),
-        n: common_vendor.p({
+        j: common_vendor.o(($event) => handleNavigate("translation")),
+        k: common_vendor.p({
           type: "settings",
           size: "30",
           color: getIconColor(5)
         }),
-        o: common_vendor.o(($event) => handleNavigate("codeHelper")),
-        p: common_vendor.p({
+        l: common_vendor.o(($event) => handleNavigate("codeHelper")),
+        m: common_vendor.p({
           type: "videocam",
           size: "30",
           color: getIconColor(6)
         }),
-        q: common_vendor.o(($event) => handleNavigate("movie")),
-        r: common_vendor.o([($event) => customSettings.value.payday = $event.detail.value, validatePayday]),
-        s: customSettings.value.payday,
-        t: common_vendor.o([($event) => customSettings.value.dailyIncome = $event.detail.value, validateDailyIncome]),
-        v: customSettings.value.dailyIncome,
-        w: common_vendor.o(hideCustomDialog),
-        x: common_vendor.o(saveCustomSettings),
-        y: common_vendor.sr(popup, "9cb5c55a-6", {
+        n: common_vendor.o(($event) => handleNavigate("movie")),
+        o: common_vendor.o([($event) => customSettings.value.payday = $event.detail.value, validatePayday]),
+        p: customSettings.value.payday,
+        q: common_vendor.o([($event) => customSettings.value.dailyIncome = $event.detail.value, validateDailyIncome]),
+        r: customSettings.value.dailyIncome,
+        s: common_vendor.o(hideCustomDialog),
+        t: common_vendor.o(saveCustomSettings),
+        v: common_vendor.sr(popup, "9cb5c55a-7", {
           "k": "popup"
         }),
-        z: common_vendor.p({
+        w: common_vendor.p({
           type: "center"
         })
       };
@@ -203,4 +283,5 @@ const _sfc_main = {
   }
 };
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-9cb5c55a"]]);
+_sfc_main.__runtimeHooks = 6;
 wx.createPage(MiniProgramPage);

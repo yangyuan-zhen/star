@@ -15,56 +15,40 @@
 
     <!-- 样式设置区域 -->
     <view class="settings-section">
-      <!-- 主题选择 -->
       <view class="setting-item">
-        <text class="setting-label">主题样式：</text>
-        <picker
-          :value="themeIndex"
-          :range="themes"
-          @change="onThemeChange"
-          class="theme-picker"
-        >
-          <view class="picker-text">{{ themes[themeIndex] }}</view>
+        <view class="setting-label">
+          <Icon icon="material-symbols:palette-outline" class="setting-icon" />
+          <text>主题样式</text>
+        </view>
+        <picker :value="themeIndex" :range="themes" @change="onThemeChange">
+          <view class="picker-wrapper">
+            <text>{{ themes[themeIndex] }}</text>
+            <Icon
+              icon="material-symbols:arrow-forward-ios"
+              class="arrow-icon"
+            />
+          </view>
         </picker>
-      </view>
-
-      <!-- 字体大小 -->
-      <view class="setting-item">
-        <text class="setting-label">字体大小：{{ fontSize }}px</text>
-        <slider
-          :value="fontSize"
-          :min="12"
-          :max="24"
-          :step="1"
-          @change="onFontSizeChange"
-          class="slider"
-        />
-      </view>
-
-      <!-- 背景透明度 -->
-      <view class="setting-item">
-        <text class="setting-label"
-          >背景透明度：{{ Math.round(opacity * 100) }}%</text
-        >
-        <slider
-          :value="opacity * 100"
-          :min="0"
-          :max="100"
-          :step="1"
-          @change="onOpacityChange"
-          class="slider"
-        />
       </view>
     </view>
 
     <!-- 按钮区域 -->
     <view class="button-section">
-      <button class="preview-btn" @tap="generatePreview">预览图片</button>
-      <button class="share-btn" @tap="shareToWechat" v-if="previewImage">
-        分享到微信
+      <button class="action-btn preview-btn" @tap="generatePreview">
+        <Icon icon="material-symbols:preview-outline" />
+        <text>预览图片</text>
       </button>
-      <button class="save-btn" @tap="saveImage" v-if="previewImage">
-        保存到相册
+      <button
+        class="action-btn share-btn"
+        @tap="shareToWechat"
+        v-if="previewImage"
+      >
+        <Icon icon="material-symbols:share-outline" />
+        <text>分享到微信</text>
+      </button>
+      <button class="action-btn save-btn" @tap="saveImage" v-if="previewImage">
+        <Icon icon="material-symbols:download" />
+        <text>保存到相册</text>
       </button>
     </view>
 
@@ -96,8 +80,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+import { Icon } from "@iconify/vue";
 
 const content = ref("");
 const themeIndex = ref(0);
@@ -114,38 +99,24 @@ const themeStyles = {
     textColor: "#ffffff",
   },
 };
-const fontSize = ref(14);
-const opacity = ref(1);
+const fontSize = 12;
 const showPreview = ref(false);
 const previewImage = ref("");
 
 // 计算样式
 const inputStyle = computed(() => {
-  const style = {
-    fontSize: `${fontSize.value}px`,
-    backgroundColor:
-      themeIndex.value === 1
-        ? `rgba(40, 44, 52, ${opacity.value})`
-        : `rgba(255, 255, 255, ${opacity.value})`,
-    color: themeIndex.value === 1 ? "#ffffff" : "#333333",
+  return {
+    fontSize: `${fontSize}px`,
+    backgroundColor: themeStyles[themeIndex.value].background,
+    color: themeStyles[themeIndex.value].textColor,
   };
-  return style;
 });
 
 const onThemeChange = (e) => {
   themeIndex.value = e.detail.value;
 };
 
-const onFontSizeChange = (e) => {
-  fontSize.value = e.detail.value;
-};
-
-const onOpacityChange = (e) => {
-  opacity.value = e.detail.value / 100;
-};
-
 const drawText = async () => {
-  // 修改获取 canvas 节点的方式
   const query = uni.createSelectorQuery();
   const canvas = await new Promise((resolve) => {
     query
@@ -168,33 +139,14 @@ const drawText = async () => {
   const ctx = canvas.getContext("2d");
   const dpr = uni.getSystemInfoSync().pixelRatio;
   const canvasWidth = 300 * dpr;
-  const canvasHeight = 400 * dpr;
 
-  // 设置画布大小
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
-
-  // 缩放以适应 DPR
-  ctx.scale(dpr, dpr);
-
-  // 清空画布
-  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-  // 绘制背景
-  ctx.fillStyle = themeStyles[themeIndex.value].background;
-  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-  // 设置文字样式
-  ctx.font = `${fontSize.value}px sans-serif`;
-  ctx.textBaseline = "middle";
-  ctx.textAlign = "center";
-  ctx.fillStyle = themeStyles[themeIndex.value].textColor;
-
-  // 文字处理和绘制
+  // 计算所需的画布高度
+  ctx.font = `${fontSize}px sans-serif`;
   const text = content.value;
-  const maxWidth = 260; // 留出左右边距
-  const lineHeight = fontSize.value + 10;
-  const topMargin = 40; // 添加顶部边距
+  const maxWidth = 260;
+  const lineHeight = fontSize + 10;
+  const topMargin = 40;
+  const bottomMargin = 40;
 
   // 分行处理
   const lines = [];
@@ -227,20 +179,48 @@ const drawText = async () => {
     }
   }
 
+  // 计算所需的总高度
+  const totalTextHeight = lines.length * lineHeight;
+  const canvasHeight = Math.max(
+    400 * dpr,
+    (totalTextHeight + topMargin + bottomMargin) * dpr
+  );
+
+  // 设置画布大小
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+
+  // 缩放以适应 DPR
+  ctx.scale(dpr, dpr);
+
+  // 清空画布
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+  // 绘制背景
+  ctx.fillStyle = themeStyles[themeIndex.value].background;
+  ctx.fillRect(0, 0, canvasWidth / dpr, canvasHeight / dpr);
+
+  // 设置文字样式
+  ctx.font = `${fontSize}px sans-serif`;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  ctx.fillStyle = themeStyles[themeIndex.value].textColor;
+
   // 绘制文字
+  const leftMargin = 20;
   lines.forEach((line, index) => {
     const y = topMargin + index * lineHeight;
-    ctx.fillText(line, 150, y); // 水平居中 (300/2)
+    ctx.fillText(line, leftMargin, y);
   });
 
-  // 添加 Free 水印
+  // 添加水印
   ctx.save();
   ctx.font = "14px sans-serif";
   ctx.fillStyle =
     themeIndex.value === 1 ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)";
   ctx.textAlign = "right";
   ctx.textBaseline = "bottom";
-  ctx.fillText("Free信息", canvas.width / dpr - 20, canvas.height / dpr - 20);
+  ctx.fillText("Free信息", canvasWidth / dpr - 20, canvasHeight / dpr - 20);
   ctx.restore();
 
   return canvas;
@@ -335,62 +315,85 @@ const shareToWechat = () => {
   });
 };
 
-// 添加页面分享处理
+// 添加分享参数处理
+const handleShare = () => {
+  // 获取当前页面路由
+  const pages = getCurrentPages();
+  const currentPage = pages[pages.length - 1];
+
+  if (currentPage && currentPage.options && currentPage.options.text) {
+    // 如果有分享参数，解码并设置到输入框
+    content.value = decodeURIComponent(currentPage.options.text);
+  }
+};
+
+// 页面加载时检查分享参数
+onMounted(() => {
+  handleShare();
+});
+
+// 修改分享配置
 onShareAppMessage(() => {
   return {
-    title: "文字图片",
+    title: "文字分享",
     imageUrl: previewImage.value,
-    path: "/pages/textSnap/index",
+    // 将当前文本内容作为参数传递
+    path: `/pages/textSnap/index?text=${encodeURIComponent(content.value)}`,
   };
 });
 
-// 添加分享到朋友圈
+// 分享到朋友圈
 onShareTimeline(() => {
   return {
-    title: "文字图片",
+    title: "文字分享",
     imageUrl: previewImage.value,
-    path: "/pages/textSnap/index",
+    // 将当前文本内容作为参数传递
+    query: `text=${encodeURIComponent(content.value)}`,
   };
 });
 </script>
 
 <style lang="scss" scoped>
 .container {
-  padding: 20rpx;
-  background-color: #f5f5f5;
+  padding: 30rpx;
+  background-color: #f8f9fa;
   min-height: 100vh;
 }
 
 .preview-section {
   margin-bottom: 30rpx;
   background: #fff;
-  border-radius: 8rpx;
+  border-radius: 16rpx;
   padding: 20rpx;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 
   .code-input {
     width: 100%;
     min-height: 200rpx;
-    padding: 20rpx;
-    border-radius: 8rpx;
-    border: 1px solid #ddd;
+    padding: 24rpx;
+    border-radius: 12rpx;
+    border: 1px solid #e5e7eb;
     box-sizing: border-box;
     transition: all 0.3s ease;
-    background-color: #fff;
-    white-space: pre-wrap;
-    word-break: break-all;
+
+    &:focus {
+      border-color: #4a90e2;
+      box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+    }
   }
 }
 
 .settings-section {
   background-color: #fff;
-  padding: 20rpx;
-  border-radius: 8rpx;
+  padding: 24rpx;
+  border-radius: 16rpx;
   margin-bottom: 30rpx;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 
   .setting-item {
     display: flex;
     align-items: center;
-    padding: 20rpx 0;
+    padding: 24rpx 0;
     border-bottom: 1px solid #f0f0f0;
 
     &:last-child {
@@ -398,18 +401,28 @@ onShareTimeline(() => {
     }
 
     .setting-label {
+      display: flex;
+      align-items: center;
+      gap: 8rpx;
       flex: 1;
       font-size: 28rpx;
-      color: #333;
+      color: #374151;
+
+      .setting-icon {
+        font-size: 36rpx;
+        color: #4a90e2;
+      }
     }
 
-    .theme-picker {
-      flex: 1;
-    }
+    .picker-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8rpx;
+      color: #6b7280;
 
-    .picker-text {
-      font-size: 28rpx;
-      color: #666;
+      .arrow-icon {
+        font-size: 24rpx;
+      }
     }
 
     .slider {
@@ -422,30 +435,45 @@ onShareTimeline(() => {
 .button-section {
   padding: 20rpx 0;
   display: flex;
-  gap: 20rpx;
+  gap: 24rpx;
 
-  .preview-btn,
-  .share-btn,
-  .save-btn {
+  .action-btn {
     flex: 1;
-    height: 80rpx;
-    line-height: 80rpx;
+    height: 88rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8rpx;
     color: #fff;
-    border-radius: 40rpx;
-    font-size: 32rpx;
+    border-radius: 44rpx;
+    font-size: 28rpx;
     border: none;
+    transition: all 0.3s ease;
+
+    :deep(svg) {
+      font-size: 32rpx;
+    }
   }
 
   .preview-btn {
-    background: linear-gradient(to right, #4a90e2, #63bfff);
+    background: linear-gradient(135deg, #4a90e2, #63bfff);
+    &:active {
+      transform: scale(0.98);
+    }
   }
 
   .share-btn {
-    background: linear-gradient(to right, #4caf50, #8bc34a);
+    background: linear-gradient(135deg, #4caf50, #8bc34a);
+    &:active {
+      transform: scale(0.98);
+    }
   }
 
   .save-btn {
-    background: linear-gradient(to right, #67c23a, #95d475);
+    background: linear-gradient(135deg, #67c23a, #95d475);
+    &:active {
+      transform: scale(0.98);
+    }
   }
 }
 

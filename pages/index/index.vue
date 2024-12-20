@@ -1,48 +1,74 @@
 <template>
   <view class="home">
-    <view class="news-list">
+    <page-loading :show="isPageLoading" title="热搜榜" />
+
+    <view class="news-list" v-show="!isPageLoading">
       <view
         v-for="(item, index) in newsList"
         :key="index"
         class="news-item"
-        @tap="handleNewsClick(item)"
+        :class="{ 'news-item-expanded': item.isExpanded }"
       >
-        <view class="news-content">
-          <view class="news-text">
-            <view class="news-title">
-              <text class="rank">{{ index + 1 }}</text>
-              {{ item.word }}
-            </view>
-            <view class="news-info">
-              <text class="hot-score">{{ formatHotScore(item.hotScore) }}</text>
-              <image
-                v-if="item.hotTagImg"
-                :src="item.hotTagImg"
-                class="hot-tag-img"
-                mode="aspectFit"
-              />
+        <view class="news-content" @tap="handleNewsClick(item)">
+          <view class="rank-column">
+            <text class="rank" :class="{ 'top-three': index < 3 }">{{
+              index + 1
+            }}</text>
+            <view class="expand-btn" @tap.stop="toggleExpand(index)">
+              <text class="expand-icon" :class="{ expanded: item.isExpanded }"
+                >▼</text
+              >
             </view>
           </view>
-          <image
-            v-if="item.img"
-            :src="item.img"
-            class="news-image"
-            mode="aspectFill"
-          />
+
+          <view class="news-main">
+            <view class="news-text">
+              <view class="news-title">{{ item.word }}</view>
+              <view class="news-info">
+                <text class="hot-score">{{
+                  formatHotScore(item.hotScore)
+                }}</text>
+                <image
+                  v-if="item.hotTagImg"
+                  :src="item.hotTagImg"
+                  class="hot-tag-img"
+                  mode="aspectFit"
+                />
+              </view>
+            </view>
+            <image
+              v-if="item.img"
+              :src="item.img"
+              class="news-image"
+              mode="aspectFill"
+            />
+          </view>
+        </view>
+
+        <view v-if="item.isExpanded" class="news-desc">
+          {{ item.desc || "暂无描述" }}
         </view>
       </view>
     </view>
-
-    <view class="loading" v-if="isLoading">加载中...</view>
   </view>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
+import PageLoading from "../../components/page-loading/page-loading.vue";
 import { searchResources } from "../../api/search";
 
 const newsList = ref([]);
 const isLoading = ref(false);
+const isPageLoading = ref(true);
+
+// 分享配置
+const shareInfo = {
+  title: "实时热搜榜",
+  path: "/pages/index/index",
+  imageUrl: "", // 可以添加分享图片的路径
+  desc: "查看最新热搜话题",
+};
 
 const checkLastFetchTime = () => {
   const lastFetchTime = uni.getStorageSync("lastFetchTime");
@@ -62,7 +88,10 @@ const fetchNews = async () => {
   try {
     const response = await searchResources();
     if (response.code === 200) {
-      newsList.value = response.data;
+      newsList.value = response.data.map((item) => ({
+        ...item,
+        isExpanded: false,
+      }));
     }
   } catch (error) {
     uni.showToast({
@@ -72,6 +101,7 @@ const fetchNews = async () => {
     });
   } finally {
     isLoading.value = false;
+    isPageLoading.value = false;
     uni.stopPullDownRefresh();
   }
 };
@@ -104,8 +134,40 @@ const handleImageError = () => {
   console.log("图片加载失败");
 };
 
+const toggleExpand = (index) => {
+  newsList.value[index] = {
+    ...newsList.value[index],
+    isExpanded: !newsList.value[index].isExpanded,
+  };
+};
+
+// 分享给朋友
+const onShareAppMessage = () => {
+  return {
+    title: shareInfo.title,
+    path: shareInfo.path,
+    imageUrl: shareInfo.imageUrl,
+    desc: shareInfo.desc,
+  };
+};
+
+// 分享到朋友圈
+const onShareTimeline = () => {
+  return {
+    title: shareInfo.title,
+    path: shareInfo.path,
+    imageUrl: shareInfo.imageUrl,
+    query: "", // 可选：分享��携带的查询参数
+  };
+};
+
 onMounted(() => {
-  fetchNews();
+  Promise.all([
+    fetchNews(),
+    new Promise((resolve) => setTimeout(resolve, 1500)),
+  ]).then(() => {
+    isPageLoading.value = false;
+  });
 });
 
 defineExpose({
@@ -120,68 +182,134 @@ defineExpose({
       uni.stopPullDownRefresh();
     }
   },
+  onShareAppMessage,
+  onShareTimeline,
 });
 </script>
 
 <style lang="scss">
 .home {
-  padding: 20rpx;
+  padding: 30rpx 20rpx;
+  background: #f6f7f9;
+  min-height: 100vh;
 
   .news-list {
     .news-item {
-      padding: 20rpx 0;
-      border-bottom: 1px solid #eee;
+      background: #fff;
+      border-radius: 16rpx;
+      padding: 24rpx;
+      margin-bottom: 20rpx;
+      box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+      transition: all 0.3s ease;
+
+      &-expanded {
+        box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+      }
 
       .news-content {
         display: flex;
-        align-items: center;
         gap: 20rpx;
+      }
 
-        .news-text {
-          flex: 1;
+      .rank-column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30rpx;
+        padding-top: 6rpx;
 
-          .news-title {
-            font-size: 28rpx;
-            margin-bottom: 10rpx;
-            display: flex;
-            gap: 10rpx;
+        .rank {
+          font-size: 32rpx;
+          font-weight: 600;
+          color: #999;
 
-            .rank {
-              color: #ff4444;
-              font-weight: bold;
-            }
-          }
-
-          .news-info {
-            display: flex;
-            align-items: center;
-            gap: 10rpx;
-
-            .hot-score {
-              color: #ff4444;
-              font-size: 24rpx;
-            }
-
-            .hot-tag-img {
-              width: 32rpx;
-              height: 32rpx;
-            }
+          &.top-three {
+            color: #ff4444;
           }
         }
 
-        .news-image {
-          width: 160rpx;
-          height: 120rpx;
-          border-radius: 8rpx;
+        .expand-btn {
+          padding: 8rpx;
+          margin-top: 10rpx;
+
+          .expand-icon {
+            display: block;
+            color: #999;
+            font-size: 24rpx;
+            transition: transform 0.3s ease;
+
+            &.expanded {
+              transform: rotate(180deg);
+            }
+          }
         }
+      }
+
+      .news-main {
+        flex: 1;
+        display: flex;
+        gap: 20rpx;
+      }
+
+      .news-text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .news-title {
+          font-size: 30rpx;
+          line-height: 1.5;
+          font-weight: 500;
+          color: #333;
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .news-info {
+          display: flex;
+          align-items: center;
+          gap: 12rpx;
+          margin-top: 12rpx;
+
+          .hot-score {
+            color: #ff4444;
+            font-size: 26rpx;
+            font-weight: 500;
+          }
+
+          .hot-tag-img {
+            width: 32rpx;
+            height: 32rpx;
+          }
+        }
+      }
+
+      .news-image {
+        width: 180rpx;
+        height: 140rpx;
+        border-radius: 12rpx;
+        object-fit: cover;
+      }
+
+      .news-desc {
+        font-size: 28rpx;
+        color: #666;
+        line-height: 1.6;
+        padding: 20rpx;
+        background-color: #f8f9fa;
+        border-radius: 12rpx;
+        margin-top: 20rpx;
       }
     }
   }
 
   .loading {
     text-align: center;
-    padding: 20rpx;
+    padding: 30rpx;
     color: #999;
+    font-size: 28rpx;
   }
 }
 </style>
