@@ -37,15 +37,15 @@
       }
     },
     {
-      "path": "pages/codeHelper/index",
-      "style": {
-        "navigationBarTitleText": "代码prompt"
-      }
-    },
-    {
       "path": "pages/movie/index",
       "style": {
         "navigationBarTitleText": "电影日历"
+      }
+    },
+    {
+      "path": "pages/shopping/index",
+      "style": {
+        "navigationBarTitleText": "值得买吗"
       }
     }
   ],

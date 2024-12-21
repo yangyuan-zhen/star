@@ -103,6 +103,10 @@
   --card-color: #795548;
   --card-color-secondary: #8d6e63;
 }
+.grid-card.data-v-9cb5c55a:nth-child(7) {
+  --card-color: #00bcd4;
+  --card-color-secondary: #03a9f4;
+}
 .custom-dialog.data-v-9cb5c55a {
   background: #fff;
   width: 600rpx;

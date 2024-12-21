@@ -6,8 +6,8 @@
     "pages/weather/index",
     "pages/book/index",
     "pages/translation/index",
-    "pages/codeHelper/index",
-    "pages/movie/index"
+    "pages/movie/index",
+    "pages/shopping/index"
   ],
   "window": {
     "navigationBarTextStyle": "black",

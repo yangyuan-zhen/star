@@ -179,35 +179,6 @@ const translateText = (text) => {
     });
   });
 };
-const COZE_API_CONFIG = {
-  url: "https://api.coze.cn/v1/workflow/run",
-  workflowId: "7446309388979290151",
-  token: "pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65"
-};
-const getCodeSuggestion = (userInput) => {
-  return new Promise((resolve, reject) => {
-    common_vendor.index.request({
-      url: COZE_API_CONFIG.url,
-      method: "POST",
-      header: {
-        Authorization: `Bearer ${COZE_API_CONFIG.token}`,
-        "Content-Type": "application/json"
-      },
-      data: {
-        workflow_id: COZE_API_CONFIG.workflowId,
-        parameters: {
-          BOT_USER_INPUT: userInput
-        }
-      },
-      success: (res) => {
-        resolve(res.data);
-      },
-      fail: (err) => {
-        reject(err);
-      }
-    });
-  });
-};
 const getMovieData = () => {
   return new Promise((resolve, reject) => {
     const makeRequest = (retryCount = 0) => {
@@ -319,10 +290,51 @@ const getHolidayData = () => {
     });
   });
 };
+const getShoppingAdvice = (query, maxPrice, minPrice) => {
+  return new Promise((resolve, reject) => {
+    common_vendor.index.request({
+      url: "https://api.coze.cn/v1/workflow/run",
+      method: "POST",
+      header: {
+        "Authorization": "Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65",
+        "Content-Type": "application/json"
+      },
+      data: {
+        workflow_id: "7450799344502423603",
+        parameters: {
+          query,
+          max_price: maxPrice,
+          min_price: minPrice
+        }
+      },
+      success: (res) => {
+        if (res.data.code === 0) {
+          try {
+            const result = JSON.parse(res.data.data);
+            resolve(result);
+          } catch (error) {
+            reject({
+              code: -1,
+              message: "数据解析失败"
+            });
+          }
+        } else {
+          reject({
+            code: -1,
+            message: res.data.msg || "获取购物建议失败"
+          });
+        }
+      },
+      fail: (err) => {
+        reject(err);
+      }
+    });
+  });
+};
 exports.getBookRecommend = getBookRecommend;
-exports.getCodeSuggestion = getCodeSuggestion;
 exports.getHolidayData = getHolidayData;
 exports.getMovieData = getMovieData;
+exports.getShoppingAdvice = getShoppingAdvice;
 exports.getWeatherReport = getWeatherReport;
 exports.searchResources = searchResources;
 exports.translateText = translateText;

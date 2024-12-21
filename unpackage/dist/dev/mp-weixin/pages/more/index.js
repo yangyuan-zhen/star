@@ -22,7 +22,8 @@ const _sfc_main = {
         book: "/pages/book/index",
         translation: "/pages/translation/index",
         codeHelper: "/pages/codeHelper/index",
-        movie: "/pages/movie/index"
+        movie: "/pages/movie/index",
+        shopping: "/pages/shopping/index"
       };
       if (routes[type]) {
         common_vendor.index.navigateTo({
@@ -46,7 +47,8 @@ const _sfc_main = {
         3: "#4caf50",
         4: "#9c27b0",
         5: "#ff9800",
-        6: "#795548"
+        6: "#795548",
+        7: "#00bcd4"
       };
       return colors[index] || "#007aff";
     };
@@ -255,17 +257,17 @@ const _sfc_main = {
         }),
         j: common_vendor.o(($event) => handleNavigate("translation")),
         k: common_vendor.p({
-          type: "settings",
-          size: "30",
-          color: getIconColor(5)
-        }),
-        l: common_vendor.o(($event) => handleNavigate("codeHelper")),
-        m: common_vendor.p({
           type: "videocam",
           size: "30",
           color: getIconColor(6)
         }),
-        n: common_vendor.o(($event) => handleNavigate("movie")),
+        l: common_vendor.o(($event) => handleNavigate("movie")),
+        m: common_vendor.p({
+          type: "shop",
+          size: "30",
+          color: getIconColor(7)
+        }),
+        n: common_vendor.o(($event) => handleNavigate("shopping")),
         o: common_vendor.o([($event) => customSettings.value.payday = $event.detail.value, validatePayday]),
         p: customSettings.value.payday,
         q: common_vendor.o([($event) => customSettings.value.dailyIncome = $event.detail.value, validateDailyIncome]),

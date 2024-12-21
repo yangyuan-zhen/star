@@ -220,37 +220,6 @@ const translateText = (text) => {
     })
 }
 
-const COZE_API_CONFIG = {
-    url: "https://api.coze.cn/v1/workflow/run",
-    workflowId: "7446309388979290151",
-    token: "pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65",
-};
-
-const getCodeSuggestion = (userInput) => {
-    return new Promise((resolve, reject) => {
-        uni.request({
-            url: COZE_API_CONFIG.url,
-            method: "POST",
-            header: {
-                Authorization: `Bearer ${COZE_API_CONFIG.token}`,
-                "Content-Type": "application/json",
-            },
-            data: {
-                workflow_id: COZE_API_CONFIG.workflowId,
-                parameters: {
-                    BOT_USER_INPUT: userInput,
-                },
-            },
-            success: (res) => {
-                resolve(res.data);
-            },
-            fail: (err) => {
-                reject(err);
-            },
-        });
-    });
-};
-
 // 获取电影数据接口
 const getMovieData = () => {
     return new Promise((resolve, reject) => {
@@ -373,8 +342,48 @@ const getHolidayData = () => {
     });
 };
 
-
-
+// 值得买吗接口
+const getShoppingAdvice = (query, maxPrice, minPrice) => {
+    return new Promise((resolve, reject) => {
+        uni.request({
+            url: 'https://api.coze.cn/v1/workflow/run',
+            method: 'POST',
+            header: {
+                'Authorization': 'Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65',
+                'Content-Type': 'application/json'
+            },
+            data: {
+                workflow_id: '7450799344502423603',
+                parameters: {
+                    query: query,
+                    max_price: maxPrice,
+                    min_price: minPrice
+                }
+            },
+            success: (res) => {
+                if (res.data.code === 0) {
+                    try {
+                        const result = JSON.parse(res.data.data);
+                        resolve(result);
+                    } catch (error) {
+                        reject({
+                            code: -1,
+                            message: '数据解析失败'
+                        });
+                    }
+                } else {
+                    reject({
+                        code: -1,
+                        message: res.data.msg || '获取购物建议失败'
+                    });
+                }
+            },
+            fail: (err) => {
+                reject(err);
+            }
+        });
+    });
+};
 
 // 统一导出所有函数
 export {
@@ -382,7 +391,7 @@ export {
     getWeatherReport,
     getBookRecommend,
     translateText,
-    getCodeSuggestion,
     getMovieData,
-    getHolidayData
+    getHolidayData,
+    getShoppingAdvice
 }

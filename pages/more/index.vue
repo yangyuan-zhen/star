@@ -64,20 +64,6 @@
         </view>
       </view>
 
-      <view class="grid-card" @tap="handleNavigate('codeHelper')">
-        <view class="card-content">
-          <view class="icon-wrapper">
-            <uni-icons
-              type="settings"
-              size="30"
-              :color="getIconColor(5)"
-            ></uni-icons>
-          </view>
-          <text class="card-title">代码prompt</text>
-          <text class="card-desc">编程助手</text>
-        </view>
-      </view>
-
       <view class="grid-card" @tap="handleNavigate('movie')">
         <view class="card-content">
           <view class="icon-wrapper">
@@ -89,6 +75,20 @@
           </view>
           <text class="card-title">电影日历</text>
           <text class="card-desc">每日电影推荐</text>
+        </view>
+      </view>
+
+      <view class="grid-card" @tap="handleNavigate('shopping')">
+        <view class="card-content">
+          <view class="icon-wrapper">
+            <uni-icons
+              type="shop"
+              size="30"
+              :color="getIconColor(7)"
+            ></uni-icons>
+          </view>
+          <text class="card-title">值得买吗</text>
+          <text class="card-desc">智能购物建议</text>
         </view>
       </view>
     </view>
@@ -145,6 +145,7 @@ const handleNavigate = (type) => {
     translation: "/pages/translation/index",
     codeHelper: "/pages/codeHelper/index",
     movie: "/pages/movie/index",
+    shopping: "/pages/shopping/index",
   };
 
   if (routes[type]) {
@@ -171,6 +172,7 @@ const getIconColor = (index) => {
     4: "#9c27b0",
     5: "#ff9800",
     6: "#795548",
+    7: "#00bcd4",
   };
   return colors[index] || "#007aff";
 };
@@ -334,7 +336,7 @@ const nextHoliday = computed(() => {
       return holidayDate >= today;
     });
 
-  // 按日期排序
+  // 按日期���序
   holidays.sort((a, b) => new Date(a.fullDate) - new Date(b.fullDate));
 
   if (holidays.length === 0) {
@@ -512,6 +514,10 @@ onMounted(() => {
   &:nth-child(6) {
     --card-color: #795548;
     --card-color-secondary: #8d6e63;
+  }
+  &:nth-child(7) {
+    --card-color: #00bcd4;
+    --card-color-secondary: #03a9f4;
   }
 }
 
