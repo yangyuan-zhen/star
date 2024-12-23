@@ -178,9 +178,9 @@ const getAdvice = async () => {
 
 const formatResult = (text) => {
   if (!text) return "";
-  return text.replace(/^- /gm, "").replace(/\n- /g, "\n");
+  return text.replace(/^- /gm, "").replace(/\n- /g, "\n"); // 去掉行首的-
 };
-
+// 复制结果
 const copyOutput = () => {
   if (result.value?.output) {
     uni.setClipboardData({

@@ -1,6 +1,6 @@
 {
   "pages": [
-    "pages/index/index",
+    "pages/Minefield/index",
     "pages/more/index",
     "pages/textSnap/index",
     "pages/weather/index",
@@ -20,10 +20,10 @@
     "borderStyle": "black",
     "list": [
       {
-        "pagePath": "pages/index/index",
-        "text": "热搜",
-        "iconPath": "static/tabs/home.png",
-        "selectedIconPath": "static/tabs/home-active.png"
+        "pagePath": "pages/Minefield/index",
+        "text": "扫雷",
+        "iconPath": "static/tabs/mine.png",
+        "selectedIconPath": "static/tabs/mine-active.png"
       },
       {
         "pagePath": "pages/more/index",

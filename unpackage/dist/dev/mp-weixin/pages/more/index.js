@@ -55,11 +55,16 @@ const _sfc_main = {
     const popup = common_vendor.ref(null);
     const customSettings = common_vendor.ref({
       payday: "",
-      dailyIncome: ""
+      dailyIncome: "",
+      workStartTime: "09:00",
+      workEndTime: "18:00"
     });
     const displaySettings = common_vendor.ref({
       payday: 28,
-      dailyIncome: 1e3
+      dailyIncome: 1e3,
+      workStartTime: "09:00",
+      workEndTime: "18:00",
+      workDays: [1, 2, 3, 4, 5]
     });
     const showCustomDialog = async () => {
       await common_vendor.nextTick$1();
@@ -91,7 +96,10 @@ const _sfc_main = {
       }
       displaySettings.value = {
         payday,
-        dailyIncome
+        dailyIncome,
+        workStartTime: customSettings.value.workStartTime,
+        workEndTime: customSettings.value.workEndTime,
+        workDays: selectedWorkDays.value
       };
       common_vendor.index.setStorageSync("customSettings", displaySettings.value);
       common_vendor.index.showToast({
@@ -212,14 +220,33 @@ const _sfc_main = {
       onShareAppMessage,
       onShareTimeline
     });
+    const selectedWorkDays = common_vendor.ref([1, 2, 3, 4, 5]);
+    const toggleWorkDay = (dayIndex) => {
+      const index = selectedWorkDays.value.indexOf(dayIndex);
+      if (index === -1) {
+        selectedWorkDays.value.push(dayIndex);
+      } else {
+        selectedWorkDays.value.splice(index, 1);
+      }
+      selectedWorkDays.value.sort((a, b) => a - b);
+    };
+    const onWorkStartTimeChange = (e) => {
+      customSettings.value.workStartTime = e.detail.value;
+    };
+    const onWorkEndTimeChange = (e) => {
+      customSettings.value.workEndTime = e.detail.value;
+    };
     common_vendor.onMounted(() => {
       const savedSettings = common_vendor.index.getStorageSync("customSettings");
       if (savedSettings) {
         displaySettings.value = savedSettings;
         customSettings.value = {
           payday: savedSettings.payday.toString(),
-          dailyIncome: savedSettings.dailyIncome.toString()
+          dailyIncome: savedSettings.dailyIncome.toString(),
+          workStartTime: savedSettings.workStartTime || "09:00",
+          workEndTime: savedSettings.workEndTime || "18:00"
         };
+        selectedWorkDays.value = savedSettings.workDays || [1, 2, 3, 4, 5];
       }
       console.log("popup ref:", popup.value);
       fetchHolidayData();
@@ -272,12 +299,26 @@ const _sfc_main = {
         p: customSettings.value.payday,
         q: common_vendor.o([($event) => customSettings.value.dailyIncome = $event.detail.value, validateDailyIncome]),
         r: customSettings.value.dailyIncome,
-        s: common_vendor.o(hideCustomDialog),
-        t: common_vendor.o(saveCustomSettings),
-        v: common_vendor.sr(popup, "9cb5c55a-7", {
+        s: common_vendor.f(["周日", "周一", "周二", "周三", "周四", "周五", "周六"], (day, index, i0) => {
+          return {
+            a: common_vendor.t(day),
+            b: index,
+            c: selectedWorkDays.value.includes(index) ? 1 : "",
+            d: common_vendor.o(($event) => toggleWorkDay(index), index)
+          };
+        }),
+        t: common_vendor.t(customSettings.value.workStartTime),
+        v: customSettings.value.workStartTime,
+        w: common_vendor.o(onWorkStartTimeChange),
+        x: common_vendor.t(customSettings.value.workEndTime),
+        y: customSettings.value.workEndTime,
+        z: common_vendor.o(onWorkEndTimeChange),
+        A: common_vendor.o(hideCustomDialog),
+        B: common_vendor.o(saveCustomSettings),
+        C: common_vendor.sr(popup, "9cb5c55a-7", {
           "k": "popup"
         }),
-        w: common_vendor.p({
+        D: common_vendor.p({
           type: "center"
         })
       };

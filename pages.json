@@ -1,9 +1,9 @@
 {
   "pages": [
     {
-      "path": "pages/index/index",
+      "path": "pages/Minefield/index",
       "style": {
-        "navigationBarTitleText": "热搜"
+        "navigationBarTitleText": "扫雷"
       }
     },
     {
@@ -56,10 +56,10 @@
     "borderStyle": "black",
     "list": [
       {
-        "pagePath": "pages/index/index",
-        "text": "热搜",
-        "iconPath": "static/tabs/home.png",
-        "selectedIconPath": "static/tabs/home-active.png"
+        "pagePath": "pages/Minefield/index",
+        "text": "扫雷",
+        "iconPath": "static/tabs/mine.png",
+        "selectedIconPath": "static/tabs/mine-active.png"
       },
       {
         "pagePath": "pages/more/index",

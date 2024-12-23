@@ -32,7 +32,7 @@
             ></uni-icons>
           </view>
           <text class="card-title">天气画报</text>
-          <text class="card-desc">今日天气预报</text>
+          <text class="card-desc">今日天��预报</text>
         </view>
       </view>
 
@@ -120,6 +120,52 @@
               @input="validateDailyIncome"
             />
           </view>
+          <view class="input-group">
+            <text class="label">工作日</text>
+            <view class="weekday-selector">
+              <view
+                v-for="(day, index) in [
+                  '周日',
+                  '周一',
+                  '周二',
+                  '周三',
+                  '周四',
+                  '周五',
+                  '周六',
+                ]"
+                :key="index"
+                class="weekday-item"
+                :class="{ active: selectedWorkDays.includes(index) }"
+                @tap="toggleWorkDay(index)"
+              >
+                {{ day }}
+              </view>
+            </view>
+          </view>
+          <view class="input-group">
+            <text class="label">上班时间</text>
+            <picker
+              mode="time"
+              :value="customSettings.workStartTime"
+              @change="onWorkStartTimeChange"
+              class="input"
+            >
+              <view class="picker-value">{{
+                customSettings.workStartTime
+              }}</view>
+            </picker>
+          </view>
+          <view class="input-group">
+            <text class="label">下班时间</text>
+            <picker
+              mode="time"
+              :value="customSettings.workEndTime"
+              @change="onWorkEndTimeChange"
+              class="input"
+            >
+              <view class="picker-value">{{ customSettings.workEndTime }}</view>
+            </picker>
+          </view>
         </view>
         <view class="dialog-footer">
           <button class="btn cancel" @tap="hideCustomDialog">取消</button>
@@ -181,11 +227,16 @@ const popup = ref(null);
 const customSettings = ref({
   payday: "",
   dailyIncome: "",
+  workStartTime: "09:00",
+  workEndTime: "18:00",
 });
 
 const displaySettings = ref({
   payday: 28,
   dailyIncome: 1000.0,
+  workStartTime: "09:00",
+  workEndTime: "18:00",
+  workDays: [1, 2, 3, 4, 5],
 });
 
 const showCustomDialog = async () => {
@@ -226,6 +277,9 @@ const saveCustomSettings = () => {
   displaySettings.value = {
     payday: payday,
     dailyIncome: dailyIncome,
+    workStartTime: customSettings.value.workStartTime,
+    workEndTime: customSettings.value.workEndTime,
+    workDays: selectedWorkDays.value,
   };
 
   // 保存设置到本地存储
@@ -336,7 +390,7 @@ const nextHoliday = computed(() => {
       return holidayDate >= today;
     });
 
-  // 按日期���序
+  // 按日期序
   holidays.sort((a, b) => new Date(a.fullDate) - new Date(b.fullDate));
 
   if (holidays.length === 0) {
@@ -395,6 +449,26 @@ defineExpose({
   onShareTimeline,
 });
 
+const selectedWorkDays = ref([1, 2, 3, 4, 5]); // 默认周一到周五
+
+const toggleWorkDay = (dayIndex) => {
+  const index = selectedWorkDays.value.indexOf(dayIndex);
+  if (index === -1) {
+    selectedWorkDays.value.push(dayIndex);
+  } else {
+    selectedWorkDays.value.splice(index, 1);
+  }
+  selectedWorkDays.value.sort((a, b) => a - b);
+};
+
+const onWorkStartTimeChange = (e) => {
+  customSettings.value.workStartTime = e.detail.value;
+};
+
+const onWorkEndTimeChange = (e) => {
+  customSettings.value.workEndTime = e.detail.value;
+};
+
 onMounted(() => {
   const savedSettings = uni.getStorageSync("customSettings");
   if (savedSettings) {
@@ -402,7 +476,10 @@ onMounted(() => {
     customSettings.value = {
       payday: savedSettings.payday.toString(),
       dailyIncome: savedSettings.dailyIncome.toString(),
+      workStartTime: savedSettings.workStartTime || "09:00",
+      workEndTime: savedSettings.workEndTime || "18:00",
     };
+    selectedWorkDays.value = savedSettings.workDays || [1, 2, 3, 4, 5];
   }
   console.log("popup ref:", popup.value);
   fetchHolidayData();
@@ -590,5 +667,50 @@ onMounted(() => {
       }
     }
   }
+}
+
+.weekday-selector {
+  display: flex;
+  gap: 10rpx;
+  margin-top: 10rpx;
+}
+
+.weekday-item {
+  flex: 1;
+  height: 60rpx;
+  line-height: 60rpx;
+  text-align: center;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  background-color: #f5f5f5;
+  color: #666;
+  transition: all 0.3s ease;
+
+  &.active {
+    background-color: #007aff;
+    color: #fff;
+  }
+}
+
+.picker-value {
+  height: 80rpx;
+  line-height: 80rpx;
+  padding: 0 20rpx;
+}
+
+/* 确保输入框和选择器样式统一 */
+.input,
+picker {
+  width: 100%;
+  height: 80rpx;
+  border: 1rpx solid #eee;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+}
+
+.picker-value {
+  height: 100%;
+  line-height: 80rpx;
+  padding: 0 20rpx;
 }
 </style>

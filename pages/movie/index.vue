@@ -61,10 +61,7 @@ const weekDays = ["日", "一", "二", "三", "四", "五", "六"];
 const currentDay = computed(() => currentDate.value.getDate());
 const currentMonth = computed(() => currentDate.value.getMonth());
 const weekDayText = computed(() => weekDays[currentDate.value.getDay()]);
-
 const todayMovie = ref(null);
-const showHistoryList = ref(false);
-const historyMovies = ref([]);
 const isLoading = ref(true);
 
 // 获取电影数据

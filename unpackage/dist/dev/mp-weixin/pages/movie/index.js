@@ -10,8 +10,6 @@ const _sfc_main = {
     const currentMonth = common_vendor.computed(() => currentDate.value.getMonth());
     const weekDayText = common_vendor.computed(() => weekDays[currentDate.value.getDay()]);
     const todayMovie = common_vendor.ref(null);
-    common_vendor.ref(false);
-    common_vendor.ref([]);
     const isLoading = common_vendor.ref(true);
     const fetchMovieData = async () => {
       isLoading.value = true;

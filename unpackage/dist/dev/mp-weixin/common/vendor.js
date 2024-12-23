@@ -9599,9 +9599,9 @@ const Icon = /* @__PURE__ */ defineComponent({
 });
 const pages = [
   {
-    path: "pages/index/index",
+    path: "pages/Minefield/index",
     style: {
-      navigationBarTitleText: "热搜"
+      navigationBarTitleText: "扫雷"
     }
   },
   {
@@ -9654,10 +9654,10 @@ const tabBar = {
   borderStyle: "black",
   list: [
     {
-      pagePath: "pages/index/index",
-      text: "热搜",
-      iconPath: "static/tabs/home.png",
-      selectedIconPath: "static/tabs/home-active.png"
+      pagePath: "pages/Minefield/index",
+      text: "扫雷",
+      iconPath: "static/tabs/mine.png",
+      selectedIconPath: "static/tabs/mine-active.png"
     },
     {
       pagePath: "pages/more/index",
@@ -9979,7 +9979,7 @@ class v {
 function I(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), C = b, P = I('{"address":["127.0.0.1","192.168.31.220","169.254.203.26"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), T = I('[{"provider":"alipay","spaceName":"free","spaceId":"env-00jxhk9ji189","spaceAppId":"2021004199605426","accessKey":"j7ZnJMTcTYPY7N6b","secretKey":"hKXUWkBWPoaRk7GP"}]') || [];
+const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), C = b, P = I('{"address":["127.0.0.1","192.168.31.105","169.254.203.26"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), T = I('[{"provider":"alipay","spaceName":"free","spaceId":"env-00jxhk9ji189","spaceAppId":"2021004199605426","accessKey":"j7ZnJMTcTYPY7N6b","secretKey":"hKXUWkBWPoaRk7GP"}]') || [];
 let O = "";
 try {
   O = "__UNI__920B084";
@@ -12460,6 +12460,8 @@ var Zs = Xs;
 const createHook = (lifecycle) => (hook, target = getCurrentInstance()) => {
   !isInSSRComponentSetup && injectHook(lifecycle, hook, target);
 };
+const onShow = /* @__PURE__ */ createHook(ON_SHOW);
+const onHide = /* @__PURE__ */ createHook(ON_HIDE);
 const onShareTimeline = /* @__PURE__ */ createHook(ON_SHARE_TIMELINE);
 const onShareAppMessage = /* @__PURE__ */ createHook(ON_SHARE_APP_MESSAGE);
 const fontData = [
@@ -13120,9 +13122,11 @@ exports.index = index;
 exports.n = n$1;
 exports.nextTick$1 = nextTick$1;
 exports.o = o$1;
+exports.onHide = onHide;
 exports.onMounted = onMounted;
 exports.onShareAppMessage = onShareAppMessage;
 exports.onShareTimeline = onShareTimeline;
+exports.onShow = onShow;
 exports.onUnmounted = onUnmounted;
 exports.p = p$1;
 exports.ref = ref;
@@ -13131,3 +13135,4 @@ exports.s = s$1;
 exports.sr = sr;
 exports.t = t$1;
 exports.unref = unref;
+exports.watch = watch;

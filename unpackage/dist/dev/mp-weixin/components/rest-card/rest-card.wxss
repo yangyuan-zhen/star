@@ -118,8 +118,17 @@
   color: #ff6b6b;
   font-weight: 600;
   margin: 0 8rpx;
+  transition: all 0.3s ease;
 }
 .money-info .unit.data-v-c9d65e26 {
   font-size: 26rpx;
   color: #ff6b6b;
+}
+.badge.working.data-v-c9d65e26 {
+  background: rgba(0, 122, 255, 0.1);
+  color: #007aff;
+}
+.badge.data-v-c9d65e26:not(.working) {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
 }

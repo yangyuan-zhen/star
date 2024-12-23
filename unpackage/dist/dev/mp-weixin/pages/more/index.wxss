@@ -166,3 +166,43 @@
 .custom-dialog .dialog-footer .btn.data-v-9cb5c55a:active {
   background-color: #f5f5f5;
 }
+.weekday-selector.data-v-9cb5c55a {
+  display: flex;
+  gap: 10rpx;
+  margin-top: 10rpx;
+}
+.weekday-item.data-v-9cb5c55a {
+  flex: 1;
+  height: 60rpx;
+  line-height: 60rpx;
+  text-align: center;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  background-color: #f5f5f5;
+  color: #666;
+  transition: all 0.3s ease;
+}
+.weekday-item.active.data-v-9cb5c55a {
+  background-color: #007aff;
+  color: #fff;
+}
+.picker-value.data-v-9cb5c55a {
+  height: 80rpx;
+  line-height: 80rpx;
+  padding: 0 20rpx;
+}
+
+/* 确保输入框和选择器样式统一 */
+.input.data-v-9cb5c55a,
+picker.data-v-9cb5c55a {
+  width: 100%;
+  height: 80rpx;
+  border: 1rpx solid #eee;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+}
+.picker-value.data-v-9cb5c55a {
+  height: 100%;
+  line-height: 80rpx;
+  padding: 0 20rpx;
+}
