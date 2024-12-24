@@ -6690,8 +6690,8 @@ function uniIdMixin(globalProperties) {
     return role.indexOf(roleId) > -1;
   };
   globalProperties.uniIDHasPermission = function(permissionId) {
-    const { permission: permission2 } = getCurrentUserInfo();
-    return this.uniIDHasRole("admin") || permission2.indexOf(permissionId) > -1;
+    const { permission } = getCurrentUserInfo();
+    return this.uniIDHasRole("admin") || permission.indexOf(permissionId) > -1;
   };
   globalProperties.uniIDTokenValid = function() {
     const { tokenExpired } = getCurrentUserInfo();
@@ -9599,9 +9599,9 @@ const Icon = /* @__PURE__ */ defineComponent({
 });
 const pages = [
   {
-    path: "pages/Minefield/index",
+    path: "pages/note/index",
     style: {
-      navigationBarTitleText: "扫雷"
+      navigationBarTitleText: "备忘录"
     }
   },
   {
@@ -9613,13 +9613,13 @@ const pages = [
   {
     path: "pages/textSnap/index",
     style: {
-      navigationBarTitleText: "文字转图片"
+      navigationBarTitleText: "文字图片"
     }
   },
   {
     path: "pages/weather/index",
     style: {
-      navigationBarTitleText: "每日天气壁纸"
+      navigationBarTitleText: "天气画报"
     }
   },
   {
@@ -9631,7 +9631,7 @@ const pages = [
   {
     path: "pages/translation/index",
     style: {
-      navigationBarTitleText: "中英互译"
+      navigationBarTitleText: "AI智能翻译"
     }
   },
   {
@@ -9654,10 +9654,10 @@ const tabBar = {
   borderStyle: "black",
   list: [
     {
-      pagePath: "pages/Minefield/index",
-      text: "扫雷",
-      iconPath: "static/tabs/mine.png",
-      selectedIconPath: "static/tabs/mine-active.png"
+      pagePath: "pages/note/index",
+      text: "备忘录",
+      iconPath: "static/tabs/note.png",
+      selectedIconPath: "static/tabs/note-active.png"
     },
     {
       pagePath: "pages/more/index",
@@ -9671,24 +9671,10 @@ const globalStyle = {
   navigationBarTextStyle: "black",
   navigationBarBackgroundColor: "#ffffff"
 };
-const permission = {
-  "scope.writePhotosAlbum": {
-    desc: "用于保存图片到相册"
-  }
-};
-const easycom = {
-  autoscan: true,
-  custom: {
-    "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
-    "^my-(.*)": "@/components/my-$1/my-$1.vue"
-  }
-};
 const e = {
   pages,
   tabBar,
-  globalStyle,
-  permission,
-  easycom
+  globalStyle
 };
 var define_process_env_UNI_SECURE_NETWORK_CONFIG_default = [];
 function t(e2) {
@@ -12460,8 +12446,6 @@ var Zs = Xs;
 const createHook = (lifecycle) => (hook, target = getCurrentInstance()) => {
   !isInSSRComponentSetup && injectHook(lifecycle, hook, target);
 };
-const onShow = /* @__PURE__ */ createHook(ON_SHOW);
-const onHide = /* @__PURE__ */ createHook(ON_HIDE);
 const onShareTimeline = /* @__PURE__ */ createHook(ON_SHARE_TIMELINE);
 const onShareAppMessage = /* @__PURE__ */ createHook(ON_SHARE_APP_MESSAGE);
 const fontData = [
@@ -13115,6 +13099,7 @@ exports.Zs = Zs;
 exports._export_sfc = _export_sfc;
 exports.computed = computed;
 exports.createSSRApp = createSSRApp;
+exports.defineComponent = defineComponent;
 exports.e = e$1;
 exports.f = f$1;
 exports.fontData = fontData;
@@ -13122,11 +13107,9 @@ exports.index = index;
 exports.n = n$1;
 exports.nextTick$1 = nextTick$1;
 exports.o = o$1;
-exports.onHide = onHide;
 exports.onMounted = onMounted;
 exports.onShareAppMessage = onShareAppMessage;
 exports.onShareTimeline = onShareTimeline;
-exports.onShow = onShow;
 exports.onUnmounted = onUnmounted;
 exports.p = p$1;
 exports.ref = ref;
@@ -13136,3 +13119,4 @@ exports.sr = sr;
 exports.t = t$1;
 exports.unref = unref;
 exports.watch = watch;
+exports.wx$1 = wx$1;

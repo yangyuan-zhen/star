@@ -32,7 +32,7 @@
             ></uni-icons>
           </view>
           <text class="card-title">天气画报</text>
-          <text class="card-desc">今日天��预报</text>
+          <text class="card-desc">今日天气预报</text>
         </view>
       </view>
 

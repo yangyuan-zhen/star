@@ -1,9 +1,9 @@
 {
   "pages": [
     {
-      "path": "pages/Minefield/index",
+      "path": "pages/note/index",
       "style": {
-        "navigationBarTitleText": "扫雷"
+        "navigationBarTitleText": "备忘录"
       }
     },
     {
@@ -15,13 +15,13 @@
     {
       "path": "pages/textSnap/index",
       "style": {
-        "navigationBarTitleText": "文字转图片"
+        "navigationBarTitleText": "文字图片"
       }
     },
     {
       "path": "pages/weather/index",
       "style": {
-        "navigationBarTitleText": "每日天气壁纸"
+        "navigationBarTitleText": "天气画报"
       }
     },
     {
@@ -33,7 +33,7 @@
     {
       "path": "pages/translation/index",
       "style": {
-        "navigationBarTitleText": "中英互译"
+        "navigationBarTitleText": "AI智能翻译"
       }
     },
     {
@@ -56,10 +56,10 @@
     "borderStyle": "black",
     "list": [
       {
-        "pagePath": "pages/Minefield/index",
-        "text": "扫雷",
-        "iconPath": "static/tabs/mine.png",
-        "selectedIconPath": "static/tabs/mine-active.png"
+        "pagePath": "pages/note/index",
+        "text": "备忘录",
+        "iconPath": "static/tabs/note.png",
+        "selectedIconPath": "static/tabs/note-active.png"
       },
       {
         "pagePath": "pages/more/index",
@@ -72,17 +72,5 @@
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarBackgroundColor": "#ffffff"
-  },
-  "permission": {
-    "scope.writePhotosAlbum": {
-      "desc": "用于保存图片到相册"
-    }
-  },
-  "easycom": {
-    "autoscan": true,
-    "custom": {
-      "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
-      "^my-(.*)": "@/components/my-$1/my-$1.vue"
-    }
   }
 }
