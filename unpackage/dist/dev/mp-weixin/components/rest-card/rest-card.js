@@ -80,6 +80,11 @@ const _sfc_main = {
       return minuteRate / 60;
     };
     const updateEarnings = () => {
+      var _a;
+      if (!((_a = props.displaySettings) == null ? void 0 : _a.dailyIncome)) {
+        currentEarnings.value = 0;
+        return;
+      }
       if (!isWorkingHours.value) {
         const now2 = /* @__PURE__ */ new Date();
         const currentTime2 = now2.getHours() * 3600 + now2.getMinutes() * 60 + now2.getSeconds();
@@ -100,12 +105,14 @@ const _sfc_main = {
       currentEarnings.value = workedSeconds * calculateHourlyRate();
     };
     common_vendor.onMounted(() => {
-      calculateCountdown();
-      updateEarnings();
-      timer = setInterval(() => {
+      common_vendor.nextTick$1(() => {
         calculateCountdown();
         updateEarnings();
-      }, 1e3);
+        timer = setInterval(() => {
+          calculateCountdown();
+          updateEarnings();
+        }, 1e3);
+      });
     });
     common_vendor.onUnmounted(() => {
       if (timer) {
@@ -143,7 +150,7 @@ const _sfc_main = {
     });
     return (_ctx, _cache) => {
       return {
-        a: common_vendor.t(isWorkingHours.value ? countdownTime.value : "休息时间"),
+        a: common_vendor.t(isWorkingHours.value ? "距离下班还有" + countdownTime.value : "休息时间"),
         b: common_vendor.t(isWorkingHours.value ? "工作中" : "休息中"),
         c: isWorkingHours.value ? 1 : "",
         d: common_vendor.t(daysUntilPayday.value),

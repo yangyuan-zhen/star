@@ -70,7 +70,9 @@ const _sfc_main = {
           minPrice.value
         );
         console.log("API 响应:", res);
-        result.value = res;
+        result.value = {
+          data: res
+        };
         lastQuery.value = query.value;
         lastMinPrice.value = minPrice.value;
         lastMaxPrice.value = maxPrice.value;
@@ -88,11 +90,6 @@ const _sfc_main = {
         }
       }
     };
-    const formatResult = (text) => {
-      if (!text)
-        return "";
-      return text.replace(/^- /gm, "").replace(/\n- /g, "\n");
-    };
     common_vendor.onUnmounted(() => {
       if (loadingTimer) {
         clearTimeout(loadingTimer);
@@ -101,7 +98,7 @@ const _sfc_main = {
     });
     const onShareAppMessage = () => {
       return {
-        title: "值得买吗 - AI智能购物建议",
+        title: "买什么 - AI智能购物建议",
         path: "/pages/shopping/index",
         imageUrl: ""
         // 如果有分享图片的话
@@ -109,7 +106,7 @@ const _sfc_main = {
     };
     const onShareTimeline = () => {
       return {
-        title: "值得买吗 - AI智能购物建议",
+        title: "买什么 - AI智能购物建议",
         query: "/pages/shopping/index",
         // 分享链接
         imageUrl: ""
@@ -120,47 +117,75 @@ const _sfc_main = {
       onShareAppMessage,
       onShareTimeline
     });
+    const parsedResults = common_vendor.computed(() => {
+      var _a;
+      if (!((_a = result.value) == null ? void 0 : _a.data))
+        return [];
+      try {
+        const data = result.value.data;
+        const jsonData = typeof data === "string" ? JSON.parse(data) : data;
+        const outputText = jsonData.output;
+        const lines = outputText.split("\n").filter(
+          (line) => line.includes("手机名称：") || line.includes("价格：") || line.includes("购买渠道：")
+        );
+        const results = [];
+        for (let i = 0; i < lines.length; i += 3) {
+          if (i + 2 < lines.length) {
+            const nameMatch = lines[i].match(/手机名称：(.+)/);
+            const priceMatch = lines[i + 1].match(/价格：(\d+\.?\d*)/);
+            const channelMatch = lines[i + 2].match(/购买渠道：(.+)/);
+            if (nameMatch && priceMatch && channelMatch) {
+              results.push({
+                name: nameMatch[1].trim(),
+                price: priceMatch[1].trim(),
+                channel: channelMatch[1].trim()
+              });
+            }
+          }
+        }
+        return results;
+      } catch (error) {
+        console.error("数据解析错误:", error);
+        return [];
+      }
+    });
     return (_ctx, _cache) => {
-      var _a, _b, _c, _d;
       return common_vendor.e({
         a: common_vendor.p({
-          icon: "mdi:shopping"
-        }),
-        b: common_vendor.p({
-          icon: "mdi:robot"
-        }),
-        c: common_vendor.p({
           icon: "mdi:shopping-outline"
         }),
-        d: query.value,
-        e: common_vendor.o(($event) => query.value = $event.detail.value),
-        f: common_vendor.p({
+        b: query.value,
+        c: common_vendor.o(($event) => query.value = $event.detail.value),
+        d: common_vendor.p({
           icon: "mdi:information"
         }),
-        g: common_vendor.p({
+        e: common_vendor.p({
           icon: "mdi:currency-cny"
         }),
-        h: minPrice.value,
-        i: common_vendor.o(($event) => minPrice.value = $event.detail.value),
-        j: common_vendor.p({
+        f: minPrice.value,
+        g: common_vendor.o(($event) => minPrice.value = $event.detail.value),
+        h: common_vendor.p({
           icon: "mdi:currency-cny"
         }),
-        k: maxPrice.value,
-        l: common_vendor.o(($event) => maxPrice.value = $event.detail.value),
-        m: loading.value ? 1 : "",
-        n: common_vendor.p({
+        i: maxPrice.value,
+        j: common_vendor.o(($event) => maxPrice.value = $event.detail.value),
+        k: loading.value ? 1 : "",
+        l: common_vendor.p({
           icon: loading.value ? "mdi:loading" : "mdi:magnify"
         }),
-        o: common_vendor.t(loading.value ? "分析中..." : "获取建议"),
-        p: common_vendor.o(getAdvice),
-        q: loading.value,
-        r: (_a = result.value) == null ? void 0 : _a.value
-      }, ((_b = result.value) == null ? void 0 : _b.value) ? {
-        s: common_vendor.t(JSON.stringify(result.value.value, null, 2))
-      } : {}, {
-        t: (_c = result.value) == null ? void 0 : _c.output
-      }, ((_d = result.value) == null ? void 0 : _d.output) ? {
-        v: common_vendor.t(formatResult(result.value.output))
+        m: common_vendor.t(loading.value ? "分析中..." : "获取建议"),
+        n: common_vendor.o(getAdvice),
+        o: loading.value,
+        p: parsedResults.value && parsedResults.value.length > 0
+      }, parsedResults.value && parsedResults.value.length > 0 ? {
+        q: common_vendor.f(parsedResults.value, (item, index, i0) => {
+          return {
+            a: common_vendor.t(item.name),
+            b: common_vendor.t(item.price),
+            c: common_vendor.t(item.channel),
+            d: index
+          };
+        })
       } : {});
     };
   }

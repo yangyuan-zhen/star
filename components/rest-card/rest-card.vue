@@ -2,7 +2,7 @@
   <view class="rest-card" @tap="$emit('tap')">
     <view class="card-header">
       <text class="title">{{
-        isWorkingHours ? countdownTime : "休息时间"
+        isWorkingHours ? "距离下班还有" + countdownTime : "休息时间"
       }}</text>
       <view class="badge" :class="{ working: isWorkingHours }">
         {{ isWorkingHours ? "工作中" : "休息中" }}
@@ -42,7 +42,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted, watch } from "vue";
+import { computed, ref, onMounted, onUnmounted, watch, nextTick } from "vue";
 
 const props = defineProps({
   displaySettings: {
@@ -159,8 +159,13 @@ const calculateHourlyRate = () => {
 
 // 更新当前收入
 const updateEarnings = () => {
+  // 如果没有 displaySettings 或者 dailyIncome，直接返回
+  if (!props.displaySettings?.dailyIncome) {
+    currentEarnings.value = 0;
+    return;
+  }
+
   if (!isWorkingHours.value) {
-    // 如果已经过了下班时间，显示全天收入
     const now = new Date();
     const currentTime =
       now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
@@ -193,14 +198,16 @@ const updateEarnings = () => {
 
 // 修改 onMounted
 onMounted(() => {
-  calculateCountdown(); // 立即执行一次倒计时
-  updateEarnings(); // 立即执行一次收入计算
-
-  // 合并定时器，每秒同时更新倒计时和收入
-  timer = setInterval(() => {
+  // 确保在组件挂载时先进行一次工作状态判断
+  nextTick(() => {
     calculateCountdown();
     updateEarnings();
-  }, 1000);
+
+    timer = setInterval(() => {
+      calculateCountdown();
+      updateEarnings();
+    }, 1000);
+  });
 });
 
 // 清理定时器

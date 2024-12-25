@@ -9643,7 +9643,7 @@ const pages = [
   {
     path: "pages/shopping/index",
     style: {
-      navigationBarTitleText: "值得买吗"
+      navigationBarTitleText: "买什么"
     }
   }
 ];
@@ -9671,10 +9671,17 @@ const globalStyle = {
   navigationBarTextStyle: "black",
   navigationBarBackgroundColor: "#ffffff"
 };
+const easycom = {
+  autoscan: true,
+  custom: {
+    "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+  }
+};
 const e = {
   pages,
   tabBar,
-  globalStyle
+  globalStyle,
+  easycom
 };
 var define_process_env_UNI_SECURE_NETWORK_CONFIG_default = [];
 function t(e2) {
@@ -9965,7 +9972,7 @@ class v {
 function I(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), C = b, P = I('{"address":["127.0.0.1","192.168.31.105","169.254.203.26"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), T = I('[{"provider":"alipay","spaceName":"free","spaceId":"env-00jxhk9ji189","spaceAppId":"2021004199605426","accessKey":"j7ZnJMTcTYPY7N6b","secretKey":"hKXUWkBWPoaRk7GP"}]') || [];
+const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), C = b, P = I('{"address":["127.0.0.1","192.168.31.105"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), T = I('[{"provider":"alipay","spaceName":"free","spaceId":"env-00jxhk9ji189","spaceAppId":"2021004199605426","accessKey":"j7ZnJMTcTYPY7N6b","secretKey":"hKXUWkBWPoaRk7GP"}]') || [];
 let O = "";
 try {
   O = "__UNI__920B084";

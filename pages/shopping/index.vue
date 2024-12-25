@@ -1,16 +1,5 @@
 <template>
   <view class="container">
-    <view class="header">
-      <text class="title">
-        <Icon icon="mdi:shopping" class="title-icon" />
-        值得买吗
-      </text>
-      <text class="subtitle">
-        <Icon icon="mdi:robot" class="subtitle-icon" />
-        AI智能购物建议
-      </text>
-    </view>
-
     <view class="form-container">
       <view class="input-group">
         <text class="label">
@@ -64,21 +53,34 @@
       </button>
     </view>
 
-    <view v-if="result?.value" class="debug-info">
-      <text>API 返回数据结构：</text>
-      <text>{{ JSON.stringify(result.value, null, 2) }}</text>
-    </view>
-
-    <view v-if="result?.output" class="result-container">
-      <view class="result-content">
-        <text class="result-text">{{ formatResult(result.output) }}</text>
+    <view
+      v-if="parsedResults && parsedResults.length > 0"
+      class="result-container"
+    >
+      <view class="result-table">
+        <view class="table-header">
+          <view class="th">手机型号</view>
+          <view class="th">价格</view>
+          <view class="th">渠道</view>
+        </view>
+        <scroll-view scroll-y class="table-body">
+          <view
+            v-for="(item, index) in parsedResults"
+            :key="index"
+            class="table-row"
+          >
+            <view class="td model">{{ item.name }}</view>
+            <view class="td price">¥{{ item.price }}</view>
+            <view class="td channel">{{ item.channel }}</view>
+          </view>
+        </scroll-view>
       </view>
     </view>
   </view>
 </template>
 
 <script setup>
-import { ref, onUnmounted } from "vue";
+import { ref, onUnmounted, computed } from "vue";
 import { getShoppingAdvice } from "@/api/search.js";
 import { Icon } from "@iconify/vue";
 
@@ -157,7 +159,10 @@ const getAdvice = async () => {
       minPrice.value
     );
     console.log("API 响应:", res);
-    result.value = res;
+    result.value = {
+      data: res,
+    };
+
     lastQuery.value = query.value;
     lastMinPrice.value = minPrice.value;
     lastMaxPrice.value = maxPrice.value;
@@ -206,7 +211,7 @@ onUnmounted(() => {
 // 定义分享给朋友
 const onShareAppMessage = () => {
   return {
-    title: "值得买吗 - AI智能购物建议",
+    title: "买什么 - AI智能购物建议",
     path: "/pages/shopping/index",
     imageUrl: "", // 如果有分享图片的话
   };
@@ -215,7 +220,7 @@ const onShareAppMessage = () => {
 // 定义分享到朋友圈
 const onShareTimeline = () => {
   return {
-    title: "值得买吗 - AI智能购物建议",
+    title: "买什么 - AI智能购物建议",
     query: "/pages/shopping/index", // 分享链接
     imageUrl: "", // 如果有分享图片的话
   };
@@ -226,28 +231,64 @@ defineExpose({
   onShareAppMessage,
   onShareTimeline,
 });
+
+const parsedResults = computed(() => {
+  if (!result.value?.data) return [];
+
+  try {
+    // 获取返回的数据
+    const data = result.value.data;
+
+    // 如果数据是字符串，尝试解析为 JSON
+    const jsonData = typeof data === "string" ? JSON.parse(data) : data;
+
+    // 获取 output 字段的内容
+    const outputText = jsonData.output;
+
+    // 分割文本为数组，去掉开头的介绍文字
+    const lines = outputText
+      .split("\n")
+      .filter(
+        (line) =>
+          line.includes("手机名称：") ||
+          line.includes("价格：") ||
+          line.includes("购买渠道：")
+      );
+
+    const results = [];
+
+    // 每三行处理一组数据
+    for (let i = 0; i < lines.length; i += 3) {
+      if (i + 2 < lines.length) {
+        const nameMatch = lines[i].match(/手机名称：(.+)/);
+        const priceMatch = lines[i + 1].match(/价格：(\d+\.?\d*)/);
+        const channelMatch = lines[i + 2].match(/购买渠道：(.+)/);
+
+        if (nameMatch && priceMatch && channelMatch) {
+          results.push({
+            name: nameMatch[1].trim(),
+            price: priceMatch[1].trim(),
+            channel: channelMatch[1].trim(),
+          });
+        }
+      }
+    }
+
+    return results;
+  } catch (error) {
+    console.error("数据解析错误:", error);
+    return [];
+  }
+});
 </script>
 
 <style lang="scss" scoped>
 .container {
   padding: 20px;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 20px;
-
-  .title {
-    font-size: 20px;
-    font-weight: bold;
-    color: #333;
-  }
-
-  .subtitle {
-    font-size: 13px;
-    color: #666;
-    margin-top: 5px;
-  }
+  height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-container {
@@ -302,32 +343,79 @@ defineExpose({
 
 .result-container {
   margin-top: 16px;
-  padding: 12px 16px;
+  flex: 1;
   background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
 
-  .result-content {
-    .result-text {
+.result-table {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .table-header {
+    display: flex;
+    background: #f5f5f5;
+    padding: 12px 0;
+    flex-shrink: 0;
+
+    .th {
+      flex: 1;
+      text-align: center;
       font-size: 14px;
-      line-height: 1.6;
+      font-weight: bold;
       color: #333;
-      white-space: pre-wrap;
-      word-break: break-all;
+
+      &:first-child {
+        flex: 2;
+        padding-left: 12px;
+        text-align: left;
+      }
     }
   }
-}
 
-.title-icon {
-  font-size: 28px;
-  margin-right: 8px;
-  vertical-align: middle;
-}
+  .table-body {
+    flex: 1;
+    height: 0;
+    overflow-y: auto;
+  }
 
-.subtitle-icon {
-  font-size: 16px;
-  margin-right: 4px;
-  vertical-align: middle;
+  .table-row {
+    display: flex;
+    border-bottom: 1px solid #eee;
+    padding: 12px 0;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .td {
+      flex: 1;
+      text-align: center;
+      font-size: 14px;
+      color: #333;
+
+      &.model {
+        flex: 2;
+        padding-left: 12px;
+        text-align: left;
+      }
+
+      &.price {
+        color: #f56c6c;
+        font-weight: 500;
+      }
+
+      &.channel {
+        color: #409eff;
+      }
+    }
+  }
 }
 
 .input-icon {
@@ -356,20 +444,6 @@ defineExpose({
   }
 }
 
-.header {
-  .title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .subtitle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-}
-
 .submit-btn {
   display: flex;
   align-items: center;
@@ -378,30 +452,6 @@ defineExpose({
 
   &:active:not(:disabled) {
     transform: scale(0.98);
-  }
-}
-
-.product-name {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  .copy-btn {
-    padding: 4px 8px;
-    border-radius: 4px;
-    background-color: #f5f5f5;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:active {
-      background-color: #e0e0e0;
-    }
-  }
-
-  .copy-icon {
-    font-size: 18px;
-    color: #666;
   }
 }
 

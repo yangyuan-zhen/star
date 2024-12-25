@@ -45,7 +45,7 @@
     {
       "path": "pages/shopping/index",
       "style": {
-        "navigationBarTitleText": "值得买吗"
+        "navigationBarTitleText": "买什么"
       }
     }
   ],
@@ -72,5 +72,11 @@
   "globalStyle": {
     "navigationBarTextStyle": "black",
     "navigationBarBackgroundColor": "#ffffff"
+  },
+  "easycom": {
+    "autoscan": true,
+    "custom": {
+      "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue"
+    }
   }
 }
