@@ -1,6 +1,7 @@
 <template>
   <view class="container">
-    <view class="form-container">
+    <!-- 搜索表单视图 -->
+    <view v-if="!showResults" class="form-container">
       <view class="input-group">
         <text class="label">
           <Icon icon="mdi:shopping-outline" class="input-icon" />
@@ -9,14 +10,10 @@
         <input
           class="input"
           v-model="query"
-          placeholder="请输入商品名称, 如: 苹果手机"
+          placeholder="请输入商品名称, 如: 手机"
           type="text"
         />
       </view>
-      <text class="tip">
-        <Icon icon="mdi:information" class="tip-icon" />
-        建议最低价和最高价差距不要太大，否则可能会影响分析结果
-      </text>
       <view class="input-group">
         <text class="label">
           <Icon icon="mdi:currency-cny" class="input-icon" />
@@ -51,27 +48,60 @@
         />
         {{ loading ? "分析中..." : "获取建议" }}
       </button>
+
+      <!-- 添加提示信息 -->
+      <view class="tips-container">
+        <view class="tip-item">
+          <uni-icons type="info" size="14" color="#909399"></uni-icons>
+          <text class="tip-text"
+            >建议最低价和最高价差距不要太大，否则可能会影响分析结果</text
+          >
+        </view>
+        <view class="tip-item">
+          <uni-icons type="info" size="14" color="#909399"></uni-icons>
+          <text class="tip-text"
+            >如果一次没有获取到结果就尝试修改价格或者重新获取</text
+          >
+        </view>
+      </view>
     </view>
 
-    <view
-      v-if="parsedResults && parsedResults.length > 0"
-      class="result-container"
-    >
-      <view class="result-table">
-        <view class="table-header">
-          <view class="th">手机型号</view>
-          <view class="th">价格</view>
-          <view class="th">渠道</view>
-        </view>
-        <scroll-view scroll-y class="table-body">
+    <!-- 结果表格视图 -->
+    <view v-else class="results-view">
+      <!-- 顶部导航栏 -->
+      <view class="nav-bar">
+        <button class="back-btn" @click="showResults = false">
+          <uni-icons type="back" size="12"></uni-icons>
+        </button>
+        <text class="page-title">商品推荐</text>
+      </view>
+
+      <!-- 内容容器 -->
+      <view class="content-container">
+        <!-- 商品列表 -->
+        <scroll-view
+          scroll-y
+          class="result-list"
+          :style="{ height: scrollHeight + 'px' }"
+        >
           <view
             v-for="(item, index) in parsedResults"
             :key="index"
-            class="table-row"
+            class="result-card"
           >
-            <view class="td model">{{ item.name }}</view>
-            <view class="td price">¥{{ item.price }}</view>
-            <view class="td channel">{{ item.channel }}</view>
+            <view class="product-name">{{ item.name }}</view>
+            <view class="product-info">
+              <view class="price-tag">¥{{ item.price }}</view>
+              <view class="channel-tag">{{ item.channel }}</view>
+            </view>
+            <view class="worth-info">
+              <uni-icons
+                type="checkmarkempty"
+                size="16"
+                color="#52c41a"
+              ></uni-icons>
+              {{ item.worth }}
+            </view>
           </view>
         </scroll-view>
       </view>
@@ -80,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, onUnmounted, computed } from "vue";
+import { ref, onUnmounted, computed, onMounted } from "vue";
 import { getShoppingAdvice } from "@/api/search.js";
 import { Icon } from "@iconify/vue";
 
@@ -94,113 +124,31 @@ const lastMinPrice = ref("");
 const lastMaxPrice = ref("");
 let loadingTimer = null;
 
+// 添加显示结果的状态控制
+const showResults = ref(false);
+
 const getAdvice = async () => {
-  if (
-    result.value?.output &&
-    query.value === lastQuery.value &&
-    minPrice.value === lastMinPrice.value &&
-    maxPrice.value === lastMaxPrice.value
-  ) {
-    uni.showToast({
-      title: "输入的商品和价格未改变，请修改后再试",
-      icon: "none",
-    });
-    return;
-  }
-
-  if (!query.value.trim()) {
-    uni.showToast({
-      title: "请输入商品名称",
-      icon: "none",
-    });
-    return;
-  }
-
-  if (!minPrice.value) {
-    uni.showToast({
-      title: "请输入最低价格",
-      icon: "none",
-    });
-    return;
-  }
-
-  if (!maxPrice.value) {
-    uni.showToast({
-      title: "请输入最高价格",
-      icon: "none",
-    });
-    return;
-  }
-
-  if (Number(minPrice.value) > Number(maxPrice.value)) {
-    uni.showToast({
-      title: "最低价格不能高于最高价格",
-      icon: "none",
-    });
-    return;
-  }
-
-  loading.value = true;
-
-  loadingTimer = setTimeout(() => {
-    if (loading.value) {
-      uni.showToast({
-        title: "正在努力分析中，请耐心等待...",
-        icon: "none",
-        duration: 2000,
-      });
-    }
-  }, 5000);
-
   try {
+    loading.value = true;
     const res = await getShoppingAdvice(
       query.value,
       maxPrice.value,
       minPrice.value
     );
-    console.log("API 响应:", res);
-    result.value = {
-      data: res,
-    };
-
-    lastQuery.value = query.value;
-    lastMinPrice.value = minPrice.value;
-    lastMaxPrice.value = maxPrice.value;
+    result.value = res;
+    // 如果成功获取数据，切换到结果视图
+    if (parsedResults.value.length > 0) {
+      showResults.value = true;
+    }
   } catch (error) {
-    console.error("发生错误:", error);
     uni.showToast({
       title: "获取建议失败",
       icon: "error",
     });
   } finally {
     loading.value = false;
-    if (loadingTimer) {
-      clearTimeout(loadingTimer);
-      loadingTimer = null;
-    }
   }
 };
-
-const formatResult = (text) => {
-  if (!text) return "";
-  return text.replace(/^- /gm, "").replace(/\n- /g, "\n"); // 去掉行首的-
-};
-// 复制结果
-const copyOutput = () => {
-  if (result.value?.output) {
-    uni.setClipboardData({
-      data: result.value.output,
-      success: () => {
-        uni.showToast({
-          title: "复制成功",
-          icon: "success",
-          duration: 1500,
-        });
-      },
-    });
-  }
-};
-
 onUnmounted(() => {
   if (loadingTimer) {
     clearTimeout(loadingTimer);
@@ -226,69 +174,61 @@ const onShareTimeline = () => {
   };
 };
 
-// 将分享方法定义到当前页面
+// 将分享方法定义当前页面
 defineExpose({
   onShareAppMessage,
   onShareTimeline,
 });
 
 const parsedResults = computed(() => {
-  if (!result.value?.data) return [];
+  if (!result.value) return [];
 
   try {
-    // 获取返回的数据
-    const data = result.value.data;
+    const outputText = result.value.output || "";
+    const products = outputText.split("\n\n").slice(1).filter(Boolean);
 
-    // 如果数据是字符串，尝试解析为 JSON
-    const jsonData = typeof data === "string" ? JSON.parse(data) : data;
-
-    // 获取 output 字段的内容
-    const outputText = jsonData.output;
-
-    // 分割文本为数组，去掉开头的介绍文字
-    const lines = outputText
-      .split("\n")
-      .filter(
-        (line) =>
-          line.includes("手机名称：") ||
-          line.includes("价格：") ||
-          line.includes("购买渠道：")
-      );
-
-    const results = [];
-
-    // 每三行处理一组数据
-    for (let i = 0; i < lines.length; i += 3) {
-      if (i + 2 < lines.length) {
-        const nameMatch = lines[i].match(/手机名称：(.+)/);
-        const priceMatch = lines[i + 1].match(/价格：(\d+\.?\d*)/);
-        const channelMatch = lines[i + 2].match(/购买渠道：(.+)/);
+    const results = products
+      .map((product) => {
+        const nameMatch = product.match(/商品名称：([^\n]+)/);
+        const priceMatch = product.match(/价格：([^\n]+)/);
+        const channelMatch = product.match(/购买渠道：([^\n]+)/);
+        const worthMatch = product.match(/是否值得购买：([^\n]+)/);
 
         if (nameMatch && priceMatch && channelMatch) {
-          results.push({
-            name: nameMatch[1].trim(),
-            price: priceMatch[1].trim(),
-            channel: channelMatch[1].trim(),
-          });
+          return {
+            name: nameMatch[1].trim().replace(/🛍️\s*/, ""),
+            price: priceMatch[1].trim().replace(/💲\s*/, ""),
+            channel: channelMatch[1].trim().replace(/🛒\s*/, ""),
+            worth: worthMatch
+              ? worthMatch[1].trim().replace(/⭐\s*/, "")
+              : "暂无评估",
+          };
         }
-      }
-    }
+        return null;
+      })
+      .filter(Boolean);
 
     return results;
   } catch (error) {
-    console.error("数据解析错误:", error);
     return [];
   }
+});
+
+// 计算滚动区域高度
+const scrollHeight = ref(0);
+
+onMounted(() => {
+  // 获取系统信息
+  const systemInfo = uni.getSystemInfoSync();
+  // 44是导航栏高度，32是上下padding的总和
+  scrollHeight.value = systemInfo.windowHeight - 44 - 32;
 });
 </script>
 
 <style lang="scss" scoped>
 .container {
-  padding: 20px;
   height: 100vh;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
 }
 
 .form-container {
@@ -335,87 +275,138 @@ const parsedResults = computed(() => {
   font-size: 15px;
   border: none;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 
   &:disabled {
     background: #ccc;
   }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
 }
 
-.result-container {
-  margin-top: 16px;
+.results-view {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 44px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.back-btn {
+  position: absolute;
+  left: 16px;
+  background: transparent;
+  border: none;
+  padding: 8px;
+  margin: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.page-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.content-container {
   flex: 1;
+  padding: 16px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 600px; // 在大屏设备上限制最大宽度
+}
+
+.result-list {
+  width: 100%;
+}
+
+.result-card {
   background: #fff;
   border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  &:active {
+    transform: scale(0.99);
+    transition: transform 0.2s ease;
+  }
 }
 
-.result-table {
-  width: 100%;
-  height: 100%;
+.product-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #333;
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.product-info {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 8px;
+}
 
-  .table-header {
-    display: flex;
-    background: #f5f5f5;
-    padding: 12px 0;
-    flex-shrink: 0;
+.price-tag {
+  background: #fff5f5;
+  color: #ff4d4f;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+}
 
-    .th {
-      flex: 1;
-      text-align: center;
-      font-size: 14px;
-      font-weight: bold;
-      color: #333;
+.channel-tag {
+  background: #f0f5ff;
+  color: #4096ff;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+}
 
-      &:first-child {
-        flex: 2;
-        padding-left: 12px;
-        text-align: left;
-      }
-    }
-  }
+.worth-info {
+  display: flex;
+  align-items: center;
+  color: #52c41a;
+  font-size: 14px;
+  line-height: 1.4;
+  background: #f6ffed;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
 
-  .table-body {
-    flex: 1;
-    height: 0;
-    overflow-y: auto;
-  }
-
-  .table-row {
-    display: flex;
-    border-bottom: 1px solid #eee;
-    padding: 12px 0;
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    .td {
-      flex: 1;
-      text-align: center;
-      font-size: 14px;
-      color: #333;
-
-      &.model {
-        flex: 2;
-        padding-left: 12px;
-        text-align: left;
-      }
-
-      &.price {
-        color: #f56c6c;
-        font-weight: 500;
-      }
-
-      &.channel {
-        color: #409eff;
-      }
-    }
-  }
+.worth-icon {
+  font-size: 16px;
+  margin-right: 6px;
+  color: #52c41a;
 }
 
 .input-icon {
@@ -444,26 +435,66 @@ const parsedResults = computed(() => {
   }
 }
 
-.submit-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
+.tips-container {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
 
-  &:active:not(:disabled) {
-    transform: scale(0.98);
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  padding: 4px 0;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .uni-icons {
+    margin-top: 3px;
   }
 }
 
-.tip {
-  display: flex;
-  align-items: center;
-  font-size: 12px;
+.tip-text {
+  font-size: 13px;
   color: #909399;
-  margin: 8px 0 12px;
-  padding: 8px 12px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
   line-height: 1.4;
+  margin-left: 6px;
+  flex: 1;
+}
+
+// 响应式调整
+@media screen and (min-width: 375px) {
+  .content-container {
+    padding: 16px;
+  }
+
+  .result-card {
+    padding: 16px;
+  }
+}
+
+@media screen and (max-width: 374px) {
+  .content-container {
+    padding: 12px;
+  }
+
+  .result-card {
+    padding: 12px;
+  }
+
+  .product-name {
+    font-size: 14px;
+  }
+
+  .price-tag {
+    font-size: 15px;
+  }
+
+  .channel-tag {
+    font-size: 12px;
+  }
 }
 </style>

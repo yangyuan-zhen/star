@@ -87,7 +87,7 @@
               :color="getIconColor(7)"
             ></uni-icons>
           </view>
-          <text class="card-title">值得买吗</text>
+          <text class="card-title">买什么</text>
           <text class="card-desc">智能购物建议</text>
         </view>
       </view>

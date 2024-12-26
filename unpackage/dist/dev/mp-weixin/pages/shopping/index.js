@@ -1,8 +1,13 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
 const api_search = require("../../api/search.js");
+if (!Array) {
+  const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
+  _easycom_uni_icons2();
+}
+const _easycom_uni_icons = () => "../../node-modules/@dcloudio/uni-ui/lib/uni-icons/uni-icons.js";
 if (!Math) {
-  common_vendor.unref(common_vendor.Icon)();
+  (common_vendor.unref(common_vendor.Icon) + _easycom_uni_icons)();
 }
 const _sfc_main = {
   __name: "index",
@@ -12,89 +17,32 @@ const _sfc_main = {
     const maxPrice = common_vendor.ref("");
     const loading = common_vendor.ref(false);
     const result = common_vendor.ref(null);
-    const lastQuery = common_vendor.ref("");
-    const lastMinPrice = common_vendor.ref("");
-    const lastMaxPrice = common_vendor.ref("");
-    let loadingTimer = null;
+    common_vendor.ref("");
+    common_vendor.ref("");
+    common_vendor.ref("");
+    const showResults = common_vendor.ref(false);
     const getAdvice = async () => {
-      var _a;
-      if (((_a = result.value) == null ? void 0 : _a.output) && query.value === lastQuery.value && minPrice.value === lastMinPrice.value && maxPrice.value === lastMaxPrice.value) {
-        common_vendor.index.showToast({
-          title: "输入的商品和价格未改变，请修改后再试",
-          icon: "none"
-        });
-        return;
-      }
-      if (!query.value.trim()) {
-        common_vendor.index.showToast({
-          title: "请输入商品名称",
-          icon: "none"
-        });
-        return;
-      }
-      if (!minPrice.value) {
-        common_vendor.index.showToast({
-          title: "请输入最低价格",
-          icon: "none"
-        });
-        return;
-      }
-      if (!maxPrice.value) {
-        common_vendor.index.showToast({
-          title: "请输入最高价格",
-          icon: "none"
-        });
-        return;
-      }
-      if (Number(minPrice.value) > Number(maxPrice.value)) {
-        common_vendor.index.showToast({
-          title: "最低价格不能高于最高价格",
-          icon: "none"
-        });
-        return;
-      }
-      loading.value = true;
-      loadingTimer = setTimeout(() => {
-        if (loading.value) {
-          common_vendor.index.showToast({
-            title: "正在努力分析中，请耐心等待...",
-            icon: "none",
-            duration: 2e3
-          });
-        }
-      }, 5e3);
       try {
+        loading.value = true;
         const res = await api_search.getShoppingAdvice(
           query.value,
           maxPrice.value,
           minPrice.value
         );
-        console.log("API 响应:", res);
-        result.value = {
-          data: res
-        };
-        lastQuery.value = query.value;
-        lastMinPrice.value = minPrice.value;
-        lastMaxPrice.value = maxPrice.value;
+        result.value = res;
+        if (parsedResults.value.length > 0) {
+          showResults.value = true;
+        }
       } catch (error) {
-        console.error("发生错误:", error);
         common_vendor.index.showToast({
           title: "获取建议失败",
           icon: "error"
         });
       } finally {
         loading.value = false;
-        if (loadingTimer) {
-          clearTimeout(loadingTimer);
-          loadingTimer = null;
-        }
       }
     };
     common_vendor.onUnmounted(() => {
-      if (loadingTimer) {
-        clearTimeout(loadingTimer);
-        loadingTimer = null;
-      }
     });
     const onShareAppMessage = () => {
       return {
@@ -118,47 +66,45 @@ const _sfc_main = {
       onShareTimeline
     });
     const parsedResults = common_vendor.computed(() => {
-      var _a;
-      if (!((_a = result.value) == null ? void 0 : _a.data))
+      if (!result.value)
         return [];
       try {
-        const data = result.value.data;
-        const jsonData = typeof data === "string" ? JSON.parse(data) : data;
-        const outputText = jsonData.output;
-        const lines = outputText.split("\n").filter(
-          (line) => line.includes("手机名称：") || line.includes("价格：") || line.includes("购买渠道：")
-        );
-        const results = [];
-        for (let i = 0; i < lines.length; i += 3) {
-          if (i + 2 < lines.length) {
-            const nameMatch = lines[i].match(/手机名称：(.+)/);
-            const priceMatch = lines[i + 1].match(/价格：(\d+\.?\d*)/);
-            const channelMatch = lines[i + 2].match(/购买渠道：(.+)/);
-            if (nameMatch && priceMatch && channelMatch) {
-              results.push({
-                name: nameMatch[1].trim(),
-                price: priceMatch[1].trim(),
-                channel: channelMatch[1].trim()
-              });
-            }
+        const outputText = result.value.output || "";
+        const products = outputText.split("\n\n").slice(1).filter(Boolean);
+        const results = products.map((product) => {
+          const nameMatch = product.match(/商品名称：([^\n]+)/);
+          const priceMatch = product.match(/价格：([^\n]+)/);
+          const channelMatch = product.match(/购买渠道：([^\n]+)/);
+          const worthMatch = product.match(/是否值得购买：([^\n]+)/);
+          if (nameMatch && priceMatch && channelMatch) {
+            return {
+              name: nameMatch[1].trim().replace(/🛍️\s*/, ""),
+              price: priceMatch[1].trim().replace(/💲\s*/, ""),
+              channel: channelMatch[1].trim().replace(/🛒\s*/, ""),
+              worth: worthMatch ? worthMatch[1].trim().replace(/⭐\s*/, "") : "暂无评估"
+            };
           }
-        }
+          return null;
+        }).filter(Boolean);
         return results;
       } catch (error) {
-        console.error("数据解析错误:", error);
         return [];
       }
     });
+    const scrollHeight = common_vendor.ref(0);
+    common_vendor.onMounted(() => {
+      const systemInfo = common_vendor.index.getSystemInfoSync();
+      scrollHeight.value = systemInfo.windowHeight - 44 - 32;
+    });
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_vendor.p({
+        a: !showResults.value
+      }, !showResults.value ? {
+        b: common_vendor.p({
           icon: "mdi:shopping-outline"
         }),
-        b: query.value,
-        c: common_vendor.o(($event) => query.value = $event.detail.value),
-        d: common_vendor.p({
-          icon: "mdi:information"
-        }),
+        c: query.value,
+        d: common_vendor.o(($event) => query.value = $event.detail.value),
         e: common_vendor.p({
           icon: "mdi:currency-cny"
         }),
@@ -176,17 +122,39 @@ const _sfc_main = {
         m: common_vendor.t(loading.value ? "分析中..." : "获取建议"),
         n: common_vendor.o(getAdvice),
         o: loading.value,
-        p: parsedResults.value && parsedResults.value.length > 0
-      }, parsedResults.value && parsedResults.value.length > 0 ? {
-        q: common_vendor.f(parsedResults.value, (item, index, i0) => {
+        p: common_vendor.p({
+          type: "info",
+          size: "14",
+          color: "#909399"
+        }),
+        q: common_vendor.p({
+          type: "info",
+          size: "14",
+          color: "#909399"
+        })
+      } : {
+        r: common_vendor.p({
+          type: "back",
+          size: "12"
+        }),
+        s: common_vendor.o(($event) => showResults.value = false),
+        t: common_vendor.f(parsedResults.value, (item, index, i0) => {
           return {
             a: common_vendor.t(item.name),
             b: common_vendor.t(item.price),
             c: common_vendor.t(item.channel),
-            d: index
+            d: "d650adc9-7-" + i0,
+            e: common_vendor.t(item.worth),
+            f: index
           };
-        })
-      } : {});
+        }),
+        v: common_vendor.p({
+          type: "checkmarkempty",
+          size: "16",
+          color: "#52c41a"
+        }),
+        w: scrollHeight.value + "px"
+      });
     };
   }
 };
