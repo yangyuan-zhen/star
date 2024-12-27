@@ -5,9 +5,7 @@ const _sfc_main = {
   data() {
     return {
       cityName: "",
-      weatherData: null,
-      cardWidth: 300,
-      cardHeight: 400
+      weatherData: null
     };
   },
   methods: {
@@ -34,65 +32,6 @@ const _sfc_main = {
         common_vendor.index.hideLoading();
       }
     },
-    // 修改保存图片方法
-    async saveImage() {
-      try {
-        if (!this.weatherData || !this.weatherData.img) {
-          throw new Error("图片数据不存在");
-        }
-        await common_vendor.index.showLoading({
-          title: "保存中...",
-          mask: true
-        });
-        const { result } = await common_vendor.Zs.callFunction({
-          name: "downloadImage",
-          data: {
-            imageUrl: this.weatherData.img
-          }
-        });
-        console.log("云函数调用结果:", result);
-        if (!result || !result.data) {
-          throw new Error("云函数返回结果为空");
-        }
-        if (result.code !== 0) {
-          throw new Error(result.msg || "处理图片失败");
-        }
-        const settingRes = await common_vendor.index.getSetting({});
-        if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
-          await common_vendor.index.authorize({ scope: "scope.writePhotosAlbum" });
-        }
-        const downloadRes = await common_vendor.index.downloadFile({
-          url: result.data.tempFileURL
-        });
-        if (downloadRes.statusCode !== 200) {
-          throw new Error("下载图片失败");
-        }
-        await common_vendor.index.saveImageToPhotosAlbum({
-          filePath: downloadRes.tempFilePath
-        });
-        common_vendor.index.showToast({
-          title: "已保存到相册",
-          icon: "success"
-        });
-      } catch (error) {
-        console.error("保存失败:", error);
-        common_vendor.index.showToast({
-          title: error.message || "保存失败",
-          icon: "none",
-          duration: 3e3
-        });
-      } finally {
-        common_vendor.index.hideLoading();
-      }
-    },
-    // 分享给朋友
-    shareImage() {
-      return {
-        title: `${this.weatherData.city}天气画报`,
-        path: "/pages/weather/index",
-        imageUrl: this.weatherData.img
-      };
-    },
     handleFocus() {
       this.$refs.cityInput && (this.$refs.cityInput.style.borderColor = "#409eff");
     },
@@ -118,9 +57,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     l: common_vendor.t($data.weatherData.date),
     m: common_vendor.t($data.weatherData.condition),
     n: common_vendor.t($data.weatherData.temp_high),
-    o: common_vendor.t($data.weatherData.temp_low),
-    p: common_vendor.o((...args) => $options.saveImage && $options.saveImage(...args)),
-    q: common_vendor.o((...args) => $options.shareImage && $options.shareImage(...args))
+    o: common_vendor.t($data.weatherData.temp_low)
   } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-37d277d7"]]);

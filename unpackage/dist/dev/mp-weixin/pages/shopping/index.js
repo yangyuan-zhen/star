@@ -17,9 +17,6 @@ const _sfc_main = {
     const maxPrice = common_vendor.ref("");
     const loading = common_vendor.ref(false);
     const result = common_vendor.ref(null);
-    common_vendor.ref("");
-    common_vendor.ref("");
-    common_vendor.ref("");
     const showResults = common_vendor.ref(false);
     const getAdvice = async () => {
       try {

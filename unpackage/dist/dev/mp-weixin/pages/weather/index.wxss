@@ -118,28 +118,3 @@
   color: #666;
   margin-bottom: 8rpx;
 }
-.action-buttons.data-v-37d277d7 {
-  display: flex;
-  padding: 32rpx;
-  gap: 24rpx;
-}
-.action-buttons .action-btn.data-v-37d277d7 {
-  flex: 1;
-  height: 88rpx;
-  border-radius: 8rpx;
-  font-size: 28rpx;
-  color: #ffffff;
-  border: none;
-  margin: 0;
-  padding: 0;
-  line-height: 88rpx;
-}
-.action-buttons .action-btn.save-btn.data-v-37d277d7 {
-  background: #5b6c8b;
-}
-.action-buttons .action-btn.share-btn.data-v-37d277d7 {
-  background: #4caf50;
-}
-.action-buttons .action-btn.data-v-37d277d7::after {
-  border: none;
-}

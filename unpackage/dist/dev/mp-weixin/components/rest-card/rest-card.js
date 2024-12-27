@@ -22,11 +22,12 @@ const _sfc_main = {
     }
   },
   emits: ["tap"],
-  setup(__props) {
+  setup(__props, { emit: __emit }) {
     const props = __props;
     const countdownTime = common_vendor.ref("--:--:--");
     let timer = null;
     const currentEarnings = common_vendor.ref(0);
+    const isFirstTime = common_vendor.ref(true);
     const calculateCountdown = () => {
       const now = /* @__PURE__ */ new Date();
       const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
@@ -104,8 +105,31 @@ const _sfc_main = {
       const workedSeconds = currentTime - startTime;
       currentEarnings.value = workedSeconds * calculateHourlyRate();
     };
+    const checkFirstTimeUser = () => {
+      try {
+        const hasUsed = common_vendor.index.getStorageSync("hasUsedRestCard");
+        isFirstTime.value = !hasUsed;
+        if (isFirstTime.value) {
+          common_vendor.index.setStorageSync("hasUsedRestCard", true);
+          common_vendor.index.showModal({
+            title: "欢迎使用",
+            content: "您可以点击设置来自定义工作时间和收入信息",
+            confirmText: "去设置",
+            cancelText: "稍后再说",
+            success: (res) => {
+              if (res.confirm) {
+                emit("tap");
+              }
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Storage operation failed:", e);
+      }
+    };
     common_vendor.onMounted(() => {
       common_vendor.nextTick$1(() => {
+        checkFirstTimeUser();
         calculateCountdown();
         updateEarnings();
         timer = setInterval(() => {
@@ -148,18 +172,23 @@ const _sfc_main = {
         return lastDayOfMonth - currentDay + parseInt(payday);
       }
     });
+    const handleCardTap = () => {
+      emit("tap");
+    };
+    const emit = __emit;
     return (_ctx, _cache) => {
       return {
         a: common_vendor.t(isWorkingHours.value ? "距离下班还有" + countdownTime.value : "休息时间"),
         b: common_vendor.t(isWorkingHours.value ? "工作中" : "休息中"),
         c: isWorkingHours.value ? 1 : "",
         d: common_vendor.t(daysUntilPayday.value),
-        e: common_vendor.t(__props.daysUntilFriday),
-        f: common_vendor.t(__props.nextHoliday.days),
-        g: common_vendor.t(__props.nextHoliday.name),
-        h: common_vendor.t(currentEarnings.value.toFixed(2)),
-        i: isWorkingHours.value ? "../../static/tabs/onwork.png" : "../../static/tabs/offwork.png",
-        j: common_vendor.o(($event) => _ctx.$emit("tap"))
+        e: common_vendor.t(__props.daysUntilFriday === 0 ? "今天就是周五" : `还有${__props.daysUntilFriday}天`),
+        f: common_vendor.t(__props.daysUntilFriday === 0 ? "" : "距离周五"),
+        g: common_vendor.t(__props.nextHoliday.days),
+        h: common_vendor.t(__props.nextHoliday.name),
+        i: common_vendor.t(currentEarnings.value.toFixed(2)),
+        j: isWorkingHours.value ? "../../static/tabs/onwork.png" : "../../static/tabs/offwork.png",
+        k: common_vendor.o(handleCardTap)
       };
     };
   }

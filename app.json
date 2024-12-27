@@ -1,5 +1,18 @@
 {
-  "pages": ["pages/index/index", "pages/history/index"],
+  "pages": [
+    "pages/note/index",
+    "pages/more/index",
+    "pages/textSnap/index",
+    "pages/weather/index",
+    "pages/book/index",
+    "pages/translation/index",
+    "pages/movie/index",
+    "pages/shopping/index"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#ffffff"
+  },
   "tabBar": {
     "color": "#999999",
     "selectedColor": "#007AFF",
@@ -7,13 +20,22 @@
     "borderStyle": "black",
     "list": [
       {
-        "pagePath": "pages/index/index",
-        "text": "热搜",
-        "iconPath": "static/tabs/home.png",
-        "selectedIconPath": "static/tabs/home-active.png"
+        "pagePath": "pages/note/index",
+        "text": "备忘录",
+        "iconPath": "static/tabs/note.png",
+        "selectedIconPath": "static/tabs/note-active.png"
+      },
+      {
+        "pagePath": "pages/more/index",
+        "text": "更多",
+        "iconPath": "static/tabs/more.png",
+        "selectedIconPath": "static/tabs/more-active.png"
       }
     ]
   },
-  "usingComponents": {},
-  "enableShareTimeline": true
+  "requiredPrivateInfos": ["chooseAddress", "chooseLocation", "choosePoi"],
+  "permission": {
+    "writePhotosAlbum": true
+  },
+  "usingComponents": {}
 }

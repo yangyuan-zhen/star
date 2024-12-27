@@ -1,5 +1,5 @@
 <template>
-  <view class="rest-card" @tap="$emit('tap')">
+  <view class="rest-card" @tap="handleCardTap">
     <view class="card-header">
       <text class="title">{{
         isWorkingHours ? "距离下班还有" + countdownTime : "休息时间"
@@ -15,8 +15,12 @@
           <text class="label">距离发薪日</text>
         </view>
         <view class="info-item">
-          <text class="value">还有{{ daysUntilFriday }}天</text>
-          <text class="label">距离周五</text>
+          <text class="value">{{
+            daysUntilFriday === 0 ? "今天就是周五" : `还有${daysUntilFriday}天`
+          }}</text>
+          <text class="label">{{
+            daysUntilFriday === 0 ? "" : "距离周五"
+          }}</text>
         </view>
         <view class="info-item">
           <text class="value">还有{{ nextHoliday.days }}天</text>
@@ -67,6 +71,7 @@ const props = defineProps({
 const countdownTime = ref("--:--:--");
 let timer = null;
 const currentEarnings = ref(0);
+const isFirstTime = ref(true);
 
 // 计算倒计时
 const calculateCountdown = () => {
@@ -196,10 +201,36 @@ const updateEarnings = () => {
   currentEarnings.value = workedSeconds * calculateHourlyRate();
 };
 
+// 检查是否首次使用
+const checkFirstTimeUser = () => {
+  try {
+    const hasUsed = uni.getStorageSync("hasUsedRestCard");
+    isFirstTime.value = !hasUsed;
+    if (isFirstTime.value) {
+      // 标记已使用
+      uni.setStorageSync("hasUsedRestCard", true);
+      // 显示提示
+      uni.showModal({
+        title: "欢迎使用",
+        content: "您可以点击设置来自定义工作时间和收入信息",
+        confirmText: "去设置",
+        cancelText: "稍后再说",
+        success: (res) => {
+          if (res.confirm) {
+            emit("tap");
+          }
+        },
+      });
+    }
+  } catch (e) {
+    console.error("Storage operation failed:", e);
+  }
+};
+
 // 修改 onMounted
 onMounted(() => {
-  // 确保在组件挂载时先进行一次工作状态判断
   nextTick(() => {
+    checkFirstTimeUser();
     calculateCountdown();
     updateEarnings();
 
@@ -262,7 +293,12 @@ const daysUntilPayday = computed(() => {
   }
 });
 
-defineEmits(["tap"]);
+// 处理点击事件
+const handleCardTap = () => {
+  emit("tap");
+};
+
+const emit = defineEmits(["tap"]);
 </script>
 
 <style scoped lang="scss">

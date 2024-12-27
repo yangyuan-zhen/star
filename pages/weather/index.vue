@@ -39,18 +39,6 @@
           </view>
         </view>
       </view>
-
-      <!-- 按钮 -->
-      <view class="action-buttons">
-        <button class="action-btn save-btn" @tap="saveImage">保存到相册</button>
-        <button
-          class="action-btn share-btn"
-          @tap="shareImage"
-          open-type="share"
-        >
-          分享给朋友
-        </button>
-      </view>
     </view>
   </view>
 </template>
@@ -63,8 +51,6 @@ export default {
     return {
       cityName: "",
       weatherData: null,
-      cardWidth: 300,
-      cardHeight: 400,
     };
   },
   methods: {
@@ -91,82 +77,6 @@ export default {
       } finally {
         uni.hideLoading();
       }
-    },
-
-    // 修改保存图片方法
-    async saveImage() {
-      try {
-        if (!this.weatherData || !this.weatherData.img) {
-          throw new Error("图片数据不存在");
-        }
-
-        // 显示加载中
-        await uni.showLoading({
-          title: "保存中...",
-          mask: true,
-        });
-
-        // 调用云函数下载图片
-        const { result } = await uniCloud.callFunction({
-          name: "downloadImage",
-          data: {
-            imageUrl: this.weatherData.img,
-          },
-        });
-
-        console.log("云函数调用结果:", result);
-
-        if (!result || !result.data) {
-          throw new Error("云函数返回结果为空");
-        }
-
-        if (result.code !== 0) {
-          throw new Error(result.msg || "处理图片失败");
-        }
-
-        // 检查相册权限
-        const settingRes = await uni.getSetting({});
-        if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
-          await uni.authorize({ scope: "scope.writePhotosAlbum" });
-        }
-
-        // 下载云存储的图片到本地
-        const downloadRes = await uni.downloadFile({
-          url: result.data.tempFileURL,
-        });
-
-        if (downloadRes.statusCode !== 200) {
-          throw new Error("下载图片失败");
-        }
-
-        // 保存图片到相册
-        await uni.saveImageToPhotosAlbum({
-          filePath: downloadRes.tempFilePath,
-        });
-
-        uni.showToast({
-          title: "已保存到相册",
-          icon: "success",
-        });
-      } catch (error) {
-        console.error("保存失败:", error);
-        uni.showToast({
-          title: error.message || "保存失败",
-          icon: "none",
-          duration: 3000,
-        });
-      } finally {
-        uni.hideLoading();
-      }
-    },
-
-    // 分享给朋友
-    shareImage() {
-      return {
-        title: `${this.weatherData.city}天气画报`,
-        path: "/pages/weather/index",
-        imageUrl: this.weatherData.img,
-      };
     },
 
     handleFocus() {
@@ -301,36 +211,6 @@ export default {
       font-size: 24rpx;
       color: #666;
       margin-bottom: 8rpx;
-    }
-  }
-}
-
-.action-buttons {
-  display: flex;
-  padding: 32rpx;
-  gap: 24rpx;
-
-  .action-btn {
-    flex: 1;
-    height: 88rpx;
-    border-radius: 8rpx;
-    font-size: 28rpx;
-    color: #ffffff;
-    border: none;
-    margin: 0;
-    padding: 0;
-    line-height: 88rpx;
-
-    &.save-btn {
-      background: #5b6c8b;
-    }
-
-    &.share-btn {
-      background: #4caf50;
-    }
-
-    &::after {
-      border: none;
     }
   }
 }

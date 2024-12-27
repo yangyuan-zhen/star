@@ -119,9 +119,6 @@ const minPrice = ref("");
 const maxPrice = ref("");
 const loading = ref(false);
 const result = ref(null);
-const lastQuery = ref("");
-const lastMinPrice = ref("");
-const lastMaxPrice = ref("");
 let loadingTimer = null;
 
 // 添加显示结果的状态控制
