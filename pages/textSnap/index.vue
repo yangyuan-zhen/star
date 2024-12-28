@@ -17,16 +17,11 @@
     <view class="settings-section">
       <view class="setting-item">
         <view class="setting-label">
-          <Icon icon="material-symbols:palette-outline" class="setting-icon" />
           <text>主题样式</text>
         </view>
         <picker :value="themeIndex" :range="themes" @change="onThemeChange">
           <view class="picker-wrapper">
             <text>{{ themes[themeIndex] }}</text>
-            <Icon
-              icon="material-symbols:arrow-forward-ios"
-              class="arrow-icon"
-            />
           </view>
         </picker>
       </view>
@@ -35,7 +30,6 @@
     <!-- 按钮区域 -->
     <view class="button-section">
       <button class="action-btn preview-btn" @tap="generatePreview">
-        <Icon icon="material-symbols:preview-outline" />
         <text>预览图片</text>
       </button>
       <button
@@ -43,11 +37,9 @@
         @tap="shareToWechat"
         v-if="previewImage"
       >
-        <Icon icon="material-symbols:share-outline" />
         <text>分享到微信</text>
       </button>
       <button class="action-btn save-btn" @tap="saveImage" v-if="previewImage">
-        <Icon icon="material-symbols:download" />
         <text>保存到相册</text>
       </button>
     </view>
@@ -82,7 +74,6 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
-import { Icon } from "@iconify/vue";
 
 const content = ref("");
 const themeIndex = ref(0);
@@ -140,13 +131,15 @@ const drawText = async () => {
   const dpr = uni.getSystemInfoSync().pixelRatio;
   const canvasWidth = 300 * dpr;
 
-  // 计算所需的画布高度
+  // 计算所需画布高度
   ctx.font = `${fontSize}px sans-serif`;
   const text = content.value;
   const maxWidth = 260;
-  const lineHeight = fontSize + 10;
-  const topMargin = 40;
-  const bottomMargin = 40;
+  const lineHeight = fontSize + 8;
+  const topMargin = 20;
+  const bottomMargin = 30;
+  const leftMargin = 20;
+  const rightMargin = 20;
 
   // 分行处理
   const lines = [];
@@ -207,7 +200,6 @@ const drawText = async () => {
   ctx.fillStyle = themeStyles[themeIndex.value].textColor;
 
   // 绘制文字
-  const leftMargin = 20;
   lines.forEach((line, index) => {
     const y = topMargin + index * lineHeight;
     ctx.fillText(line, leftMargin, y);
@@ -215,12 +207,16 @@ const drawText = async () => {
 
   // 添加水印
   ctx.save();
-  ctx.font = "14px sans-serif";
+  ctx.font = "12px sans-serif";
   ctx.fillStyle =
-    themeIndex.value === 1 ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)";
+    themeIndex.value === 1 ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)";
   ctx.textAlign = "right";
   ctx.textBaseline = "bottom";
-  ctx.fillText("Free信息", canvasWidth / dpr - 20, canvasHeight / dpr - 20);
+  ctx.fillText(
+    "Free信息",
+    canvasWidth / dpr - rightMargin,
+    canvasHeight / dpr - 15
+  );
   ctx.restore();
 
   return canvas;
@@ -363,22 +359,24 @@ onShareTimeline(() => {
 .preview-section {
   margin-bottom: 30rpx;
   background: #fff;
-  border-radius: 16rpx;
-  padding: 20rpx;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 
   .code-input {
     width: 100%;
-    min-height: 200rpx;
-    padding: 24rpx;
-    border-radius: 12rpx;
-    border: 1px solid #e5e7eb;
+    min-height: 240rpx;
+    padding: 28rpx;
+    border-radius: 16rpx;
+    border: 1px solid #eaecef;
     box-sizing: border-box;
+    font-size: 28rpx;
+    line-height: 1.6;
     transition: all 0.3s ease;
 
     &:focus {
       border-color: #4a90e2;
-      box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.08);
     }
   }
 }
@@ -407,11 +405,6 @@ onShareTimeline(() => {
       flex: 1;
       font-size: 28rpx;
       color: #374151;
-
-      .setting-icon {
-        font-size: 36rpx;
-        color: #4a90e2;
-      }
     }
 
     .picker-wrapper {
@@ -419,10 +412,6 @@ onShareTimeline(() => {
       align-items: center;
       gap: 8rpx;
       color: #6b7280;
-
-      .arrow-icon {
-        font-size: 24rpx;
-      }
     }
 
     .slider {
@@ -483,30 +472,38 @@ onShareTimeline(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 999;
 
   .preview-image {
-    width: 80%;
-    max-height: 80vh;
-    border-radius: 8rpx;
+    width: 85%;
+    max-height: 85vh;
+    border-radius: 12rpx;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   }
 
   .preview-close {
     position: absolute;
     top: 40rpx;
     right: 40rpx;
-    width: 60rpx;
-    height: 60rpx;
-    line-height: 60rpx;
+    width: 64rpx;
+    height: 64rpx;
+    line-height: 64rpx;
     text-align: center;
-    font-size: 40rpx;
+    font-size: 44rpx;
     color: #fff;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 30rpx;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 32rpx;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+
+    &:active {
+      transform: scale(0.95);
+      background: rgba(0, 0, 0, 0.5);
+    }
   }
 }
 </style>

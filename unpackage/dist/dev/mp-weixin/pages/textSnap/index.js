@@ -1,8 +1,5 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-if (!Math) {
-  common_vendor.unref(common_vendor.Icon)();
-}
 const fontSize = 12;
 const _sfc_main = {
   __name: "index",
@@ -56,9 +53,11 @@ const _sfc_main = {
       ctx.font = `${fontSize}px sans-serif`;
       const text = content.value;
       const maxWidth = 260;
-      const lineHeight = fontSize + 10;
-      const topMargin = 40;
-      const bottomMargin = 40;
+      const lineHeight = fontSize + 8;
+      const topMargin = 20;
+      const bottomMargin = 30;
+      const leftMargin = 20;
+      const rightMargin = 20;
       const lines = [];
       let currentLine = "";
       const paragraphs = text.split("\n");
@@ -97,17 +96,20 @@ const _sfc_main = {
       ctx.textBaseline = "middle";
       ctx.textAlign = "left";
       ctx.fillStyle = themeStyles[themeIndex.value].textColor;
-      const leftMargin = 20;
       lines.forEach((line, index) => {
         const y = topMargin + index * lineHeight;
         ctx.fillText(line, leftMargin, y);
       });
       ctx.save();
-      ctx.font = "14px sans-serif";
-      ctx.fillStyle = themeIndex.value === 1 ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.3)";
+      ctx.font = "12px sans-serif";
+      ctx.fillStyle = themeIndex.value === 1 ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)";
       ctx.textAlign = "right";
       ctx.textBaseline = "bottom";
-      ctx.fillText("Free信息", canvasWidth / dpr - 20, canvasHeight / dpr - 20);
+      ctx.fillText(
+        "Free信息",
+        canvasWidth / dpr - rightMargin,
+        canvasHeight / dpr - 15
+      );
       ctx.restore();
       return canvas;
     };
@@ -218,41 +220,26 @@ const _sfc_main = {
         b: -1,
         c: content.value,
         d: common_vendor.o(($event) => content.value = $event.detail.value),
-        e: common_vendor.p({
-          icon: "material-symbols:palette-outline"
-        }),
-        f: common_vendor.t(themes[themeIndex.value]),
-        g: common_vendor.p({
-          icon: "material-symbols:arrow-forward-ios"
-        }),
-        h: themeIndex.value,
-        i: themes,
-        j: common_vendor.o(onThemeChange),
-        k: common_vendor.p({
-          icon: "material-symbols:preview-outline"
-        }),
-        l: common_vendor.o(generatePreview),
-        m: previewImage.value
+        e: common_vendor.t(themes[themeIndex.value]),
+        f: themeIndex.value,
+        g: themes,
+        h: common_vendor.o(onThemeChange),
+        i: common_vendor.o(generatePreview),
+        j: previewImage.value
       }, previewImage.value ? {
-        n: common_vendor.p({
-          icon: "material-symbols:share-outline"
-        }),
-        o: common_vendor.o(shareToWechat)
+        k: common_vendor.o(shareToWechat)
       } : {}, {
-        p: previewImage.value
+        l: previewImage.value
       }, previewImage.value ? {
-        q: common_vendor.p({
-          icon: "material-symbols:download"
-        }),
-        r: common_vendor.o(saveImage)
+        m: common_vendor.o(saveImage)
       } : {}, {
-        s: showPreview.value
+        n: showPreview.value
       }, showPreview.value ? {
-        t: previewImage.value,
-        v: common_vendor.o(() => {
+        o: previewImage.value,
+        p: common_vendor.o(() => {
         }),
-        w: common_vendor.o(closePreview),
-        x: common_vendor.o(closePreview)
+        q: common_vendor.o(closePreview),
+        r: common_vendor.o(closePreview)
       } : {});
     };
   }
