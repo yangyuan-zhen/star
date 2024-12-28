@@ -4,6 +4,12 @@
     <view class="header">
       <text class="title">我的备忘录</text>
       <text class="subtitle">本周剩余可添加: {{ 5 - notes.length }}</text>
+      <text v-if="isFriday" class="reminder warning">
+        今天是周五，请检查本周待办事项是否已处理完毕
+      </text>
+      <text v-if="isSunday" class="reminder danger">
+        今天是周日，备忘录将在今晚清空
+      </text>
     </view>
 
     <!-- 备忘录列表 -->
@@ -60,20 +66,26 @@ export default defineComponent({
       showModal: false,
       currentNote: "",
       editIndex: -1,
+      isFriday: false,
+      isSunday: false,
     };
   },
   mounted() {
     this.loadNotes();
+    this.checkWeekday();
+    if (this.isSunday) {
+      this.checkAndClearNotes();
+    }
   },
   methods: {
     loadNotes(): void {
-      const savedNotes = wx.getStorageSync("notes") || [];
+      const savedNotes = uni.getStorageSync("notes") || [];
       this.notes = savedNotes;
     },
     showAddModal(): void {
       if (this.notes.length >= 5) {
-        wx.showToast({
-          title: "本周已达到添加上限",
+        uni.showToast({
+          title: "本周已达到添加上限，请处理一些事项哦",
           icon: "none",
         });
         return;
@@ -88,10 +100,10 @@ export default defineComponent({
       this.editIndex = index;
     },
     deleteNote(index: number): void {
-      wx.showModal({
+      uni.showModal({
         title: "确认删除",
         content: "是否确认删除该备忘？",
-        success: (res: WechatMiniprogram.ShowModalSuccessCallbackResult) => {
+        success: (res) => {
           if (res.confirm) {
             this.notes.splice(index, 1);
             this.saveToStorage();
@@ -101,7 +113,7 @@ export default defineComponent({
     },
     saveNote(): void {
       if (!this.currentNote.trim()) {
-        wx.showToast({
+        uni.showToast({
           title: "内容不能为空",
           icon: "none",
         });
@@ -126,99 +138,108 @@ export default defineComponent({
       this.showModal = false;
     },
     saveToStorage(): void {
-      wx.setStorageSync("notes", this.notes);
+      uni.setStorageSync("notes", this.notes);
+    },
+    checkWeekday(): void {
+      const today = new Date();
+      this.isFriday = today.getDay() === 5;
+      this.isSunday = today.getDay() === 0;
+    },
+    checkAndClearNotes(): void {
+      const lastClearDate = uni.getStorageSync("lastClearDate");
+      const today = new Date().toDateString();
+
+      if (lastClearDate !== today) {
+        this.notes = [];
+        this.saveToStorage();
+        uni.setStorageSync("lastClearDate", today);
+      }
     },
   },
 });
 </script>
 
-<style lang="scss">
-// 定义变量
-$color-primary: #007aff; // iOS 风格的蓝色
-$color-success: #34c759; // 更柔和的绿色
-$color-error: #ff3b30; // iOS 风格的红色
-$color-text: #000000;
-$color-text-secondary: #8e8e93;
-$color-text-light: #c7c7cc;
-$color-bg: #f2f2f7; // iOS 风格的背景色
-$color-white: #ffffff;
-$color-border: #e5e5ea;
-$color-disabled: #c7c7cc;
-
-$spacing-xs: 8px;
-$spacing-sm: 12px;
-$spacing-base: 16px;
-$spacing-lg: 20px;
-$spacing-xl: 24px;
-$spacing-xxl: 32px;
-
-$font-size-sm: 13px;
-$font-size-base: 15px;
-$font-size-lg: 17px;
-$font-size-xl: 20px;
-$font-size-xxl: 24px;
-
-$radius-sm: 8px;
-$radius-base: 10px;
-$radius-lg: 12px;
-$radius-xl: 16px;
+<style lang="scss" scoped>
+@import "@/styles/variables.scss";
 
 .note-container {
-  padding: $spacing-base;
-  background: $color-bg;
+  padding: $uni-spacing-base;
+  background: $uni-color-bg;
   min-height: 100vh;
   box-sizing: border-box;
-  padding-bottom: calc(50px + env(safe-area-inset-bottom) + #{$spacing-xl});
+  padding-bottom: calc(
+    100rpx + env(safe-area-inset-bottom) + #{$uni-spacing-xl}
+  );
 }
 
 .header {
-  padding: $spacing-lg $spacing-base;
-  background: $color-white;
-  margin-bottom: $spacing-lg;
-  border-radius: $radius-lg;
+  padding: $uni-spacing-lg $uni-spacing-base;
+  background: $uni-color-white;
+  margin-bottom: $uni-spacing-lg;
+  border-radius: $uni-radius-lg;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 
   .title {
-    font-size: $font-size-xl;
+    font-size: $uni-font-size-xl;
     font-weight: 600;
-    color: $color-text;
-    margin-bottom: $spacing-xs;
+    color: $uni-color-text;
+    margin-bottom: $uni-spacing-xs;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
 
   .subtitle {
-    font-size: $font-size-base;
-    color: $color-text-secondary;
-    background: $color-bg;
-    padding: $spacing-xs $spacing-sm;
-    border-radius: $radius-sm;
+    font-size: $uni-font-size-base;
+    color: $uni-color-text-secondary;
+    background: $uni-color-bg;
+    padding: $uni-spacing-xs $uni-spacing-sm;
+    border-radius: $uni-radius-sm;
     display: inline-block;
+  }
+
+  .reminder {
+    display: block;
+    margin-top: $uni-spacing-sm;
+    padding: $uni-spacing-xs $uni-spacing-sm;
+    border-radius: $uni-radius-sm;
+    font-size: $uni-font-size-sm;
+
+    &.warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    &.danger {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
   }
 }
 
 .notes-list {
-  margin-bottom: $spacing-lg;
+  margin-bottom: $uni-spacing-lg;
 }
 
 .note-item {
-  background: $color-white;
-  border-radius: $radius-lg;
-  padding: $spacing-lg;
-  margin: $spacing-sm $spacing-base;
+  background: $uni-color-white;
+  border-radius: $uni-radius-lg;
+  padding: $uni-spacing-lg;
+  margin: $uni-spacing-sm $uni-spacing-base;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
   .note-content {
-    font-size: $font-size-base;
-    color: $color-text;
-    margin-bottom: $spacing-sm;
+    font-size: $uni-font-size-base;
+    color: $uni-color-text;
+    margin-bottom: $uni-spacing-sm;
     line-height: 1.4;
 
     .note-date {
-      font-size: $font-size-sm;
-      color: $color-text-secondary;
-      margin-top: $spacing-xs;
+      font-size: $uni-font-size-sm;
+      color: $uni-color-text-secondary;
+      margin-top: $uni-spacing-xs;
       display: block;
     }
   }
@@ -226,54 +247,54 @@ $radius-xl: 16px;
   .note-actions {
     display: flex;
     justify-content: flex-end;
-    gap: $spacing-sm;
-    margin-top: $spacing-base;
+    gap: $uni-spacing-sm;
+    margin-top: $uni-spacing-base;
   }
 }
 
 .btn {
-  padding: $spacing-xs $spacing-lg;
-  border-radius: $radius-base;
-  font-size: $font-size-base;
+  padding: $uni-spacing-xs $uni-spacing-lg;
+  border-radius: $uni-radius-base;
+  font-size: $uni-font-size-base;
   border: none;
   font-weight: 500;
 
   &.edit {
-    background: $color-success;
-    color: $color-white;
+    background: $uni-color-success;
+    color: $uni-color-white;
   }
 
   &.delete {
-    background: $color-error;
-    color: $color-white;
+    background: $uni-color-error;
+    color: $uni-color-white;
   }
 
   &.cancel {
-    background: $color-bg;
-    color: $color-text-secondary;
+    background: $uni-color-bg;
+    color: $uni-color-text-secondary;
   }
 
   &.save {
-    background: $color-primary;
-    color: $color-white;
+    background: $uni-color-primary;
+    color: $uni-color-white;
   }
 }
 
 .add-btn {
   // 移除 position: fixed 相关样式
-  margin: $spacing-lg auto; // 改用上下外边距
+  margin: $uni-spacing-lg auto; // 改用上下外边距
   width: 140px; // 设置固定宽度
-  background: $color-primary;
-  color: $color-white;
-  padding: $spacing-sm $spacing-lg; // 减小内边距
-  border-radius: $radius-base;
-  font-size: $font-size-base; // 减小字体大小
+  background: $uni-color-primary;
+  color: $uni-color-white;
+  padding: $uni-spacing-sm $uni-spacing-lg; // 减小内边距
+  border-radius: $uni-radius-base;
+  font-size: $uni-font-size-base; // 减小字体大小
   font-weight: 500;
   text-align: center;
-  box-shadow: 0 2px 8px rgba($color-primary, 0.2); // 减小阴影
+  box-shadow: 0 2px 8px rgba($uni-color-primary, 0.2); // 减小阴影
 
   &:disabled {
-    background: $color-disabled;
+    background: $uni-color-disabled;
     opacity: 0.8;
     box-shadow: none;
   }
@@ -285,7 +306,7 @@ $radius-xl: 16px;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba($color-text, 0.4);
+  background: rgba($uni-color-text, 0.4);
   z-index: 999;
 
   .modal-content {
@@ -293,40 +314,40 @@ $radius-xl: 16px;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    background: $color-white;
+    background: $uni-color-white;
     width: 90%;
-    padding: $spacing-lg;
-    border-radius: $radius-lg;
+    padding: $uni-spacing-lg;
+    border-radius: $uni-radius-lg;
   }
 
   .note-input {
     width: calc(100% - 2px);
     height: 200px;
-    border: 1px solid $color-border;
-    border-radius: $radius-base;
-    padding: $spacing-base;
-    margin-bottom: $spacing-xs;
-    font-size: $font-size-base;
+    border: 1px solid $uni-color-border;
+    border-radius: $uni-radius-base;
+    padding: $uni-spacing-base;
+    margin-bottom: $uni-spacing-xs;
+    font-size: $uni-font-size-base;
     box-sizing: border-box;
   }
 
   .word-count {
     text-align: right;
-    font-size: $font-size-sm;
-    color: $color-text-secondary;
-    margin-bottom: $spacing-base;
-    padding-right: $spacing-xs;
+    font-size: $uni-font-size-sm;
+    color: $uni-color-text-secondary;
+    margin-bottom: $uni-spacing-base;
+    padding-right: $uni-spacing-xs;
   }
 
   .modal-btns {
     display: flex;
     justify-content: flex-end;
-    gap: $spacing-base;
-    padding: 0 $spacing-xs;
+    gap: $uni-spacing-base;
+    padding: 0 $uni-spacing-xs;
 
     .btn {
       min-width: 80px;
-      padding: $spacing-xs $spacing-lg;
+      padding: $uni-spacing-xs $uni-spacing-lg;
     }
   }
 }

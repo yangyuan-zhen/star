@@ -5,113 +5,121 @@ const _sfc_main = {
   __name: "index",
   setup(__props) {
     const content = common_vendor.ref("");
-    const themeIndex = common_vendor.ref(0);
-    const themes = ["简约浅色", "暗黑模式"];
-    const themeStyles = {
-      0: {
-        // 简约浅色
-        background: "#ffffff",
-        textColor: "#333333"
-      },
-      1: {
-        // 暗黑模式
-        background: "#282c34",
-        textColor: "#ffffff"
-      }
-    };
     const showPreview = common_vendor.ref(false);
     const previewImage = common_vendor.ref("");
+    const backgroundColor = common_vendor.ref("#ffffff");
     const inputStyle = common_vendor.computed(() => {
       return {
         fontSize: `${fontSize}px`,
-        backgroundColor: themeStyles[themeIndex.value].background,
-        color: themeStyles[themeIndex.value].textColor
+        backgroundColor: "#ffffff"
       };
     });
-    const onThemeChange = (e) => {
-      themeIndex.value = e.detail.value;
-    };
     const drawText = async () => {
-      const query = common_vendor.index.createSelectorQuery();
-      const canvas = await new Promise((resolve) => {
-        query.select("#myCanvas").fields({ node: true, size: true }).exec((res) => {
-          if (res[0]) {
-            resolve(res[0].node);
-          } else {
-            common_vendor.index.showToast({
-              title: "获取画布失败",
-              icon: "none"
-            });
-          }
-        });
-      });
-      if (!canvas)
-        return null;
-      const ctx = canvas.getContext("2d");
       const dpr = common_vendor.index.getSystemInfoSync().pixelRatio;
       const canvasWidth = 300 * dpr;
-      ctx.font = `${fontSize}px sans-serif`;
-      const text = content.value;
-      const maxWidth = 260;
-      const lineHeight = fontSize + 8;
-      const topMargin = 20;
-      const bottomMargin = 30;
-      const leftMargin = 20;
-      const rightMargin = 20;
-      const lines = [];
-      let currentLine = "";
-      const paragraphs = text.split("\n");
-      for (let paragraph of paragraphs) {
-        if (paragraph === "") {
-          lines.push("");
-          continue;
-        }
-        for (let char of paragraph) {
-          const testLine = currentLine + char;
-          const metrics = ctx.measureText(testLine);
-          if (metrics.width > maxWidth && currentLine) {
-            lines.push(currentLine);
-            currentLine = char;
-          } else {
-            currentLine = testLine;
+      const fontSize2 = 12;
+      const lineHeight = fontSize2 * 2;
+      const leftMargin = 20 * dpr;
+      const rightMargin = 20 * dpr;
+      const topMargin = 20 * dpr;
+      const maxWidth = (canvasWidth - leftMargin - rightMargin) / dpr;
+      try {
+        const query = common_vendor.index.createSelectorQuery();
+        const canvas2 = await new Promise((resolve) => {
+          query.select("#myCanvas").fields({ node: true, size: true }).exec((res) => {
+            if (res[0]) {
+              const canvas3 = res[0].node;
+              const ctx2 = canvas3.getContext("2d");
+              resolve({ canvas: canvas3, ctx: ctx2 });
+            }
+          });
+        });
+        const { canvas, ctx } = canvas2;
+        const textLines = [];
+        const paragraphs = content.value.split("\n");
+        ctx.font = `${fontSize2}px sans-serif`;
+        for (let paragraph of paragraphs) {
+          let currentLine = "";
+          let chars = paragraph.split("");
+          for (let char of chars) {
+            const testLine = currentLine + char;
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && currentLine) {
+              textLines.push(currentLine);
+              currentLine = char;
+            } else {
+              currentLine = testLine;
+            }
           }
+          if (currentLine) {
+            textLines.push(currentLine);
+          }
+          textLines.push("");
         }
-        if (currentLine) {
-          lines.push(currentLine);
-          currentLine = "";
-        }
+        const textHeight = textLines.length * lineHeight;
+        const bottomSpace = 180;
+        const canvasHeight = Math.max(400, topMargin + textHeight + bottomSpace) * dpr;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        ctx.scale(dpr, dpr);
+        ctx.fillStyle = backgroundColor.value;
+        ctx.fillRect(0, 0, canvasWidth / dpr, canvasHeight / dpr);
+        const logoImage = await new Promise((resolve, reject) => {
+          const img = canvas.createImage();
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = "/static/tabs/logo.png";
+        });
+        let lastTextY = 0;
+        textLines.forEach((line, index) => {
+          const y = topMargin / dpr + index * lineHeight;
+          ctx.fillText(line, leftMargin / dpr, y);
+          lastTextY = y;
+        });
+        const lineY = lastTextY + lineHeight + 20;
+        ctx.beginPath();
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+        ctx.moveTo(30, lineY);
+        ctx.lineTo(canvasWidth / dpr - 30, lineY);
+        ctx.stroke();
+        const date = /* @__PURE__ */ new Date();
+        const dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#333333";
+        const dateY = lineY + 20;
+        ctx.fillText(dateStr, canvasWidth / (2 * dpr), dateY);
+        const logoSize = 80;
+        const logoX = (canvasWidth / dpr - logoSize) / 2;
+        const logoY = dateY + 20;
+        ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
+        const totalHeight = logoY + logoSize + 20;
+        canvas.height = totalHeight * dpr;
+        ctx.scale(dpr, dpr);
+        ctx.fillStyle = backgroundColor.value;
+        ctx.fillRect(0, 0, canvasWidth / dpr, totalHeight);
+        ctx.font = `${fontSize2}px sans-serif`;
+        ctx.fillStyle = "#333333";
+        ctx.textBaseline = "top";
+        ctx.textAlign = "left";
+        textLines.forEach((line, index) => {
+          const y = topMargin / dpr + index * lineHeight;
+          ctx.fillText(line, leftMargin / dpr, y);
+        });
+        ctx.beginPath();
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1;
+        ctx.moveTo(30, lineY);
+        ctx.lineTo(canvasWidth / dpr - 30, lineY);
+        ctx.stroke();
+        ctx.textAlign = "center";
+        ctx.fillText(dateStr, canvasWidth / (2 * dpr), dateY);
+        ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
+        return canvas;
+      } catch (error) {
+        console.error("绘制失败:", error);
+        throw error;
       }
-      const totalTextHeight = lines.length * lineHeight;
-      const canvasHeight = Math.max(
-        400 * dpr,
-        (totalTextHeight + topMargin + bottomMargin) * dpr
-      );
-      canvas.width = canvasWidth;
-      canvas.height = canvasHeight;
-      ctx.scale(dpr, dpr);
-      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-      ctx.fillStyle = themeStyles[themeIndex.value].background;
-      ctx.fillRect(0, 0, canvasWidth / dpr, canvasHeight / dpr);
-      ctx.font = `${fontSize}px sans-serif`;
-      ctx.textBaseline = "middle";
-      ctx.textAlign = "left";
-      ctx.fillStyle = themeStyles[themeIndex.value].textColor;
-      lines.forEach((line, index) => {
-        const y = topMargin + index * lineHeight;
-        ctx.fillText(line, leftMargin, y);
-      });
-      ctx.save();
-      ctx.font = "12px sans-serif";
-      ctx.fillStyle = themeIndex.value === 1 ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)";
-      ctx.textAlign = "right";
-      ctx.textBaseline = "bottom";
-      ctx.fillText(
-        "Free信息",
-        canvasWidth / dpr - rightMargin,
-        canvasHeight / dpr - 15
-      );
-      ctx.restore();
-      return canvas;
     };
     const generatePreview = async () => {
       if (!content.value.trim()) {
@@ -214,32 +222,90 @@ const _sfc_main = {
         query: `text=${encodeURIComponent(content.value)}`
       };
     });
+    const showColorPicker = common_vendor.ref(false);
+    const currentPickerColor = common_vendor.ref("#ffffff");
+    const currentPickerType = common_vendor.ref("");
+    const presetColors = [
+      "#FFFFFF",
+      // 白色
+      "#FFF8DC",
+      // 奶油
+      "#FAF3E0",
+      // 淡米色
+      "#F5F5F5",
+      // 浅灰色
+      "#E0E0E0",
+      // 中灰色
+      "#FDF6E3",
+      // 米黄色
+      "#FFFDE7",
+      // 浅米色
+      "#E0F7FA",
+      // 淡蓝色
+      "#B3E5FC",
+      // 浅蓝色
+      "#E8F5E9",
+      // 淡绿色
+      "#C8E6C9"
+      // 浅绿色
+    ];
+    const showBackgroundColorPicker = () => {
+      currentPickerColor.value = backgroundColor.value;
+      currentPickerType.value = "background";
+      showColorPicker.value = true;
+    };
+    const closeColorPicker = () => {
+      showColorPicker.value = false;
+    };
+    const selectColor = (color) => {
+      backgroundColor.value = color;
+      closeColorPicker();
+    };
+    const onColorInput = (e) => {
+      const color = e.target.value;
+      backgroundColor.value = color;
+      closeColorPicker();
+    };
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: common_vendor.s(inputStyle.value),
         b: -1,
         c: content.value,
         d: common_vendor.o(($event) => content.value = $event.detail.value),
-        e: common_vendor.t(themes[themeIndex.value]),
-        f: themeIndex.value,
-        g: themes,
-        h: common_vendor.o(onThemeChange),
-        i: common_vendor.o(generatePreview),
-        j: previewImage.value
-      }, previewImage.value ? {
-        k: common_vendor.o(shareToWechat)
+        e: backgroundColor.value,
+        f: common_vendor.o(showBackgroundColorPicker),
+        g: common_vendor.o(generatePreview),
+        h: content.value.trim() && previewImage.value
+      }, content.value.trim() && previewImage.value ? {
+        i: common_vendor.o(shareToWechat)
       } : {}, {
-        l: previewImage.value
-      }, previewImage.value ? {
-        m: common_vendor.o(saveImage)
+        j: content.value.trim() && previewImage.value
+      }, content.value.trim() && previewImage.value ? {
+        k: common_vendor.o(saveImage)
       } : {}, {
-        n: showPreview.value
+        l: showPreview.value
       }, showPreview.value ? {
-        o: previewImage.value,
-        p: common_vendor.o(() => {
+        m: previewImage.value,
+        n: common_vendor.o(() => {
         }),
-        q: common_vendor.o(closePreview),
-        r: common_vendor.o(closePreview)
+        o: common_vendor.o(closePreview),
+        p: common_vendor.o(closePreview)
+      } : {}, {
+        q: showColorPicker.value
+      }, showColorPicker.value ? {
+        r: common_vendor.o(closeColorPicker),
+        s: common_vendor.f(presetColors, (color, k0, i0) => {
+          return {
+            a: color,
+            b: color,
+            c: common_vendor.o(($event) => selectColor(color), color)
+          };
+        }),
+        t: currentPickerColor.value,
+        v: common_vendor.o(onColorInput),
+        w: common_vendor.o(() => {
+        }),
+        x: common_vendor.o(closeColorPicker)
       } : {});
     };
   }

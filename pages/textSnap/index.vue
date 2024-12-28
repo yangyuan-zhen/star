@@ -17,13 +17,14 @@
     <view class="settings-section">
       <view class="setting-item">
         <view class="setting-label">
-          <text>主题样式</text>
+          <text>背景颜色</text>
         </view>
-        <picker :value="themeIndex" :range="themes" @change="onThemeChange">
-          <view class="picker-wrapper">
-            <text>{{ themes[themeIndex] }}</text>
-          </view>
-        </picker>
+        <view class="color-picker" @tap="showBackgroundColorPicker">
+          <view
+            class="color-preview"
+            :style="{ backgroundColor: backgroundColor }"
+          ></view>
+        </view>
       </view>
     </view>
 
@@ -35,11 +36,15 @@
       <button
         class="action-btn share-btn"
         @tap="shareToWechat"
-        v-if="previewImage"
+        v-if="content.trim() && previewImage"
       >
         <text>分享到微信</text>
       </button>
-      <button class="action-btn save-btn" @tap="saveImage" v-if="previewImage">
+      <button
+        class="action-btn save-btn"
+        @tap="saveImage"
+        v-if="content.trim() && previewImage"
+      >
         <text>保存到相册</text>
       </button>
     </view>
@@ -68,158 +73,216 @@
         top: 0;
       "
     ></canvas>
+
+    <!-- 颜色选择器弹窗 -->
+    <view
+      class="color-picker-modal"
+      v-if="showColorPicker"
+      @tap="closeColorPicker"
+    >
+      <view class="color-picker-content" @tap.stop>
+        <view class="color-picker-header">
+          <text>选择颜色</text>
+          <text class="close-btn" @tap="closeColorPicker">×</text>
+        </view>
+
+        <view class="preset-colors">
+          <view
+            v-for="color in presetColors"
+            :key="color"
+            class="color-item"
+            :style="{ backgroundColor: color }"
+            @tap="selectColor(color)"
+          ></view>
+        </view>
+
+        <view class="custom-color">
+          <text>自定义颜色</text>
+          <input
+            type="color"
+            :value="currentPickerColor"
+            @change="onColorInput"
+            class="color-input"
+          />
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
+import colorPicker from "@/utils/colorPicker";
 
 const content = ref("");
-const themeIndex = ref(0);
-const themes = ["简约浅色", "暗黑模式"];
-const themeStyles = {
-  0: {
-    // 简约浅色
-    background: "#ffffff",
-    textColor: "#333333",
-  },
-  1: {
-    // 暗黑模式
-    background: "#282c34",
-    textColor: "#ffffff",
-  },
-};
 const fontSize = 12;
 const showPreview = ref(false);
 const previewImage = ref("");
+const backgroundColor = ref("#ffffff");
 
 // 计算样式
 const inputStyle = computed(() => {
   return {
     fontSize: `${fontSize}px`,
-    backgroundColor: themeStyles[themeIndex.value].background,
-    color: themeStyles[themeIndex.value].textColor,
+    backgroundColor: "#ffffff",
   };
 });
 
-const onThemeChange = (e) => {
-  themeIndex.value = e.detail.value;
-};
-
 const drawText = async () => {
-  const query = uni.createSelectorQuery();
-  const canvas = await new Promise((resolve) => {
-    query
-      .select("#myCanvas")
-      .fields({ node: true, size: true })
-      .exec((res) => {
-        if (res[0]) {
-          resolve(res[0].node);
-        } else {
-          uni.showToast({
-            title: "获取画布失败",
-            icon: "none",
-          });
-        }
-      });
-  });
-
-  if (!canvas) return null;
-
-  const ctx = canvas.getContext("2d");
   const dpr = uni.getSystemInfoSync().pixelRatio;
   const canvasWidth = 300 * dpr;
+  const fontSize = 12;
+  const lineHeight = fontSize * 2;
+  const leftMargin = 20 * dpr;
+  const rightMargin = 20 * dpr;
+  const topMargin = 20 * dpr;
+  const maxWidth = (canvasWidth - leftMargin - rightMargin) / dpr;
 
-  // 计算所需画布高度
-  ctx.font = `${fontSize}px sans-serif`;
-  const text = content.value;
-  const maxWidth = 260;
-  const lineHeight = fontSize + 8;
-  const topMargin = 20;
-  const bottomMargin = 30;
-  const leftMargin = 20;
-  const rightMargin = 20;
+  try {
+    const query = uni.createSelectorQuery();
+    const canvas2 = await new Promise((resolve) => {
+      query
+        .select("#myCanvas")
+        .fields({ node: true, size: true })
+        .exec((res) => {
+          if (res[0]) {
+            const canvas = res[0].node;
+            const ctx = canvas.getContext("2d");
+            resolve({ canvas, ctx });
+          }
+        });
+    });
 
-  // 分行处理
-  const lines = [];
-  let currentLine = "";
+    const { canvas, ctx } = canvas2;
 
-  // 处理手动换行
-  const paragraphs = text.split("\n");
-  for (let paragraph of paragraphs) {
-    if (paragraph === "") {
-      lines.push(""); // 保留空行
-      continue;
-    }
+    // 计算文本行数和画布高度
+    const textLines = [];
+    const paragraphs = content.value.split("\n");
 
-    // 处理每一段的自动换行
-    for (let char of paragraph) {
-      const testLine = currentLine + char;
-      const metrics = ctx.measureText(testLine);
+    ctx.font = `${fontSize}px sans-serif`;
 
-      if (metrics.width > maxWidth && currentLine) {
-        lines.push(currentLine);
-        currentLine = char;
-      } else {
-        currentLine = testLine;
+    // 处理文本换行
+    for (let paragraph of paragraphs) {
+      let currentLine = "";
+      let chars = paragraph.split("");
+
+      for (let char of chars) {
+        const testLine = currentLine + char;
+        const metrics = ctx.measureText(testLine);
+
+        if (metrics.width > maxWidth && currentLine) {
+          textLines.push(currentLine);
+          currentLine = char;
+        } else {
+          currentLine = testLine;
+        }
       }
+
+      if (currentLine) {
+        textLines.push(currentLine);
+      }
+      // 段落之间添加空行
+      textLines.push("");
     }
 
-    if (currentLine) {
-      lines.push(currentLine);
-      currentLine = "";
-    }
+    // 计算画布高度
+    const textHeight = textLines.length * lineHeight;
+    const bottomSpace = 180;
+    const canvasHeight =
+      Math.max(400, topMargin + textHeight + bottomSpace) * dpr;
+
+    // 设置画布尺寸
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+    ctx.scale(dpr, dpr);
+
+    // 绘制背景
+    ctx.fillStyle = backgroundColor.value;
+    ctx.fillRect(0, 0, canvasWidth / dpr, canvasHeight / dpr);
+
+    // 加载 logo 图片
+    const logoImage = await new Promise((resolve, reject) => {
+      const img = canvas.createImage();
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = "/static/tabs/logo.png";
+    });
+
+    // 绘制文字
+    let lastTextY = 0;
+    textLines.forEach((line, index) => {
+      const y = topMargin / dpr + index * lineHeight;
+      ctx.fillText(line, leftMargin / dpr, y);
+      lastTextY = y;
+    });
+
+    // 绘制分割线
+    const lineY = lastTextY + lineHeight + 20;
+    ctx.beginPath();
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 1;
+    ctx.moveTo(30, lineY);
+    ctx.lineTo(canvasWidth / dpr - 30, lineY);
+    ctx.stroke();
+
+    // 绘制日期
+    const date = new Date();
+    const dateStr = `${date.getFullYear()}年${
+      date.getMonth() + 1
+    }月${date.getDate()}日`;
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#333333";
+    const dateY = lineY + 20;
+    ctx.fillText(dateStr, canvasWidth / (2 * dpr), dateY);
+
+    // 绘制 logo
+    const logoSize = 80; // logo 大小
+    const logoX = (canvasWidth / dpr - logoSize) / 2;
+    const logoY = dateY + 20; // 日期下���20px
+    ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
+
+    // 计算新的画布高度
+    const totalHeight = logoY + logoSize + 20;
+    canvas.height = totalHeight * dpr;
+
+    // 重新绘制所有内容
+    ctx.scale(dpr, dpr);
+
+    // 重新绘制背景
+    ctx.fillStyle = backgroundColor.value;
+    ctx.fillRect(0, 0, canvasWidth / dpr, totalHeight);
+
+    // 重新绘制文字
+    ctx.font = `${fontSize}px sans-serif`;
+    ctx.fillStyle = "#333333";
+    ctx.textBaseline = "top";
+    ctx.textAlign = "left";
+    textLines.forEach((line, index) => {
+      const y = topMargin / dpr + index * lineHeight;
+      ctx.fillText(line, leftMargin / dpr, y);
+    });
+
+    // 重新绘制分割线
+    ctx.beginPath();
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 1;
+    ctx.moveTo(30, lineY);
+    ctx.lineTo(canvasWidth / dpr - 30, lineY);
+    ctx.stroke();
+
+    // 重新绘制日期
+    ctx.textAlign = "center";
+    ctx.fillText(dateStr, canvasWidth / (2 * dpr), dateY);
+
+    // 重新绘制 logo
+    ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
+
+    return canvas;
+  } catch (error) {
+    console.error("绘制失败:", error);
+    throw error;
   }
-
-  // 计算所需的总高度
-  const totalTextHeight = lines.length * lineHeight;
-  const canvasHeight = Math.max(
-    400 * dpr,
-    (totalTextHeight + topMargin + bottomMargin) * dpr
-  );
-
-  // 设置画布大小
-  canvas.width = canvasWidth;
-  canvas.height = canvasHeight;
-
-  // 缩放以适应 DPR
-  ctx.scale(dpr, dpr);
-
-  // 清空画布
-  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-
-  // 绘制背景
-  ctx.fillStyle = themeStyles[themeIndex.value].background;
-  ctx.fillRect(0, 0, canvasWidth / dpr, canvasHeight / dpr);
-
-  // 设置文字样式
-  ctx.font = `${fontSize}px sans-serif`;
-  ctx.textBaseline = "middle";
-  ctx.textAlign = "left";
-  ctx.fillStyle = themeStyles[themeIndex.value].textColor;
-
-  // 绘制文字
-  lines.forEach((line, index) => {
-    const y = topMargin + index * lineHeight;
-    ctx.fillText(line, leftMargin, y);
-  });
-
-  // 添加水印
-  ctx.save();
-  ctx.font = "12px sans-serif";
-  ctx.fillStyle =
-    themeIndex.value === 1 ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)";
-  ctx.textAlign = "right";
-  ctx.textBaseline = "bottom";
-  ctx.fillText(
-    "Free信息",
-    canvasWidth / dpr - rightMargin,
-    canvasHeight / dpr - 15
-  );
-  ctx.restore();
-
-  return canvas;
 };
 
 // 修改 generatePreview 函数
@@ -347,6 +410,51 @@ onShareTimeline(() => {
     query: `text=${encodeURIComponent(content.value)}`,
   };
 });
+
+// 添加颜色选择器相关的状态
+const showColorPicker = ref(false);
+const currentPickerColor = ref("#ffffff");
+const currentPickerType = ref(""); // 'background' 或 'text'
+
+// 预设颜色
+const presetColors = [
+  "#FFFFFF", // 白色
+  "#FFF8DC", // 奶油
+  "#FAF3E0", // 淡米色
+  "#F5F5F5", // 浅灰色
+  "#E0E0E0", // 中灰色
+  "#FDF6E3", // 米黄色
+  "#FFFDE7", // 浅米色
+  "#E0F7FA", // 淡蓝色
+  "#B3E5FC", // 浅蓝色
+  "#E8F5E9", // 淡绿色
+  "#C8E6C9", // 浅绿色
+];
+
+// 修改颜色选择器方法
+const showBackgroundColorPicker = () => {
+  currentPickerColor.value = backgroundColor.value;
+  currentPickerType.value = "background";
+  showColorPicker.value = true;
+};
+
+// 关闭颜色选择器
+const closeColorPicker = () => {
+  showColorPicker.value = false;
+};
+
+// 选择预设颜色
+const selectColor = (color) => {
+  backgroundColor.value = color;
+  closeColorPicker();
+};
+
+// 处理自定义颜色输入
+const onColorInput = (e) => {
+  const color = e.target.value;
+  backgroundColor.value = color;
+  closeColorPicker();
+};
 </script>
 
 <style lang="scss" scoped>
@@ -503,6 +611,81 @@ onShareTimeline(() => {
     &:active {
       transform: scale(0.95);
       background: rgba(0, 0, 0, 0.5);
+    }
+  }
+}
+
+.color-picker {
+  .color-preview {
+    width: 60rpx;
+    height: 60rpx;
+    border-radius: 8rpx;
+    border: 1px solid #eaecef;
+  }
+}
+
+.color-picker-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+
+  .color-picker-content {
+    width: 600rpx;
+    background: #fff;
+    border-radius: 20rpx;
+    padding: 30rpx;
+  }
+
+  .color-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30rpx;
+
+    .close-btn {
+      font-size: 40rpx;
+      color: #999;
+      padding: 10rpx;
+    }
+  }
+
+  .preset-colors {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20rpx;
+    margin-bottom: 30rpx;
+
+    .color-item {
+      aspect-ratio: 1;
+      border-radius: 8rpx;
+      border: 1px solid #eee;
+      transition: transform 0.2s;
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+
+  .custom-color {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20rpx 0;
+    border-top: 1px solid #eee;
+
+    .color-input {
+      width: 80rpx;
+      height: 80rpx;
+      padding: 0;
+      border: none;
     }
   }
 }

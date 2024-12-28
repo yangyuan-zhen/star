@@ -16,6 +16,10 @@
 /* 文字尺寸 */
 /* 间距 */
 /* 圆角 */
+/* 新增颜色变量 */
+/* 扩展文字尺寸 */
+/* 扩展间距 */
+/* 扩展圆角 */
 .movie-calendar.data-v-a135a866 {
   min-height: 100vh;
   background: #f5f5f5;
