@@ -113,7 +113,6 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import { onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
-import colorPicker from "@/utils/colorPicker";
 
 const content = ref("");
 const fontSize = 12;
@@ -128,7 +127,7 @@ const inputStyle = computed(() => {
     backgroundColor: "#ffffff",
   };
 });
-
+// 绘制文字
 const drawText = async () => {
   const dpr = uni.getSystemInfoSync().pixelRatio;
   const canvasWidth = 300 * dpr;
@@ -239,7 +238,7 @@ const drawText = async () => {
     // 绘制 logo
     const logoSize = 80; // logo 大小
     const logoX = (canvasWidth / dpr - logoSize) / 2;
-    const logoY = dateY + 20; // 日期下���20px
+    const logoY = dateY + 20; // 日期下20px
     ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
 
     // 计算新的画布高度
@@ -326,10 +325,42 @@ const generatePreview = async () => {
 
 // 保存图片到相册
 const saveImage = async () => {
-  if (!previewImage.value) return;
+  // 检查是否有预览图
+  if (!previewImage.value) {
+    uni.showToast({
+      title: "请先生成预览图",
+      icon: "none",
+    });
+    return;
+  }
 
   try {
+    // 检查相册权限
+    const auth = await new Promise((resolve) => {
+      uni.authorize({
+        scope: "scope.writePhotosAlbum",
+        success: () => resolve(true),
+        fail: () => resolve(false),
+      });
+    });
+
+    if (!auth) {
+      uni.showModal({
+        title: "提示",
+        content: "需要您授权保存图片到相册",
+        success: (res) => {
+          if (res.confirm) {
+            uni.openSetting();
+          }
+        },
+      });
+      return;
+    }
+
+    // 显示加载提示
     uni.showLoading({ title: "保存中..." });
+
+    // 保存图片
     await new Promise((resolve, reject) => {
       uni.saveImageToPhotosAlbum({
         filePath: previewImage.value,
@@ -338,19 +369,22 @@ const saveImage = async () => {
       });
     });
 
-    uni.hideLoading();
+    // 保存成功
     uni.showToast({
       title: "保存成功",
       icon: "success",
     });
+
+    // 关闭预览
     closePreview();
   } catch (error) {
     console.error("保存失败:", error);
-    uni.hideLoading();
     uni.showToast({
       title: "保存失败",
       icon: "none",
     });
+  } finally {
+    uni.hideLoading();
   }
 };
 

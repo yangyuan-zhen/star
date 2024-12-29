@@ -155,9 +155,33 @@ const _sfc_main = {
       }
     };
     const saveImage = async () => {
-      if (!previewImage.value)
+      if (!previewImage.value) {
+        common_vendor.index.showToast({
+          title: "请先生成预览图",
+          icon: "none"
+        });
         return;
+      }
       try {
+        const auth = await new Promise((resolve) => {
+          common_vendor.index.authorize({
+            scope: "scope.writePhotosAlbum",
+            success: () => resolve(true),
+            fail: () => resolve(false)
+          });
+        });
+        if (!auth) {
+          common_vendor.index.showModal({
+            title: "提示",
+            content: "需要您授权保存图片到相册",
+            success: (res) => {
+              if (res.confirm) {
+                common_vendor.index.openSetting();
+              }
+            }
+          });
+          return;
+        }
         common_vendor.index.showLoading({ title: "保存中..." });
         await new Promise((resolve, reject) => {
           common_vendor.index.saveImageToPhotosAlbum({
@@ -166,7 +190,6 @@ const _sfc_main = {
             fail: reject
           });
         });
-        common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: "保存成功",
           icon: "success"
@@ -174,11 +197,12 @@ const _sfc_main = {
         closePreview();
       } catch (error) {
         console.error("保存失败:", error);
-        common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: "保存失败",
           icon: "none"
         });
+      } finally {
+        common_vendor.index.hideLoading();
       }
     };
     const closePreview = () => {
