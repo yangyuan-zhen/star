@@ -21,138 +21,184 @@
 /* 扩展间距 */
 /* 扩展圆角 */
 .translation {
-  padding: 24rpx;
+  padding: 32rpx;
   max-width: 900rpx;
   margin: 0 auto;
 }
 .translation .input-section .input-area {
   width: 100%;
   min-height: 240rpx;
-  padding: 24rpx;
-  border: 2rpx solid #e5e7eb;
-  border-radius: 12rpx;
+  padding: 32rpx;
+  border: 2rpx solid #e5e5ea;
+  border-radius: 16rpx;
   box-sizing: border-box;
-  font-size: 28rpx;
+  font-size: 30rpx;
   transition: all 0.3s ease;
 }
 .translation .input-section .input-area:focus {
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 2rpx rgba(79, 70, 229, 0.1);
+  border-color: #007aff;
+  box-shadow: 0 0 0 2rpx rgba(0, 122, 255, 0.1);
 }
 .translation .input-section .btn-group {
   display: flex;
   justify-content: space-between;
-  margin-top: 24rpx;
-  gap: 24rpx;
+  margin-top: 32rpx;
+  gap: 32rpx;
 }
 .translation .base-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8rpx;
-  padding: 20rpx 32rpx;
+  gap: 16rpx;
+  padding: 24rpx 40rpx;
   border-radius: 8rpx;
-  font-size: 28rpx;
+  font-size: 30rpx;
   font-weight: 500;
   transition: all 0.2s ease;
-}
-.translation .base-btn .iconify {
-  font-size: 32rpx;
 }
 .translation .base-btn:active {
   transform: scale(0.98);
 }
 .translation .clear-btn {
   flex: 1;
-  background-color: #f4f4f5;
-  color: #71717a;
+  background-color: #f8f8f8;
+  color: #999;
 }
-.translation .clear-btn:hover {
-  background-color: #e4e4e7;
-}
-.translation .translate-btn,
-.translation .copy-btn {
+.translation .translate-btn {
   flex: 1;
-  background-color: #4f46e5;
-  color: #fff;
-}
-.translation .translate-btn:hover,
-.translation .copy-btn:hover {
-  background-color: #4338ca;
+  background-color: #007aff;
+  color: #ffffff;
 }
 .translation .result-section {
-  margin-top: 40rpx;
-  background-color: #fff;
+  margin-top: 48rpx;
+  background-color: #ffffff;
   border-radius: 16rpx;
-  border: 2rpx solid #e5e7eb;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.03);
+  border: 2rpx solid #e5e5ea;
   overflow: hidden;
 }
 .translation .result-section .result-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 32rpx;
-  border-bottom: 2rpx solid #f1f5f9;
-  background-color: #f8fafc;
+  padding: 32rpx;
+  border-bottom: 2rpx solid #e5e5ea;
+  background-color: #f8f8f8;
 }
 .translation .result-section .result-header .result-title {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  font-size: 28rpx;
-  color: #475569;
+  gap: 16rpx;
+  font-size: 30rpx;
+  color: #333;
   font-weight: 500;
 }
-.translation .result-section .result-header .icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 8rpx;
-  color: #64748b;
-  background-color: #fff;
-  border: 2rpx solid #e2e8f0;
-  transition: all 0.2s ease;
-}
-.translation .result-section .result-header .icon-btn:active {
-  transform: scale(0.95);
-  background-color: #f8fafc;
-}
-.translation .result-section .result-header .icon-btn .copy-icon {
-  font-size: 36rpx;
-  width: 36rpx;
-  height: 36rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 .translation .result-section .result-content {
-  font-size: 30rpx;
+  padding: 40rpx;
+  font-size: 34rpx;
   line-height: 1.8;
-  padding: 32rpx;
-  color: #1e293b;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  color: #333;
+  border-bottom: 2rpx solid #e5e5ea;
 }
 .translation .loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
+  gap: 16rpx;
+  padding: 32rpx;
+  color: #999;
+}
+.vocabulary-section {
+  padding: 32rpx;
+}
+.vocabulary-section .category-title {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 24rpx;
+}
+.vocabulary-section .word-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+.vocabulary-section .word-list .word-item {
   padding: 24rpx;
-  color: #64748b;
+  background-color: #f8f8f8;
+  border-radius: 8rpx;
 }
-.translation .loading .loading-icon {
-  font-size: 36rpx;
-  animation: spin 1s linear infinite;
+.vocabulary-section .word-list .word-item .word-header {
+  color: #333;
+  font-weight: 500;
+  font-size: 30rpx;
+  margin-bottom: 16rpx;
 }
-@keyframes spin {
-from {
-    transform: rotate(0deg);
+.vocabulary-section .word-list .word-item .word-explanation {
+  color: #999;
+  font-size: 26rpx;
+  line-height: 1.6;
 }
-to {
-    transform: rotate(360deg);
+.feature-section {
+  margin-top: 48rpx;
+  background-color: #ffffff;
+  border-radius: 24rpx;
+  padding: 48rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
 }
+.feature-section .feature-title {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 48rpx;
+  position: relative;
+  padding-left: 40rpx;
+}
+.feature-section .feature-title::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6rpx;
+  height: 32rpx;
+  background-color: #007aff;
+  border-radius: 8rpx;
+}
+.feature-section .feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: 48rpx;
+}
+.feature-section .feature-list .feature-item {
+  background-color: #f8f8f8;
+  padding: 40rpx;
+  border-radius: 20rpx;
+  transition: all 0.3s ease;
+}
+.feature-section .feature-list .feature-item:hover {
+  transform: translateX(8rpx);
+}
+.feature-section .feature-list .feature-item .item-header {
+  display: flex;
+  align-items: center;
+  gap: 32rpx;
+  margin-bottom: 24rpx;
+}
+.feature-section .feature-list .feature-item .item-header .item-number {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #007aff;
+  background-color: rgba(0, 122, 255, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 16rpx;
+}
+.feature-section .feature-list .feature-item .item-header .item-title {
+  font-size: 34rpx;
+  font-weight: 500;
+  color: #333;
+}
+.feature-section .feature-list .feature-item .item-desc {
+  color: #999;
+  font-size: 30rpx;
+  line-height: 1.6;
+  padding-left: 72rpx;
 }
