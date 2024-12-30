@@ -160,6 +160,10 @@ const _sfc_main = {
       }
     });
     const daysUntilPayday = common_vendor.computed(() => {
+      var _a;
+      if (!((_a = props.displaySettings) == null ? void 0 : _a.payday)) {
+        return 0;
+      }
       const today = /* @__PURE__ */ new Date();
       const currentDay = today.getDate();
       const currentMonth = today.getMonth();

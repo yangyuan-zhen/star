@@ -3,10 +3,7 @@
     <!-- 搜索表单视图 -->
     <view v-if="!showResults" class="form-container">
       <view class="input-group">
-        <text class="label">
-          <Icon icon="mdi:shopping-outline" class="input-icon" />
-          商品名称
-        </text>
+        <text class="label">商品名称</text>
         <input
           class="input"
           v-model="query"
@@ -15,10 +12,7 @@
         />
       </view>
       <view class="input-group">
-        <text class="label">
-          <Icon icon="mdi:currency-cny" class="input-icon" />
-          最低价格
-        </text>
+        <text class="label">最低价格</text>
         <input
           class="input"
           v-model="minPrice"
@@ -28,10 +22,7 @@
       </view>
 
       <view class="input-group">
-        <text class="label">
-          <Icon icon="mdi:currency-cny" class="input-icon" />
-          最高价格
-        </text>
+        <text class="label">最高价格</text>
         <input
           class="input"
           v-model="maxPrice"
@@ -41,11 +32,6 @@
       </view>
 
       <button class="submit-btn" @click="getAdvice" :disabled="loading">
-        <Icon
-          :icon="loading ? 'mdi:loading' : 'mdi:magnify'"
-          class="btn-icon"
-          :class="{ 'icon-spin': loading }"
-        />
         {{ loading ? "分析中..." : "获取建议" }}
       </button>
 
@@ -112,7 +98,6 @@
 <script setup>
 import { ref, onUnmounted, computed, onMounted } from "vue";
 import { getShoppingAdvice } from "@/api/search.js";
-import { Icon } from "@iconify/vue";
 
 const query = ref("");
 const minPrice = ref("");
@@ -138,6 +123,12 @@ const getAdvice = async () => {
       showResults.value = true;
     }
   } catch (error) {
+    // 根据错误类型显示不同的提示
+    if (error.code === 401) {
+      // API授权错误时不显示错误提示（因为handleApiError已经显示了）
+      loading.value = false; // 立即关闭loading状态
+      return;
+    }
     uni.showToast({
       title: "获取建议失败",
       icon: "error",
@@ -406,30 +397,10 @@ onMounted(() => {
   color: #52c41a;
 }
 
-.input-icon {
-  font-size: 18px;
-  margin-right: 6px;
-  vertical-align: middle;
-  color: #666;
-}
-
-.btn-icon {
-  font-size: 20px;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-
+.input-icon,
+.btn-icon,
 .icon-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  display: none;
 }
 
 .tips-container {

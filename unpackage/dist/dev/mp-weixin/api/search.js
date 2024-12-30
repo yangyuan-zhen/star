@@ -16,7 +16,7 @@ const getWeatherReport = (city) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65",
+        "Authorization": "Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0",
         "Content-Type": "application/json"
       },
       data: {
@@ -55,7 +55,7 @@ const getBookRecommend = (bookName) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65",
+        "Authorization": "Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0",
         "Content-Type": "application/json"
       },
       data: {
@@ -94,7 +94,7 @@ const translateText = (text) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65",
+        "Authorization": "Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0",
         "Content-Type": "application/json"
       },
       data: {
@@ -244,7 +244,7 @@ const getShoppingAdvice = (query, maxPrice, minPrice) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65",
+        "Authorization": "Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0",
         "Content-Type": "application/json"
       },
       data: {
@@ -256,6 +256,15 @@ const getShoppingAdvice = (query, maxPrice, minPrice) => {
         }
       },
       success: (res) => {
+        if (res.statusCode === 401 || res.data && res.data.code === 401) {
+          common_vendor.index.showToast({
+            title: "API授权已过期，请等待开发者更新",
+            icon: "none",
+            duration: 3e3
+          });
+          reject({ code: 401, message: "API授权已过期" });
+          return;
+        }
         if (res.data.code === 0) {
           try {
             const result = JSON.parse(res.data.data);

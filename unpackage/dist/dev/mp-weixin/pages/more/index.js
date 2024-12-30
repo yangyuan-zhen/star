@@ -60,8 +60,8 @@ const _sfc_main = {
       workEndTime: "18:00"
     });
     const displaySettings = common_vendor.ref({
-      payday: 28,
-      dailyIncome: 1e3,
+      payday: 0,
+      dailyIncome: 0,
       workStartTime: "09:00",
       workEndTime: "18:00",
       workDays: [1, 2, 3, 4, 5]
@@ -237,16 +237,30 @@ const _sfc_main = {
       customSettings.value.workEndTime = e.detail.value;
     };
     common_vendor.onMounted(() => {
+      var _a, _b;
       const savedSettings = common_vendor.index.getStorageSync("customSettings");
       if (savedSettings) {
-        displaySettings.value = savedSettings;
+        displaySettings.value = {
+          payday: savedSettings.payday,
+          dailyIncome: savedSettings.dailyIncome,
+          workStartTime: savedSettings.workStartTime || "09:00",
+          workEndTime: savedSettings.workEndTime || "18:00",
+          workDays: savedSettings.workDays || [1, 2, 3, 4, 5]
+        };
         customSettings.value = {
-          payday: savedSettings.payday.toString(),
-          dailyIncome: savedSettings.dailyIncome.toString(),
+          payday: ((_a = savedSettings.payday) == null ? void 0 : _a.toString()) || "0",
+          dailyIncome: ((_b = savedSettings.dailyIncome) == null ? void 0 : _b.toString()) || "0",
           workStartTime: savedSettings.workStartTime || "09:00",
           workEndTime: savedSettings.workEndTime || "18:00"
         };
         selectedWorkDays.value = savedSettings.workDays || [1, 2, 3, 4, 5];
+      } else {
+        customSettings.value = {
+          payday: "0",
+          dailyIncome: "0",
+          workStartTime: "09:00",
+          workEndTime: "18:00"
+        };
       }
       console.log("popup ref:", popup.value);
       fetchHolidayData();

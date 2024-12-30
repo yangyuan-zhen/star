@@ -181,24 +181,8 @@ const drawText = async () => {
       if (currentLine) {
         textLines.push(currentLine);
       }
-      // 段落之间添加空行
-      textLines.push("");
+      textLines.push(""); // 段落之间添加空行
     }
-
-    // 计算画布高度
-    const textHeight = textLines.length * lineHeight;
-    const bottomSpace = 180;
-    const canvasHeight =
-      Math.max(400, topMargin + textHeight + bottomSpace) * dpr;
-
-    // 设置画布尺寸
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-    ctx.scale(dpr, dpr);
-
-    // 绘制背景
-    ctx.fillStyle = backgroundColor.value;
-    ctx.fillRect(0, 0, canvasWidth / dpr, canvasHeight / dpr);
 
     // 加载 logo 图片
     const logoImage = await new Promise((resolve, reject) => {
@@ -208,16 +192,35 @@ const drawText = async () => {
       img.src = "/static/tabs/logo.png";
     });
 
+    // 计算所有元素的位置
+    const lastTextY = topMargin / dpr + (textLines.length - 1) * lineHeight;
+    const lineY = lastTextY + lineHeight + 20;
+    const dateY = lineY + 20;
+    const logoSize = 80;
+    const logoX = (canvasWidth / dpr - logoSize) / 2;
+    const logoY = dateY + 20;
+    const totalHeight = logoY + logoSize + 20;
+
+    // 设置最终画布尺寸
+    canvas.width = canvasWidth;
+    canvas.height = totalHeight * dpr;
+    ctx.scale(dpr, dpr);
+
+    // 绘制背景
+    ctx.fillStyle = backgroundColor.value;
+    ctx.fillRect(0, 0, canvasWidth / dpr, totalHeight);
+
     // 绘制文字
-    let lastTextY = 0;
+    ctx.font = `${fontSize}px sans-serif`;
+    ctx.fillStyle = "#333333";
+    ctx.textBaseline = "top";
+    ctx.textAlign = "left";
     textLines.forEach((line, index) => {
       const y = topMargin / dpr + index * lineHeight;
       ctx.fillText(line, leftMargin / dpr, y);
-      lastTextY = y;
     });
 
     // 绘制分割线
-    const lineY = lastTextY + lineHeight + 20;
     ctx.beginPath();
     ctx.strokeStyle = "#000000";
     ctx.lineWidth = 1;
@@ -231,50 +234,9 @@ const drawText = async () => {
       date.getMonth() + 1
     }月${date.getDate()}日`;
     ctx.textAlign = "center";
-    ctx.fillStyle = "#333333";
-    const dateY = lineY + 20;
     ctx.fillText(dateStr, canvasWidth / (2 * dpr), dateY);
 
     // 绘制 logo
-    const logoSize = 80; // logo 大小
-    const logoX = (canvasWidth / dpr - logoSize) / 2;
-    const logoY = dateY + 20; // 日期下20px
-    ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
-
-    // 计算新的画布高度
-    const totalHeight = logoY + logoSize + 20;
-    canvas.height = totalHeight * dpr;
-
-    // 重新绘制所有内容
-    ctx.scale(dpr, dpr);
-
-    // 重新绘制背景
-    ctx.fillStyle = backgroundColor.value;
-    ctx.fillRect(0, 0, canvasWidth / dpr, totalHeight);
-
-    // 重新绘制文字
-    ctx.font = `${fontSize}px sans-serif`;
-    ctx.fillStyle = "#333333";
-    ctx.textBaseline = "top";
-    ctx.textAlign = "left";
-    textLines.forEach((line, index) => {
-      const y = topMargin / dpr + index * lineHeight;
-      ctx.fillText(line, leftMargin / dpr, y);
-    });
-
-    // 重新绘制分割线
-    ctx.beginPath();
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 1;
-    ctx.moveTo(30, lineY);
-    ctx.lineTo(canvasWidth / dpr - 30, lineY);
-    ctx.stroke();
-
-    // 重新绘制日期
-    ctx.textAlign = "center";
-    ctx.fillText(dateStr, canvasWidth / (2 * dpr), dateY);
-
-    // 重新绘制 logo
     ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
 
     return canvas;
@@ -335,26 +297,39 @@ const saveImage = async () => {
   }
 
   try {
-    // 检查相册权限
-    const auth = await new Promise((resolve) => {
-      uni.authorize({
-        scope: "scope.writePhotosAlbum",
-        success: () => resolve(true),
-        fail: () => resolve(false),
+    // 先检查是否已经授权
+    const settingRes = await new Promise((resolve) => {
+      uni.getSetting({
+        success: resolve,
+        fail: (err) => {
+          console.error("获取设置失败:", err);
+          resolve({ authSetting: {} });
+        },
       });
     });
 
-    if (!auth) {
-      uni.showModal({
-        title: "提示",
-        content: "需要您授权保存图片到相册",
-        success: (res) => {
-          if (res.confirm) {
-            uni.openSetting();
-          }
-        },
+    // 如果没有授权，则请求授权
+    if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
+      const auth = await new Promise((resolve) => {
+        uni.authorize({
+          scope: "scope.writePhotosAlbum",
+          success: () => resolve(true),
+          fail: () => resolve(false),
+        });
       });
-      return;
+
+      if (!auth) {
+        uni.showModal({
+          title: "提示",
+          content: "需要您授权保存图片到相册",
+          success: (res) => {
+            if (res.confirm) {
+              uni.openSetting();
+            }
+          },
+        });
+        return;
+      }
     }
 
     // 显示加载提示

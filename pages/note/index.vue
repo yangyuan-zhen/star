@@ -4,6 +4,9 @@
     <view class="header">
       <text class="title">我的备忘录</text>
       <text class="subtitle">本周剩余可添加: {{ 5 - notes.length }}</text>
+      <text v-if="isMonday" class="reminder info">
+        新的一周开始啦，开始记录你的计划吧！
+      </text>
       <text v-if="isFriday" class="reminder warning">
         今天是周五，请检查本周待办事项是否已处理完毕
       </text>
@@ -66,6 +69,7 @@ export default defineComponent({
       showModal: false,
       currentNote: "",
       editIndex: -1,
+      isMonday: false,
       isFriday: false,
       isSunday: false,
     };
@@ -142,6 +146,7 @@ export default defineComponent({
     },
     checkWeekday(): void {
       const today = new Date();
+      this.isMonday = today.getDay() === 1;
       this.isFriday = today.getDay() === 5;
       this.isSunday = today.getDay() === 0;
     },
@@ -215,6 +220,12 @@ export default defineComponent({
       background: #f8d7da;
       color: #721c24;
       border: 1px solid #f5c6cb;
+    }
+
+    &.info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
     }
   }
 }

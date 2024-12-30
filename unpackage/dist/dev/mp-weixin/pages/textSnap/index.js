@@ -56,44 +56,20 @@ const _sfc_main = {
           }
           textLines.push("");
         }
-        const textHeight = textLines.length * lineHeight;
-        const bottomSpace = 180;
-        const canvasHeight = Math.max(400, topMargin + textHeight + bottomSpace) * dpr;
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-        ctx.scale(dpr, dpr);
-        ctx.fillStyle = backgroundColor.value;
-        ctx.fillRect(0, 0, canvasWidth / dpr, canvasHeight / dpr);
         const logoImage = await new Promise((resolve, reject) => {
           const img = canvas.createImage();
           img.onload = () => resolve(img);
           img.onerror = reject;
           img.src = "/static/tabs/logo.png";
         });
-        let lastTextY = 0;
-        textLines.forEach((line, index) => {
-          const y = topMargin / dpr + index * lineHeight;
-          ctx.fillText(line, leftMargin / dpr, y);
-          lastTextY = y;
-        });
+        const lastTextY = topMargin / dpr + (textLines.length - 1) * lineHeight;
         const lineY = lastTextY + lineHeight + 20;
-        ctx.beginPath();
-        ctx.strokeStyle = "#000000";
-        ctx.lineWidth = 1;
-        ctx.moveTo(30, lineY);
-        ctx.lineTo(canvasWidth / dpr - 30, lineY);
-        ctx.stroke();
-        const date = /* @__PURE__ */ new Date();
-        const dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
-        ctx.textAlign = "center";
-        ctx.fillStyle = "#333333";
         const dateY = lineY + 20;
-        ctx.fillText(dateStr, canvasWidth / (2 * dpr), dateY);
         const logoSize = 80;
         const logoX = (canvasWidth / dpr - logoSize) / 2;
         const logoY = dateY + 20;
-        ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
         const totalHeight = logoY + logoSize + 20;
+        canvas.width = canvasWidth;
         canvas.height = totalHeight * dpr;
         ctx.scale(dpr, dpr);
         ctx.fillStyle = backgroundColor.value;
@@ -112,6 +88,8 @@ const _sfc_main = {
         ctx.moveTo(30, lineY);
         ctx.lineTo(canvasWidth / dpr - 30, lineY);
         ctx.stroke();
+        const date = /* @__PURE__ */ new Date();
+        const dateStr = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
         ctx.textAlign = "center";
         ctx.fillText(dateStr, canvasWidth / (2 * dpr), dateY);
         ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
@@ -163,24 +141,35 @@ const _sfc_main = {
         return;
       }
       try {
-        const auth = await new Promise((resolve) => {
-          common_vendor.index.authorize({
-            scope: "scope.writePhotosAlbum",
-            success: () => resolve(true),
-            fail: () => resolve(false)
-          });
-        });
-        if (!auth) {
-          common_vendor.index.showModal({
-            title: "提示",
-            content: "需要您授权保存图片到相册",
-            success: (res) => {
-              if (res.confirm) {
-                common_vendor.index.openSetting();
-              }
+        const settingRes = await new Promise((resolve) => {
+          common_vendor.index.getSetting({
+            success: resolve,
+            fail: (err) => {
+              console.error("获取设置失败:", err);
+              resolve({ authSetting: {} });
             }
           });
-          return;
+        });
+        if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
+          const auth = await new Promise((resolve) => {
+            common_vendor.index.authorize({
+              scope: "scope.writePhotosAlbum",
+              success: () => resolve(true),
+              fail: () => resolve(false)
+            });
+          });
+          if (!auth) {
+            common_vendor.index.showModal({
+              title: "提示",
+              content: "需要您授权保存图片到相册",
+              success: (res) => {
+                if (res.confirm) {
+                  common_vendor.index.openSetting();
+                }
+              }
+            });
+            return;
+          }
         }
         common_vendor.index.showLoading({ title: "保存中..." });
         await new Promise((resolve, reject) => {

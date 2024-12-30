@@ -232,8 +232,8 @@ const customSettings = ref({
 });
 
 const displaySettings = ref({
-  payday: 28,
-  dailyIncome: 1000.0,
+  payday: 0,
+  dailyIncome: 0,
   workStartTime: "09:00",
   workEndTime: "18:00",
   workDays: [1, 2, 3, 4, 5],
@@ -472,15 +472,31 @@ const onWorkEndTimeChange = (e) => {
 onMounted(() => {
   const savedSettings = uni.getStorageSync("customSettings");
   if (savedSettings) {
-    displaySettings.value = savedSettings;
+    displaySettings.value = {
+      payday: savedSettings.payday,
+      dailyIncome: savedSettings.dailyIncome,
+      workStartTime: savedSettings.workStartTime || "09:00",
+      workEndTime: savedSettings.workEndTime || "18:00",
+      workDays: savedSettings.workDays || [1, 2, 3, 4, 5],
+    };
+
     customSettings.value = {
-      payday: savedSettings.payday.toString(),
-      dailyIncome: savedSettings.dailyIncome.toString(),
+      payday: savedSettings.payday?.toString() || "0",
+      dailyIncome: savedSettings.dailyIncome?.toString() || "0",
       workStartTime: savedSettings.workStartTime || "09:00",
       workEndTime: savedSettings.workEndTime || "18:00",
     };
     selectedWorkDays.value = savedSettings.workDays || [1, 2, 3, 4, 5];
+  } else {
+    // 首次使用时，设置为 0
+    customSettings.value = {
+      payday: "0",
+      dailyIncome: "0",
+      workStartTime: "09:00",
+      workEndTime: "18:00",
+    };
   }
+
   console.log("popup ref:", popup.value);
   fetchHolidayData();
 });

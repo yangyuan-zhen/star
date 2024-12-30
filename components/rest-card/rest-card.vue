@@ -164,7 +164,7 @@ const calculateHourlyRate = () => {
 
 // 更新当前收入
 const updateEarnings = () => {
-  // 如果没有 displaySettings 或者 dailyIncome，直接返回
+  // 如果没有 displaySettings 或者 dailyIncome，设置为 0
   if (!props.displaySettings?.dailyIncome) {
     currentEarnings.value = 0;
     return;
@@ -274,6 +274,11 @@ watch(isWorkingHours, (newValue) => {
 
 // 计算距离发薪日的天数
 const daysUntilPayday = computed(() => {
+  // 如果没有设置发薪日，返回 0
+  if (!props.displaySettings?.payday) {
+    return 0;
+  }
+
   const today = new Date();
   const currentDay = today.getDate();
   const currentMonth = today.getMonth();

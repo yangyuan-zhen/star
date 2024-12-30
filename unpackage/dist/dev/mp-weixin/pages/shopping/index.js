@@ -7,7 +7,7 @@ if (!Array) {
 }
 const _easycom_uni_icons = () => "../../node-modules/@dcloudio/uni-ui/lib/uni-icons/uni-icons.js";
 if (!Math) {
-  (common_vendor.unref(common_vendor.Icon) + _easycom_uni_icons)();
+  _easycom_uni_icons();
 }
 const _sfc_main = {
   __name: "index",
@@ -31,6 +31,10 @@ const _sfc_main = {
           showResults.value = true;
         }
       } catch (error) {
+        if (error.code === 401) {
+          loading.value = false;
+          return;
+        }
         common_vendor.index.showToast({
           title: "获取建议失败",
           icon: "error"
@@ -97,60 +101,47 @@ const _sfc_main = {
       return common_vendor.e({
         a: !showResults.value
       }, !showResults.value ? {
-        b: common_vendor.p({
-          icon: "mdi:shopping-outline"
-        }),
-        c: query.value,
-        d: common_vendor.o(($event) => query.value = $event.detail.value),
-        e: common_vendor.p({
-          icon: "mdi:currency-cny"
-        }),
-        f: minPrice.value,
-        g: common_vendor.o(($event) => minPrice.value = $event.detail.value),
-        h: common_vendor.p({
-          icon: "mdi:currency-cny"
-        }),
-        i: maxPrice.value,
-        j: common_vendor.o(($event) => maxPrice.value = $event.detail.value),
-        k: loading.value ? 1 : "",
-        l: common_vendor.p({
-          icon: loading.value ? "mdi:loading" : "mdi:magnify"
-        }),
-        m: common_vendor.t(loading.value ? "分析中..." : "获取建议"),
-        n: common_vendor.o(getAdvice),
-        o: loading.value,
-        p: common_vendor.p({
+        b: query.value,
+        c: common_vendor.o(($event) => query.value = $event.detail.value),
+        d: minPrice.value,
+        e: common_vendor.o(($event) => minPrice.value = $event.detail.value),
+        f: maxPrice.value,
+        g: common_vendor.o(($event) => maxPrice.value = $event.detail.value),
+        h: common_vendor.t(loading.value ? "分析中..." : "获取建议"),
+        i: common_vendor.o(getAdvice),
+        j: loading.value,
+        k: common_vendor.p({
           type: "info",
           size: "14",
           color: "#909399"
         }),
-        q: common_vendor.p({
+        l: common_vendor.p({
           type: "info",
           size: "14",
           color: "#909399"
         })
       } : {
-        r: common_vendor.p({
+        m: common_vendor.p({
           type: "back",
           size: "12"
         }),
-        s: common_vendor.o(($event) => showResults.value = false),
-        t: common_vendor.f(parsedResults.value, (item, index, i0) => {
+        n: common_vendor.o(($event) => showResults.value = false),
+        o: common_vendor.f(parsedResults.value, (item, index, i0) => {
           return {
             a: common_vendor.t(item.name),
             b: common_vendor.t(item.price),
             c: common_vendor.t(item.channel),
-            d: "d650adc9-7-" + i0,
+            d: "d650adc9-3-" + i0,
             e: common_vendor.t(item.worth),
             f: index
           };
         }),
-        v: common_vendor.p({
+        p: common_vendor.p({
           type: "checkmarkempty",
           size: "16",
           color: "#52c41a"
         }),
-        w: scrollHeight.value + "px"
+        q: scrollHeight.value + "px"
       });
     };
   }

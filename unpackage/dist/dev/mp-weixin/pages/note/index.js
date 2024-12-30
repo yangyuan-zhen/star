@@ -7,6 +7,7 @@ const _sfc_main = common_vendor.defineComponent({
       showModal: false,
       currentNote: "",
       editIndex: -1,
+      isMonday: false,
       isFriday: false,
       isSunday: false
     };
@@ -80,6 +81,7 @@ const _sfc_main = common_vendor.defineComponent({
     },
     checkWeekday() {
       const today = /* @__PURE__ */ new Date();
+      this.isMonday = today.getDay() === 1;
       this.isFriday = today.getDay() === 5;
       this.isSunday = today.getDay() === 0;
     },
@@ -97,11 +99,13 @@ const _sfc_main = common_vendor.defineComponent({
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
     a: common_vendor.t(5 - _ctx.notes.length),
-    b: _ctx.isFriday
+    b: _ctx.isMonday
+  }, _ctx.isMonday ? {} : {}, {
+    c: _ctx.isFriday
   }, _ctx.isFriday ? {} : {}, {
-    c: _ctx.isSunday
+    d: _ctx.isSunday
   }, _ctx.isSunday ? {} : {}, {
-    d: common_vendor.f(_ctx.notes, (note, index, i0) => {
+    e: common_vendor.f(_ctx.notes, (note, index, i0) => {
       return {
         a: common_vendor.t(note.content),
         b: common_vendor.t(note.date),
@@ -110,15 +114,15 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         e: index
       };
     }),
-    e: common_vendor.o((...args) => _ctx.showAddModal && _ctx.showAddModal(...args)),
-    f: _ctx.notes.length >= 5,
-    g: _ctx.showModal
+    f: common_vendor.o((...args) => _ctx.showAddModal && _ctx.showAddModal(...args)),
+    g: _ctx.notes.length >= 5,
+    h: _ctx.showModal
   }, _ctx.showModal ? {
-    h: _ctx.currentNote,
-    i: common_vendor.o(($event) => _ctx.currentNote = $event.detail.value),
-    j: common_vendor.t(_ctx.currentNote.length),
-    k: common_vendor.o((...args) => _ctx.cancelEdit && _ctx.cancelEdit(...args)),
-    l: common_vendor.o((...args) => _ctx.saveNote && _ctx.saveNote(...args))
+    i: _ctx.currentNote,
+    j: common_vendor.o(($event) => _ctx.currentNote = $event.detail.value),
+    k: common_vendor.t(_ctx.currentNote.length),
+    l: common_vendor.o((...args) => _ctx.cancelEdit && _ctx.cancelEdit(...args)),
+    m: common_vendor.o((...args) => _ctx.saveNote && _ctx.saveNote(...args))
   } : {});
 }
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__scopeId", "data-v-fbfe11c7"]]);

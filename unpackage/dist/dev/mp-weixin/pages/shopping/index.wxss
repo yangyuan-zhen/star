@@ -180,27 +180,10 @@
   margin-right: 6px;
   color: #52c41a;
 }
-.input-icon.data-v-d650adc9 {
-  font-size: 18px;
-  margin-right: 6px;
-  vertical-align: middle;
-  color: #666;
-}
-.btn-icon.data-v-d650adc9 {
-  font-size: 20px;
-  margin-right: 8px;
-  vertical-align: middle;
-}
+.input-icon.data-v-d650adc9,
+.btn-icon.data-v-d650adc9,
 .icon-spin.data-v-d650adc9 {
-  animation: spin-d650adc9 1s linear infinite;
-}
-@keyframes spin-d650adc9 {
-from {
-    transform: rotate(0deg);
-}
-to {
-    transform: rotate(360deg);
-}
+  display: none;
 }
 .tips-container.data-v-d650adc9 {
   margin-top: 16px;

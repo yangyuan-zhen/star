@@ -36,7 +36,7 @@ const getWeatherReport = (city) => {
             url: 'https://api.coze.cn/v1/workflow/run',
             method: 'POST',
             header: {
-                'Authorization': 'Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65',
+                'Authorization': 'Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0',
                 'Content-Type': 'application/json'
             },
             data: {
@@ -78,7 +78,7 @@ const getBookRecommend = (bookName) => {
             url: 'https://api.coze.cn/v1/workflow/run',
             method: 'POST',
             header: {
-                'Authorization': 'Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65',
+                'Authorization': 'Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0',
                 'Content-Type': 'application/json'
             },
             data: {
@@ -113,14 +113,14 @@ const getBookRecommend = (bookName) => {
     })
 }
 
-// 翻译��口
+// 翻译接口
 const translateText = (text) => {
     return new Promise((resolve, reject) => {
         uni.request({
             url: 'https://api.coze.cn/v1/workflow/run',
             method: 'POST',
             header: {
-                'Authorization': 'Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65',
+                'Authorization': 'Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0',
                 'Content-Type': 'application/json'
             },
             data: {
@@ -276,6 +276,19 @@ const getHolidayData = () => {
     });
 };
 
+// 添加统一的错误处理函数
+const handleApiError = (error) => {
+    if (error.statusCode === 401 || (error.data && error.data.code === 401)) {
+        uni.showToast({
+            title: 'API授权已过期，请等待开发者更新',
+            icon: 'none',
+            duration: 3000
+        });
+        throw { code: 401, message: 'API授权已过期' };
+    }
+    throw error;
+};
+
 // 买什么接口
 const getShoppingAdvice = (query, maxPrice, minPrice) => {
     return new Promise((resolve, reject) => {
@@ -283,7 +296,7 @@ const getShoppingAdvice = (query, maxPrice, minPrice) => {
             url: 'https://api.coze.cn/v1/workflow/run',
             method: 'POST',
             header: {
-                'Authorization': 'Bearer pat_TZ96143O1vNGqfgnwi9uM2TmigogOxdjibiYh5xCCAkOdZW7Bd75iRRO1wJF9T65',
+                'Authorization': 'Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0',
                 'Content-Type': 'application/json'
             },
             data: {
@@ -295,6 +308,16 @@ const getShoppingAdvice = (query, maxPrice, minPrice) => {
                 }
             },
             success: (res) => {
+                if (res.statusCode === 401 || (res.data && res.data.code === 401)) {
+                    // 直接显示提示并返回错误
+                    uni.showToast({
+                        title: 'API授权已过期，请等待开发者更新',
+                        icon: 'none',
+                        duration: 3000
+                    });
+                    reject({ code: 401, message: 'API授权已过期' });
+                    return;
+                }
                 if (res.data.code === 0) {
                     try {
                         const result = JSON.parse(res.data.data);
