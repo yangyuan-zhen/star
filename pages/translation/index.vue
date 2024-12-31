@@ -9,8 +9,12 @@
       />
       <view class="btn-group">
         <button class="base-btn clear-btn" @tap="clearInput">清空</button>
-        <button class="base-btn translate-btn" @tap="handleTranslate">
-          翻译
+        <button
+          class="base-btn translate-btn"
+          @tap="handleTranslate"
+          :disabled="isLoading"
+        >
+          {{ isLoading ? "翻译中..." : "翻译" }}
         </button>
       </view>
     </view>
@@ -69,8 +73,6 @@
         </view>
       </view>
     </view>
-
-    <view class="loading" v-if="isLoading"> 翻译中... </view>
   </view>
 </template>
 
@@ -152,20 +154,29 @@ const processedTranslation = computed(() => {
   const lines = translatedText.value.split("\n").filter((line) => line.trim());
 
   // 获取翻译文本（第一段）
-  const translation = lines[0].trim();
+  const translation = lines[0]?.trim() || "";
 
   // 获取词汇解释
   const vocabularyStartIndex = lines.findIndex((line) =>
     line.includes("重点词汇分析")
   );
+
+  // 如果没有找到"重点词汇分析"，返回空数组
+  if (vocabularyStartIndex === -1) {
+    return { translation, vocabulary: [] };
+  }
+
   const vocabularyLines = lines.slice(vocabularyStartIndex + 1);
 
   const vocabulary = vocabularyLines
-    .filter((line) => line.startsWith("-"))
+    .filter((line) => line.trim().startsWith("-"))
     .map((line) => {
       const content = line.replace("-", "").trim();
       // 分割词语和解释
       const mainParts = content.split("：");
+      if (mainParts.length < 2) {
+        return { word: content, explanation: "" };
+      }
       const word = mainParts[0].trim();
       const explanation = mainParts[1].trim();
       return { word, explanation };
@@ -232,6 +243,10 @@ const processedTranslation = computed(() => {
     flex: 1;
     background-color: $uni-color-primary;
     color: $uni-color-white;
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
   }
 
   .result-section {

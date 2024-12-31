@@ -18,7 +18,7 @@ const _sfc_main = {
       const dpr = common_vendor.index.getSystemInfoSync().pixelRatio;
       const canvasWidth = 300 * dpr;
       const fontSize2 = 12;
-      const lineHeight = fontSize2 * 2;
+      const lineHeight = fontSize2 * 1.5;
       const leftMargin = 20 * dpr;
       const rightMargin = 20 * dpr;
       const topMargin = 20 * dpr;
@@ -54,7 +54,9 @@ const _sfc_main = {
           if (currentLine) {
             textLines.push(currentLine);
           }
-          textLines.push("");
+          if (currentLine.trim()) {
+            textLines.push("");
+          }
         }
         const logoImage = await new Promise((resolve, reject) => {
           const img = canvas.createImage();

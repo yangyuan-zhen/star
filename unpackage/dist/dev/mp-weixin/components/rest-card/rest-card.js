@@ -194,19 +194,6 @@ const _sfc_main = {
       const name = (_a = props.nextHoliday) == null ? void 0 : _a.name;
       return name ? `距离${name}` : "";
     });
-    common_vendor.watch(
-      () => props.nextHoliday,
-      (newVal) => {
-        console.log("手机端 nextHoliday:", {
-          value: newVal,
-          type: typeof newVal,
-          days: newVal == null ? void 0 : newVal.days,
-          daysType: typeof (newVal == null ? void 0 : newVal.days),
-          name: newVal == null ? void 0 : newVal.name
-        });
-      },
-      { immediate: true }
-    );
     return (_ctx, _cache) => {
       return {
         a: common_vendor.t(isWorkingHours.value ? "距离下班还有" + countdownTime.value : "休息时间"),

@@ -69,6 +69,10 @@
   background-color: #007aff;
   color: #ffffff;
 }
+.translation .translate-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 .translation .result-section {
   margin-top: 48rpx;
   background-color: #ffffff;

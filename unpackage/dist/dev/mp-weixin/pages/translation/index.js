@@ -62,17 +62,24 @@ const _sfc_main = {
       translatedText.value = "";
     };
     const processedTranslation = common_vendor.computed(() => {
+      var _a;
       if (!translatedText.value)
         return { translation: "", vocabulary: [] };
       const lines = translatedText.value.split("\n").filter((line) => line.trim());
-      const translation = lines[0].trim();
+      const translation = ((_a = lines[0]) == null ? void 0 : _a.trim()) || "";
       const vocabularyStartIndex = lines.findIndex(
         (line) => line.includes("重点词汇分析")
       );
+      if (vocabularyStartIndex === -1) {
+        return { translation, vocabulary: [] };
+      }
       const vocabularyLines = lines.slice(vocabularyStartIndex + 1);
-      const vocabulary = vocabularyLines.filter((line) => line.startsWith("-")).map((line) => {
+      const vocabulary = vocabularyLines.filter((line) => line.trim().startsWith("-")).map((line) => {
         const content = line.replace("-", "").trim();
         const mainParts = content.split("：");
+        if (mainParts.length < 2) {
+          return { word: content, explanation: "" };
+        }
         const word = mainParts[0].trim();
         const explanation = mainParts[1].trim();
         return { word, explanation };
@@ -86,22 +93,22 @@ const _sfc_main = {
         b: inputText.value,
         c: common_vendor.o(($event) => inputText.value = $event.detail.value),
         d: common_vendor.o(clearInput),
-        e: common_vendor.o(handleTranslate),
-        f: !translatedText.value
+        e: common_vendor.t(isLoading.value ? "翻译中..." : "翻译"),
+        f: common_vendor.o(handleTranslate),
+        g: isLoading.value,
+        h: !translatedText.value
       }, !translatedText.value ? {} : common_vendor.e({
-        g: common_vendor.t(processedTranslation.value.translation),
-        h: (_a = processedTranslation.value.vocabulary) == null ? void 0 : _a.length
+        i: common_vendor.t(processedTranslation.value.translation),
+        j: (_a = processedTranslation.value.vocabulary) == null ? void 0 : _a.length
       }, ((_b = processedTranslation.value.vocabulary) == null ? void 0 : _b.length) ? {
-        i: common_vendor.f(processedTranslation.value.vocabulary, (item, index, i0) => {
+        k: common_vendor.f(processedTranslation.value.vocabulary, (item, index, i0) => {
           return {
             a: common_vendor.t(item.word),
             b: common_vendor.t(item.explanation),
             c: index
           };
         })
-      } : {}), {
-        j: isLoading.value
-      }, isLoading.value ? {} : {});
+      } : {}));
     };
   }
 };

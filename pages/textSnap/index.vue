@@ -132,7 +132,7 @@ const drawText = async () => {
   const dpr = uni.getSystemInfoSync().pixelRatio;
   const canvasWidth = 300 * dpr;
   const fontSize = 12;
-  const lineHeight = fontSize * 2;
+  const lineHeight = fontSize * 1.5;
   const leftMargin = 20 * dpr;
   const rightMargin = 20 * dpr;
   const topMargin = 20 * dpr;
@@ -181,7 +181,9 @@ const drawText = async () => {
       if (currentLine) {
         textLines.push(currentLine);
       }
-      textLines.push(""); // 段落之间添加空行
+      if (currentLine.trim()) {
+        textLines.push("");
+      }
     }
 
     // 加载 logo 图片

@@ -319,21 +319,6 @@ const getHolidayName = computed(() => {
   const name = props.nextHoliday?.name;
   return name ? `距离${name}` : "";
 });
-
-// 添加调试日志
-watch(
-  () => props.nextHoliday,
-  (newVal) => {
-    console.log("手机端 nextHoliday:", {
-      value: newVal,
-      type: typeof newVal,
-      days: newVal?.days,
-      daysType: typeof newVal?.days,
-      name: newVal?.name,
-    });
-  },
-  { immediate: true }
-);
 </script>
 
 <style scoped lang="scss">
