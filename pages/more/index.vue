@@ -362,59 +362,67 @@ const fetchHolidayData = async () => {
 // 计算下一个节日
 const nextHoliday = computed(() => {
   if (!holidayData.value) {
-    return { name: "加载中", days: "-" };
+    return {
+      days: "-",
+      name: "加载中",
+    };
   }
 
   const today = new Date();
-  const todayStr = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(
-    today.getDate()
-  ).padStart(2, "0")}`;
-  const currentYear = today.getFullYear();
+  const todayStr = formatDate(today);
 
-  // 找出所有节假日
+  // 找出所有未来的节假日
   const holidays = Object.entries(holidayData.value)
-    .filter(
-      ([_, info]) =>
-        info.holiday &&
-        !info.name.includes("后补班") &&
-        !info.name.includes("前补班")
-    )
-    .map(([date, info]) => ({
-      date: date,
-      fullDate: `${currentYear}-${date}`,
-      name: info.name.replace(/[初一二三四五六七八九十]/, ""),
-      rest: info.rest,
+    .filter(([_, info]) => {
+      return (
+        info.holiday && !info.name.includes("补班") && info.date >= todayStr
+      );
+    })
+    .map(([_, info]) => ({
+      date: info.date,
+      name: info.name,
+      rest: info.rest || 0,
+      timestamp: new Date(info.date).getTime(),
     }))
-    .filter((holiday) => {
-      const holidayDate = new Date(holiday.fullDate);
-      return holidayDate >= today;
-    });
+    .sort((a, b) => a.timestamp - b.timestamp);
 
-  // 按日期序
-  holidays.sort((a, b) => new Date(a.fullDate) - new Date(b.fullDate));
-
+  // 如果没有找到节假日，返回到下一年元旦的天数
   if (holidays.length === 0) {
-    // 如果当年没有节假日了，计算到下一年元旦的天数
-    const nextNewYear = new Date(currentYear + 1, 0, 1);
+    const nextNewYear = new Date(today.getFullYear() + 1, 0, 1);
     const daysUntilNewYear = Math.ceil(
       (nextNewYear - today) / (1000 * 60 * 60 * 24)
     );
     return {
+      days: String(daysUntilNewYear),
       name: "元旦",
-      days: daysUntilNewYear,
     };
   }
 
+  // 获取最近的节假日
   const nextHoliday = holidays[0];
-  const days =
-    nextHoliday.rest ||
-    Math.ceil((new Date(nextHoliday.fullDate) - today) / (1000 * 60 * 60 * 24));
+  const days = Math.ceil(
+    (nextHoliday.timestamp - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  // 处理节日名称
+  let holidayName = nextHoliday.name;
+  if (holidayName === "初一") {
+    holidayName = "春节";
+  }
 
   return {
-    name: nextHoliday.name,
-    days: days,
+    days: String(Math.max(0, days)),
+    name: holidayName,
   };
 });
+
+// 修改日期格式化函数以匹配接口格式
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 const shareInfo = {
   title: "工具小助手",

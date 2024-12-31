@@ -156,42 +156,50 @@ const _sfc_main = {
     };
     const nextHoliday = common_vendor.computed(() => {
       if (!holidayData.value) {
-        return { name: "加载中", days: "-" };
+        return {
+          days: "-",
+          name: "加载中"
+        };
       }
       const today = /* @__PURE__ */ new Date();
-      `${String(today.getMonth() + 1).padStart(2, "0")}-${String(
-        today.getDate()
-      ).padStart(2, "0")}`;
-      const currentYear = today.getFullYear();
-      const holidays = Object.entries(holidayData.value).filter(
-        ([_, info]) => info.holiday && !info.name.includes("后补班") && !info.name.includes("前补班")
-      ).map(([date, info]) => ({
-        date,
-        fullDate: `${currentYear}-${date}`,
-        name: info.name.replace(/[初一二三四五六七八九十]/, ""),
-        rest: info.rest
-      })).filter((holiday) => {
-        const holidayDate = new Date(holiday.fullDate);
-        return holidayDate >= today;
-      });
-      holidays.sort((a, b) => new Date(a.fullDate) - new Date(b.fullDate));
+      const todayStr = formatDate(today);
+      const holidays = Object.entries(holidayData.value).filter(([_, info]) => {
+        return info.holiday && !info.name.includes("补班") && info.date >= todayStr;
+      }).map(([_, info]) => ({
+        date: info.date,
+        name: info.name,
+        rest: info.rest || 0,
+        timestamp: new Date(info.date).getTime()
+      })).sort((a, b) => a.timestamp - b.timestamp);
       if (holidays.length === 0) {
-        const nextNewYear = new Date(currentYear + 1, 0, 1);
+        const nextNewYear = new Date(today.getFullYear() + 1, 0, 1);
         const daysUntilNewYear = Math.ceil(
           (nextNewYear - today) / (1e3 * 60 * 60 * 24)
         );
         return {
-          name: "元旦",
-          days: daysUntilNewYear
+          days: String(daysUntilNewYear),
+          name: "元旦"
         };
       }
       const nextHoliday2 = holidays[0];
-      const days = nextHoliday2.rest || Math.ceil((new Date(nextHoliday2.fullDate) - today) / (1e3 * 60 * 60 * 24));
+      const days = Math.ceil(
+        (nextHoliday2.timestamp - today.getTime()) / (1e3 * 60 * 60 * 24)
+      );
+      let holidayName = nextHoliday2.name;
+      if (holidayName === "初一") {
+        holidayName = "春节";
+      }
       return {
-        name: nextHoliday2.name,
-        days
+        days: String(Math.max(0, days)),
+        name: holidayName
       };
     });
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
     const shareInfo = {
       title: "工具小助手",
       path: "/pages/more/index",

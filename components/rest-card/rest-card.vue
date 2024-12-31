@@ -23,8 +23,8 @@
           }}</text>
         </view>
         <view class="info-item">
-          <text class="value">还有{{ nextHoliday.days }}天</text>
-          <text class="label">距离{{ nextHoliday.name }}</text>
+          <text class="value">{{ getHolidayDays }}</text>
+          <text class="label">{{ getHolidayName }}</text>
         </view>
         <view class="money-info">
           <text class="money-label">今天赚了</text>
@@ -65,6 +65,10 @@ const props = defineProps({
   nextHoliday: {
     type: Object,
     required: true,
+    default: () => ({
+      name: "",
+      days: "-",
+    }),
   },
 });
 
@@ -304,6 +308,32 @@ const handleCardTap = () => {
 };
 
 const emit = defineEmits(["tap"]);
+
+// 添加计算属性来处理显示逻辑
+const getHolidayDays = computed(() => {
+  const days = props.nextHoliday?.days || "-";
+  return days === "-" ? "加载中" : `还有${days}天`;
+});
+
+const getHolidayName = computed(() => {
+  const name = props.nextHoliday?.name;
+  return name ? `距离${name}` : "";
+});
+
+// 添加调试日志
+watch(
+  () => props.nextHoliday,
+  (newVal) => {
+    console.log("手机端 nextHoliday:", {
+      value: newVal,
+      type: typeof newVal,
+      days: newVal?.days,
+      daysType: typeof newVal?.days,
+      name: newVal?.name,
+    });
+  },
+  { immediate: true }
+);
 </script>
 
 <style scoped lang="scss">

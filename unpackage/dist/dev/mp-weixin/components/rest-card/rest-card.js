@@ -18,7 +18,11 @@ const _sfc_main = {
     },
     nextHoliday: {
       type: Object,
-      required: true
+      required: true,
+      default: () => ({
+        name: "",
+        days: "-"
+      })
     }
   },
   emits: ["tap"],
@@ -180,6 +184,29 @@ const _sfc_main = {
       emit("tap");
     };
     const emit = __emit;
+    const getHolidayDays = common_vendor.computed(() => {
+      var _a;
+      const days = ((_a = props.nextHoliday) == null ? void 0 : _a.days) || "-";
+      return days === "-" ? "加载中" : `还有${days}天`;
+    });
+    const getHolidayName = common_vendor.computed(() => {
+      var _a;
+      const name = (_a = props.nextHoliday) == null ? void 0 : _a.name;
+      return name ? `距离${name}` : "";
+    });
+    common_vendor.watch(
+      () => props.nextHoliday,
+      (newVal) => {
+        console.log("手机端 nextHoliday:", {
+          value: newVal,
+          type: typeof newVal,
+          days: newVal == null ? void 0 : newVal.days,
+          daysType: typeof (newVal == null ? void 0 : newVal.days),
+          name: newVal == null ? void 0 : newVal.name
+        });
+      },
+      { immediate: true }
+    );
     return (_ctx, _cache) => {
       return {
         a: common_vendor.t(isWorkingHours.value ? "距离下班还有" + countdownTime.value : "休息时间"),
@@ -188,8 +215,8 @@ const _sfc_main = {
         d: common_vendor.t(daysUntilPayday.value),
         e: common_vendor.t(__props.daysUntilFriday === 0 ? "今天就是周五" : `还有${__props.daysUntilFriday}天`),
         f: common_vendor.t(__props.daysUntilFriday === 0 ? "" : "距离周五"),
-        g: common_vendor.t(__props.nextHoliday.days),
-        h: common_vendor.t(__props.nextHoliday.name),
+        g: common_vendor.t(getHolidayDays.value),
+        h: common_vendor.t(getHolidayName.value),
         i: common_vendor.t(currentEarnings.value.toFixed(2)),
         j: isWorkingHours.value ? "../../static/tabs/onwork.png" : "../../static/tabs/offwork.png",
         k: common_vendor.o(handleCardTap)
