@@ -470,48 +470,48 @@ const onColorInput = (e) => {
 
 <style lang="scss" scoped>
 .container {
-  padding: 30rpx;
-  background-color: #f8f9fa;
+  padding: $uni-spacing-base;
+  background-color: $uni-bg-color-grey;
   min-height: 100vh;
 }
 
 .preview-section {
-  margin-bottom: 30rpx;
-  background: #fff;
-  border-radius: 20rpx;
-  padding: 24rpx;
+  margin-bottom: $uni-spacing-base;
+  background: $uni-color-white;
+  border-radius: $uni-radius-base;
+  padding: $uni-spacing-sm;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 
   .code-input {
     width: 100%;
     min-height: 240rpx;
-    padding: 28rpx;
-    border-radius: 16rpx;
-    border: 1px solid #eaecef;
+    padding: $uni-spacing-base;
+    border-radius: $uni-radius-sm;
+    border: 1px solid $uni-color-border;
     box-sizing: border-box;
-    font-size: 28rpx;
+    font-size: $uni-font-size-base;
     line-height: 1.6;
     transition: all 0.3s ease;
 
     &:focus {
-      border-color: #4a90e2;
+      border-color: $uni-color-primary;
       box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.08);
     }
   }
 }
 
 .settings-section {
-  background-color: #fff;
-  padding: 24rpx;
-  border-radius: 16rpx;
-  margin-bottom: 30rpx;
+  background-color: $uni-color-white;
+  padding: $uni-spacing-sm;
+  border-radius: $uni-radius-sm;
+  margin-bottom: $uni-spacing-base;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 
   .setting-item {
     display: flex;
     align-items: center;
-    padding: 24rpx 0;
-    border-bottom: 1px solid #f0f0f0;
+    padding: $uni-spacing-sm 0;
+    border-bottom: 1px solid $uni-color-border;
 
     &:last-child {
       border-bottom: none;
@@ -522,15 +522,15 @@ const onColorInput = (e) => {
       align-items: center;
       gap: 8rpx;
       flex: 1;
-      font-size: 28rpx;
-      color: #374151;
+      font-size: $uni-font-size-base;
+      color: $uni-text-color;
     }
 
     .picker-wrapper {
       display: flex;
       align-items: center;
       gap: 8rpx;
-      color: #6b7280;
+      color: $uni-text-color-grey;
     }
 
     .slider {
@@ -541,9 +541,9 @@ const onColorInput = (e) => {
 }
 
 .button-section {
-  padding: 20rpx 0;
+  padding: $uni-spacing-sm 0;
   display: flex;
-  gap: 24rpx;
+  gap: $uni-spacing-sm;
 
   .action-btn {
     flex: 1;
@@ -553,8 +553,8 @@ const onColorInput = (e) => {
     justify-content: center;
     gap: 8rpx;
     color: #fff;
-    border-radius: 44rpx;
-    font-size: 28rpx;
+    border-radius: $uni-radius-xl;
+    font-size: $uni-font-size-base;
     border: none;
     transition: all 0.3s ease;
 
@@ -612,8 +612,8 @@ const onColorInput = (e) => {
     height: 64rpx;
     line-height: 64rpx;
     text-align: center;
-    font-size: 44rpx;
-    color: #fff;
+    font-size: $uni-font-size-xl;
+    color: $uni-color-white;
     background: rgba(0, 0, 0, 0.4);
     border-radius: 32rpx;
     backdrop-filter: blur(4px);
@@ -630,8 +630,8 @@ const onColorInput = (e) => {
   .color-preview {
     width: 60rpx;
     height: 60rpx;
-    border-radius: 8rpx;
-    border: 1px solid #eaecef;
+    border-radius: $uni-radius-sm;
+    border: 1px solid $uni-color-border;
   }
 }
 
@@ -650,33 +650,33 @@ const onColorInput = (e) => {
   .color-picker-content {
     width: 600rpx;
     background: #fff;
-    border-radius: 20rpx;
-    padding: 30rpx;
+    border-radius: $uni-radius-base;
+    padding: $uni-spacing-base;
   }
 
   .color-picker-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30rpx;
+    margin-bottom: $uni-spacing-base;
 
     .close-btn {
-      font-size: 40rpx;
-      color: #999;
-      padding: 10rpx;
+      font-size: $uni-font-size-xl;
+      color: $uni-text-color-grey;
+      padding: $uni-spacing-xs;
     }
   }
 
   .preset-colors {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 20rpx;
-    margin-bottom: 30rpx;
+    gap: $uni-spacing-sm;
+    margin-bottom: $uni-spacing-base;
 
     .color-item {
       aspect-ratio: 1;
-      border-radius: 8rpx;
-      border: 1px solid #eee;
+      border-radius: $uni-radius-sm;
+      border: 1px solid $uni-color-border;
       transition: transform 0.2s;
 
       &:active {
@@ -689,8 +689,8 @@ const onColorInput = (e) => {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20rpx 0;
-    border-top: 1px solid #eee;
+    padding: $uni-spacing-sm 0;
+    border-top: 1px solid $uni-color-border;
 
     .color-input {
       width: 80rpx;

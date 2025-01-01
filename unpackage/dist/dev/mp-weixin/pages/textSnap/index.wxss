@@ -21,13 +21,13 @@
 /* 扩展间距 */
 /* 扩展圆角 */
 .container.data-v-d8f14a53 {
-  padding: 30rpx;
-  background-color: #f8f9fa;
+  padding: 32rpx;
+  background-color: #f8f8f8;
   min-height: 100vh;
 }
 .preview-section.data-v-d8f14a53 {
-  margin-bottom: 30rpx;
-  background: #fff;
+  margin-bottom: 32rpx;
+  background: #ffffff;
   border-radius: 20rpx;
   padding: 24rpx;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
@@ -35,30 +35,30 @@
 .preview-section .code-input.data-v-d8f14a53 {
   width: 100%;
   min-height: 240rpx;
-  padding: 28rpx;
+  padding: 32rpx;
   border-radius: 16rpx;
-  border: 1px solid #eaecef;
+  border: 1px solid #e5e5ea;
   box-sizing: border-box;
-  font-size: 28rpx;
+  font-size: 30rpx;
   line-height: 1.6;
   transition: all 0.3s ease;
 }
 .preview-section .code-input.data-v-d8f14a53:focus {
-  border-color: #4a90e2;
+  border-color: #007aff;
   box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.08);
 }
 .settings-section.data-v-d8f14a53 {
-  background-color: #fff;
+  background-color: #ffffff;
   padding: 24rpx;
   border-radius: 16rpx;
-  margin-bottom: 30rpx;
+  margin-bottom: 32rpx;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 .settings-section .setting-item.data-v-d8f14a53 {
   display: flex;
   align-items: center;
   padding: 24rpx 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #e5e5ea;
 }
 .settings-section .setting-item.data-v-d8f14a53:last-child {
   border-bottom: none;
@@ -68,21 +68,21 @@
   align-items: center;
   gap: 8rpx;
   flex: 1;
-  font-size: 28rpx;
-  color: #374151;
+  font-size: 30rpx;
+  color: #333;
 }
 .settings-section .setting-item .picker-wrapper.data-v-d8f14a53 {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  color: #6b7280;
+  color: #999;
 }
 .settings-section .setting-item .slider.data-v-d8f14a53 {
   flex: 1;
   margin: 0 20rpx;
 }
 .button-section.data-v-d8f14a53 {
-  padding: 20rpx 0;
+  padding: 24rpx 0;
   display: flex;
   gap: 24rpx;
 }
@@ -94,8 +94,8 @@
   justify-content: center;
   gap: 8rpx;
   color: #fff;
-  border-radius: 44rpx;
-  font-size: 28rpx;
+  border-radius: 32rpx;
+  font-size: 30rpx;
   border: none;
   transition: all 0.3s ease;
 }
@@ -146,8 +146,8 @@
   height: 64rpx;
   line-height: 64rpx;
   text-align: center;
-  font-size: 44rpx;
-  color: #fff;
+  font-size: 40rpx;
+  color: #ffffff;
   background: rgba(0, 0, 0, 0.4);
   border-radius: 32rpx;
   -webkit-backdrop-filter: blur(4px);
@@ -161,8 +161,8 @@
 .color-picker .color-preview.data-v-d8f14a53 {
   width: 60rpx;
   height: 60rpx;
-  border-radius: 8rpx;
-  border: 1px solid #eaecef;
+  border-radius: 16rpx;
+  border: 1px solid #e5e5ea;
 }
 .color-picker-modal.data-v-d8f14a53 {
   position: fixed;
@@ -180,29 +180,29 @@
   width: 600rpx;
   background: #fff;
   border-radius: 20rpx;
-  padding: 30rpx;
+  padding: 32rpx;
 }
 .color-picker-modal .color-picker-header.data-v-d8f14a53 {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30rpx;
+  margin-bottom: 32rpx;
 }
 .color-picker-modal .color-picker-header .close-btn.data-v-d8f14a53 {
   font-size: 40rpx;
   color: #999;
-  padding: 10rpx;
+  padding: 16rpx;
 }
 .color-picker-modal .preset-colors.data-v-d8f14a53 {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 20rpx;
-  margin-bottom: 30rpx;
+  gap: 24rpx;
+  margin-bottom: 32rpx;
 }
 .color-picker-modal .preset-colors .color-item.data-v-d8f14a53 {
   aspect-ratio: 1;
-  border-radius: 8rpx;
-  border: 1px solid #eee;
+  border-radius: 16rpx;
+  border: 1px solid #e5e5ea;
   transition: transform 0.2s;
 }
 .color-picker-modal .preset-colors .color-item.data-v-d8f14a53:active {
@@ -212,8 +212,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 0;
-  border-top: 1px solid #eee;
+  padding: 24rpx 0;
+  border-top: 1px solid #e5e5ea;
 }
 .color-picker-modal .custom-color .color-input.data-v-d8f14a53 {
   width: 80rpx;

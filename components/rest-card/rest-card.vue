@@ -309,15 +309,17 @@ const handleCardTap = () => {
 
 const emit = defineEmits(["tap"]);
 
-// 添加计算属性来处理显示逻辑
+// 修改计算属性来处理显示逻辑
 const getHolidayDays = computed(() => {
-  const days = props.nextHoliday?.days || "-";
-  return days === "-" ? "加载中" : `还有${days}天`;
+  const days = props.nextHoliday?.days;
+  if (days === "-" || days === undefined) return "加载中";
+  return Number(days) === 0 ? "今天就是" : `还有${days}天`;
 });
 
 const getHolidayName = computed(() => {
   const name = props.nextHoliday?.name;
-  return name ? `距离${name}` : "";
+  const days = props.nextHoliday?.days;
+  return name ? (Number(days) === 0 ? name : `距离${name}`) : "";
 });
 </script>
 

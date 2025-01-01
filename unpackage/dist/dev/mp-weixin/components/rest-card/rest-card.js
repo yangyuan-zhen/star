@@ -186,13 +186,16 @@ const _sfc_main = {
     const emit = __emit;
     const getHolidayDays = common_vendor.computed(() => {
       var _a;
-      const days = ((_a = props.nextHoliday) == null ? void 0 : _a.days) || "-";
-      return days === "-" ? "加载中" : `还有${days}天`;
+      const days = (_a = props.nextHoliday) == null ? void 0 : _a.days;
+      if (days === "-" || days === void 0)
+        return "加载中";
+      return Number(days) === 0 ? "今天就是" : `还有${days}天`;
     });
     const getHolidayName = common_vendor.computed(() => {
-      var _a;
+      var _a, _b;
       const name = (_a = props.nextHoliday) == null ? void 0 : _a.name;
-      return name ? `距离${name}` : "";
+      const days = (_b = props.nextHoliday) == null ? void 0 : _b.days;
+      return name ? Number(days) === 0 ? name : `距离${name}` : "";
     });
     return (_ctx, _cache) => {
       return {
