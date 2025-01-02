@@ -229,7 +229,7 @@ const getHolidayData = () => {
         if (cachedData) {
             resolve(cachedData);
             return;
-        }
+        } 
 
         uni.request({
             url: `https://timor.tech/api/holiday/year/${new Date().getFullYear()}`,
