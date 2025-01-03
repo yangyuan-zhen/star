@@ -287,9 +287,8 @@ const generatePreview = async () => {
   }
 };
 
-// 保存图片到相册
+// 修改保存图片到相册的方法
 const saveImage = async () => {
-  // 检查是否有预览图
   if (!previewImage.value) {
     uni.showToast({
       title: "请先生成预览图",
@@ -299,39 +298,25 @@ const saveImage = async () => {
   }
 
   try {
-    // 先检查是否已经授权
-    const settingRes = await new Promise((resolve) => {
-      uni.getSetting({
-        success: resolve,
-        fail: (err) => {
-          console.error("获取设置失败:", err);
-          resolve({ authSetting: {} });
-        },
-      });
-    });
+    // 检查权限状态
+    const authStatus = await checkPhotoAlbumAuth();
 
-    // 如果没有授权，则请求授权
-    if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
-      const auth = await new Promise((resolve) => {
-        uni.authorize({
-          scope: "scope.writePhotosAlbum",
-          success: () => resolve(true),
-          fail: () => resolve(false),
-        });
-      });
-
-      if (!auth) {
+    if (!authStatus) {
+      // 用户拒绝了权限
+      const result = await new Promise((resolve) => {
         uni.showModal({
           title: "提示",
-          content: "需要您授权保存图片到相册",
-          success: (res) => {
-            if (res.confirm) {
-              uni.openSetting();
-            }
-          },
+          content: "需要您授权保存图片到相册权限，是否去设置？",
+          confirmText: "去设置",
+          cancelText: "取消",
+          success: resolve,
         });
-        return;
+      });
+
+      if (result.confirm) {
+        uni.openSetting();
       }
+      return;
     }
 
     // 显示加载提示
@@ -346,23 +331,45 @@ const saveImage = async () => {
       });
     });
 
-    // 保存成功
     uni.showToast({
       title: "保存成功",
       icon: "success",
     });
-
-    // 关闭预览
     closePreview();
   } catch (error) {
     console.error("保存失败:", error);
     uni.showToast({
-      title: "保存失败",
+      title: error.errMsg || "保存失败",
       icon: "none",
     });
   } finally {
     uni.hideLoading();
   }
+};
+
+// 新增：检查相册权限的辅助函数
+const checkPhotoAlbumAuth = () => {
+  return new Promise((resolve) => {
+    uni.getSetting({
+      success: (res) => {
+        if (res.authSetting["scope.writePhotosAlbum"]) {
+          // 已授权，直接返回 true
+          resolve(true);
+        } else if (res.authSetting["scope.writePhotosAlbum"] === false) {
+          // 权限已被拒绝，直接返回 false
+          resolve(false);
+        } else {
+          // 首次请求权限
+          uni.authorize({
+            scope: "scope.writePhotosAlbum",
+            success: () => resolve(true),
+            fail: () => resolve(false),
+          });
+        }
+      },
+      fail: () => resolve(false),
+    });
+  });
 };
 
 // 关闭预览

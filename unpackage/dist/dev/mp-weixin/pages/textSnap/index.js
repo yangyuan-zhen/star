@@ -143,35 +143,21 @@ const _sfc_main = {
         return;
       }
       try {
-        const settingRes = await new Promise((resolve) => {
-          common_vendor.index.getSetting({
-            success: resolve,
-            fail: (err) => {
-              console.error("获取设置失败:", err);
-              resolve({ authSetting: {} });
-            }
-          });
-        });
-        if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
-          const auth = await new Promise((resolve) => {
-            common_vendor.index.authorize({
-              scope: "scope.writePhotosAlbum",
-              success: () => resolve(true),
-              fail: () => resolve(false)
-            });
-          });
-          if (!auth) {
+        const authStatus = await checkPhotoAlbumAuth();
+        if (!authStatus) {
+          const result = await new Promise((resolve) => {
             common_vendor.index.showModal({
               title: "提示",
-              content: "需要您授权保存图片到相册",
-              success: (res) => {
-                if (res.confirm) {
-                  common_vendor.index.openSetting();
-                }
-              }
+              content: "需要您授权保存图片到相册权限，是否去设置？",
+              confirmText: "去设置",
+              cancelText: "取消",
+              success: resolve
             });
-            return;
+          });
+          if (result.confirm) {
+            common_vendor.index.openSetting();
           }
+          return;
         }
         common_vendor.index.showLoading({ title: "保存中..." });
         await new Promise((resolve, reject) => {
@@ -189,12 +175,32 @@ const _sfc_main = {
       } catch (error) {
         console.error("保存失败:", error);
         common_vendor.index.showToast({
-          title: "保存失败",
+          title: error.errMsg || "保存失败",
           icon: "none"
         });
       } finally {
         common_vendor.index.hideLoading();
       }
+    };
+    const checkPhotoAlbumAuth = () => {
+      return new Promise((resolve) => {
+        common_vendor.index.getSetting({
+          success: (res) => {
+            if (res.authSetting["scope.writePhotosAlbum"]) {
+              resolve(true);
+            } else if (res.authSetting["scope.writePhotosAlbum"] === false) {
+              resolve(false);
+            } else {
+              common_vendor.index.authorize({
+                scope: "scope.writePhotosAlbum",
+                success: () => resolve(true),
+                fail: () => resolve(false)
+              });
+            }
+          },
+          fail: () => resolve(false)
+        });
+      });
     };
     const closePreview = () => {
       showPreview.value = false;

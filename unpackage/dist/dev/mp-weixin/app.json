@@ -38,10 +38,5 @@
     "chooseLocation",
     "choosePoi"
   ],
-  "permission": {
-    "scope.writePhotosAlbum": {
-      "desc": "用于保存图片到相册"
-    }
-  },
   "usingComponents": {}
 }
