@@ -298,52 +298,59 @@ const saveImage = async () => {
   }
 
   try {
-    // 检查权限状态
-    const authStatus = await checkPhotoAlbumAuth();
+    // 先检查权限
+    const hasAuth = await checkPhotoAlbumAuth();
 
-    if (!authStatus) {
-      // 用户拒绝了权限
-      const result = await new Promise((resolve) => {
-        uni.showModal({
-          title: "提示",
-          content: "需要您授权保存图片到相册权限，是否去设置？",
-          confirmText: "去设置",
-          cancelText: "取消",
-          success: resolve,
-        });
+    if (!hasAuth) {
+      // 没有权限，显示授权对话框
+      uni.showModal({
+        title: "提示",
+        content: "需要您授权保存图片到相册的权限",
+        confirmText: "去授权",
+        cancelText: "取消",
+        success: (res) => {
+          if (res.confirm) {
+            uni.openSetting({
+              success(res) {
+                if (res.authSetting["scope.writePhotosAlbum"]) {
+                  uni.showModal({
+                    title: "提示",
+                    content: "授权成功，请重新点击保存",
+                    showCancel: false,
+                  });
+                } else {
+                  uni.showModal({
+                    title: "提示",
+                    content: "请在设置界面打开相册权限",
+                    showCancel: false,
+                  });
+                }
+              },
+            });
+          }
+        },
       });
-
-      if (result.confirm) {
-        uni.openSetting();
-      }
       return;
     }
 
-    // 显示加载提示
-    uni.showLoading({ title: "保存中..." });
-
-    // 保存图片
-    await new Promise((resolve, reject) => {
-      uni.saveImageToPhotosAlbum({
-        filePath: previewImage.value,
-        success: resolve,
-        fail: reject,
-      });
+    // 有权限，直接保存
+    await uni.saveImageToPhotosAlbum({
+      filePath: previewImage.value,
     });
 
     uni.showToast({
       title: "保存成功",
       icon: "success",
+      duration: 2000,
     });
     closePreview();
   } catch (error) {
     console.error("保存失败:", error);
     uni.showToast({
-      title: error.errMsg || "保存失败",
+      title: "保存失败",
       icon: "none",
+      duration: 2000,
     });
-  } finally {
-    uni.hideLoading();
   }
 };
 
