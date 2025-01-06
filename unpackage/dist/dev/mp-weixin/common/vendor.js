@@ -13124,4 +13124,3 @@ exports.resolveComponent = resolveComponent;
 exports.s = s$1;
 exports.sr = sr;
 exports.t = t$1;
-exports.watch = watch;

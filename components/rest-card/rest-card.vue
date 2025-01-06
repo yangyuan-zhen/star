@@ -174,35 +174,47 @@ const updateEarnings = () => {
     return;
   }
 
-  if (!isWorkingHours.value) {
-    const now = new Date();
-    const currentTime =
-      now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-    const [endHours, endMinutes] = props.displaySettings.workEndTime
-      .split(":")
-      .map(Number);
-    const endTime = endHours * 3600 + endMinutes * 60;
-
-    if (currentTime > endTime) {
-      currentEarnings.value = props.displaySettings.dailyIncome;
-    } else {
-      currentEarnings.value = 0;
-    }
-    return;
-  }
-
-  // 在工作时间内，从0开始计算
   const now = new Date();
   const currentTime =
     now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+  const [endHours, endMinutes] = props.displaySettings.workEndTime
+    .split(":")
+    .map(Number);
+  const endTime = endHours * 3600 + endMinutes * 60;
   const [startHours, startMinutes] = props.displaySettings.workStartTime
     .split(":")
     .map(Number);
   const startTime = startHours * 3600 + startMinutes * 60;
 
-  // 计算已工作的秒数
+  // 判断是否是工作日
+  const isWorkday = props.displaySettings.workDays.includes(now.getDay());
+
+  if (!isWorkday) {
+    currentEarnings.value = 0;
+    return;
+  }
+
+  if (!isWorkingHours.value) {
+    if (currentTime >= endTime) {
+      // 已经过了下班时间，显示全天收入
+      currentEarnings.value = props.displaySettings.dailyIncome;
+    } else if (currentTime < startTime) {
+      // 还没到上班时间
+      currentEarnings.value = 0;
+    } else {
+      // 在工作时间内的休息时间，保持当前计算的收入
+      const workedSeconds = currentTime - startTime;
+      currentEarnings.value = workedSeconds * calculateHourlyRate();
+    }
+    return;
+  }
+
+  // 在工作时间内，计算当前收入
   const workedSeconds = currentTime - startTime;
-  currentEarnings.value = workedSeconds * calculateHourlyRate();
+  currentEarnings.value = Math.min(
+    workedSeconds * calculateHourlyRate(),
+    props.displaySettings.dailyIncome
+  );
 };
 
 // 检查是否首次使用
@@ -250,29 +262,6 @@ onUnmounted(() => {
   if (timer) {
     clearInterval(timer);
     timer = null;
-  }
-});
-
-// 修改工作状态监听
-watch(isWorkingHours, (newValue) => {
-  if (!newValue) {
-    // 检查是否已过下班时间
-    const now = new Date();
-    const currentTime =
-      now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-    const [endHours, endMinutes] = props.displaySettings.workEndTime
-      .split(":")
-      .map(Number);
-    const endTime = endHours * 3600 + endMinutes * 60;
-
-    if (currentTime > endTime) {
-      currentEarnings.value = props.displaySettings.dailyIncome;
-    } else {
-      currentEarnings.value = 0;
-    }
-  } else {
-    // 开始工作时，从0开始计算
-    currentEarnings.value = 0;
   }
 });
 

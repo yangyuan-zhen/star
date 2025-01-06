@@ -143,73 +143,48 @@ const _sfc_main = {
         return;
       }
       try {
-        const hasAuth = await checkPhotoAlbumAuth();
-        if (!hasAuth) {
-          common_vendor.index.showModal({
-            title: "提示",
-            content: "需要您授权保存图片到相册的权限",
-            confirmText: "去授权",
-            cancelText: "取消",
-            success: (res) => {
-              if (res.confirm) {
-                common_vendor.index.openSetting({
-                  success(res2) {
-                    if (res2.authSetting["scope.writePhotosAlbum"]) {
-                      common_vendor.index.showModal({
-                        title: "提示",
-                        content: "授权成功，请重新点击保存",
-                        showCancel: false
-                      });
-                    } else {
-                      common_vendor.index.showModal({
-                        title: "提示",
-                        content: "请在设置界面打开相册权限",
-                        showCancel: false
-                      });
-                    }
-                  }
-                });
-              }
-            }
-          });
+        const setting = await common_vendor.index.getSetting();
+        if (typeof setting.authSetting["scope.writePhotosAlbum"] === "undefined") {
+          try {
+            await common_vendor.index.authorize({ scope: "scope.writePhotosAlbum" });
+          } catch (err) {
+            showAuthModal();
+            return;
+          }
+        } else if (setting.authSetting["scope.writePhotosAlbum"] === false) {
+          showAuthModal();
           return;
         }
+        common_vendor.index.showLoading({ title: "保存中..." });
         await common_vendor.index.saveImageToPhotosAlbum({
           filePath: previewImage.value
         });
+        common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: "保存成功",
-          icon: "success",
-          duration: 2e3
+          icon: "success"
         });
         closePreview();
       } catch (error) {
+        common_vendor.index.hideLoading();
         console.error("保存失败:", error);
         common_vendor.index.showToast({
-          title: "保存失败",
-          icon: "none",
-          duration: 2e3
+          title: "保存失败，请重试",
+          icon: "none"
         });
       }
     };
-    const checkPhotoAlbumAuth = () => {
-      return new Promise((resolve) => {
-        common_vendor.index.getSetting({
-          success: (res) => {
-            if (res.authSetting["scope.writePhotosAlbum"]) {
-              resolve(true);
-            } else if (res.authSetting["scope.writePhotosAlbum"] === false) {
-              resolve(false);
-            } else {
-              common_vendor.index.authorize({
-                scope: "scope.writePhotosAlbum",
-                success: () => resolve(true),
-                fail: () => resolve(false)
-              });
-            }
-          },
-          fail: () => resolve(false)
-        });
+    const showAuthModal = () => {
+      common_vendor.index.showModal({
+        title: "提示",
+        content: "需要您授权保存图片到相册的权限",
+        confirmText: "去授权",
+        cancelText: "取消",
+        success: (res) => {
+          if (res.confirm) {
+            common_vendor.index.openSetting();
+          }
+        }
       });
     };
     const closePreview = () => {

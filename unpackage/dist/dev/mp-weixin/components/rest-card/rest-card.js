@@ -90,24 +90,33 @@ const _sfc_main = {
         currentEarnings.value = 0;
         return;
       }
+      const now = /* @__PURE__ */ new Date();
+      const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      const [endHours, endMinutes] = props.displaySettings.workEndTime.split(":").map(Number);
+      const endTime = endHours * 3600 + endMinutes * 60;
+      const [startHours, startMinutes] = props.displaySettings.workStartTime.split(":").map(Number);
+      const startTime = startHours * 3600 + startMinutes * 60;
+      const isWorkday = props.displaySettings.workDays.includes(now.getDay());
+      if (!isWorkday) {
+        currentEarnings.value = 0;
+        return;
+      }
       if (!isWorkingHours.value) {
-        const now2 = /* @__PURE__ */ new Date();
-        const currentTime2 = now2.getHours() * 3600 + now2.getMinutes() * 60 + now2.getSeconds();
-        const [endHours, endMinutes] = props.displaySettings.workEndTime.split(":").map(Number);
-        const endTime = endHours * 3600 + endMinutes * 60;
-        if (currentTime2 > endTime) {
+        if (currentTime >= endTime) {
           currentEarnings.value = props.displaySettings.dailyIncome;
-        } else {
+        } else if (currentTime < startTime) {
           currentEarnings.value = 0;
+        } else {
+          const workedSeconds2 = currentTime - startTime;
+          currentEarnings.value = workedSeconds2 * calculateHourlyRate();
         }
         return;
       }
-      const now = /* @__PURE__ */ new Date();
-      const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-      const [startHours, startMinutes] = props.displaySettings.workStartTime.split(":").map(Number);
-      const startTime = startHours * 3600 + startMinutes * 60;
       const workedSeconds = currentTime - startTime;
-      currentEarnings.value = workedSeconds * calculateHourlyRate();
+      currentEarnings.value = Math.min(
+        workedSeconds * calculateHourlyRate(),
+        props.displaySettings.dailyIncome
+      );
     };
     const checkFirstTimeUser = () => {
       try {
@@ -146,21 +155,6 @@ const _sfc_main = {
       if (timer) {
         clearInterval(timer);
         timer = null;
-      }
-    });
-    common_vendor.watch(isWorkingHours, (newValue) => {
-      if (!newValue) {
-        const now = /* @__PURE__ */ new Date();
-        const currentTime = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-        const [endHours, endMinutes] = props.displaySettings.workEndTime.split(":").map(Number);
-        const endTime = endHours * 3600 + endMinutes * 60;
-        if (currentTime > endTime) {
-          currentEarnings.value = props.displaySettings.dailyIncome;
-        } else {
-          currentEarnings.value = 0;
-        }
-      } else {
-        currentEarnings.value = 0;
       }
     });
     const daysUntilPayday = common_vendor.computed(() => {

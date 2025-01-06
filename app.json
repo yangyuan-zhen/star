@@ -33,7 +33,12 @@
       }
     ]
   },
-  "requiredPrivateInfos": ["chooseAddress", "chooseLocation", "choosePoi"],
+  "requiredPrivateInfos": [
+    "chooseAddress",
+    "chooseLocation",
+    "choosePoi",
+    "writePhotosAlbum"
+  ],
 
   "usingComponents": {}
 }

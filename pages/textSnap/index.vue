@@ -298,60 +298,61 @@ const saveImage = async () => {
   }
 
   try {
-    // 先检查权限
-    const hasAuth = await checkPhotoAlbumAuth();
+    // 先获取授权状态
+    const setting = await uni.getSetting();
 
-    if (!hasAuth) {
-      // 没有权限，显示授权对话框
-      uni.showModal({
-        title: "提示",
-        content: "需要您授权保存图片到相册的权限",
-        confirmText: "去授权",
-        cancelText: "取消",
-        success: (res) => {
-          if (res.confirm) {
-            uni.openSetting({
-              success(res) {
-                if (res.authSetting["scope.writePhotosAlbum"]) {
-                  uni.showModal({
-                    title: "提示",
-                    content: "授权成功，请重新点击保存",
-                    showCancel: false,
-                  });
-                } else {
-                  uni.showModal({
-                    title: "提示",
-                    content: "请在设置界面打开相册权限",
-                    showCancel: false,
-                  });
-                }
-              },
-            });
-          }
-        },
-      });
+    // 如果从未授权过
+    if (typeof setting.authSetting["scope.writePhotosAlbum"] === "undefined") {
+      try {
+        await uni.authorize({ scope: "scope.writePhotosAlbum" });
+        // 授权成功，继续保存
+      } catch (err) {
+        // 用户拒绝授权
+        showAuthModal();
+        return;
+      }
+    }
+    // 如果之前拒绝过授权
+    else if (setting.authSetting["scope.writePhotosAlbum"] === false) {
+      showAuthModal();
       return;
     }
 
-    // 有权限，直接保存
+    // 有权限，开始保存
+    uni.showLoading({ title: "保存中..." });
     await uni.saveImageToPhotosAlbum({
       filePath: previewImage.value,
     });
 
+    uni.hideLoading();
     uni.showToast({
       title: "保存成功",
       icon: "success",
-      duration: 2000,
     });
     closePreview();
   } catch (error) {
+    uni.hideLoading();
     console.error("保存失败:", error);
     uni.showToast({
-      title: "保存失败",
+      title: "保存失败，请重试",
       icon: "none",
-      duration: 2000,
     });
   }
+};
+
+// 显示授权提示弹窗
+const showAuthModal = () => {
+  uni.showModal({
+    title: "提示",
+    content: "需要您授权保存图片到相册的权限",
+    confirmText: "去授权",
+    cancelText: "取消",
+    success: (res) => {
+      if (res.confirm) {
+        uni.openSetting();
+      }
+    },
+  });
 };
 
 // 新增：检查相册权限的辅助函数
