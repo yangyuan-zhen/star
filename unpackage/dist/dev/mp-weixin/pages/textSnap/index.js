@@ -143,15 +143,8 @@ const _sfc_main = {
         return;
       }
       try {
-        const setting = await common_vendor.index.getSetting();
-        if (typeof setting.authSetting["scope.writePhotosAlbum"] === "undefined") {
-          try {
-            await common_vendor.index.authorize({ scope: "scope.writePhotosAlbum" });
-          } catch (err) {
-            showAuthModal();
-            return;
-          }
-        } else if (setting.authSetting["scope.writePhotosAlbum"] === false) {
+        const hasAuth = await checkPhotoAlbumAuth();
+        if (!hasAuth) {
           showAuthModal();
           return;
         }
@@ -185,6 +178,26 @@ const _sfc_main = {
             common_vendor.index.openSetting();
           }
         }
+      });
+    };
+    const checkPhotoAlbumAuth = () => {
+      return new Promise((resolve) => {
+        common_vendor.index.getSetting({
+          success: (res) => {
+            if (res.authSetting["scope.writePhotosAlbum"]) {
+              resolve(true);
+            } else if (res.authSetting["scope.writePhotosAlbum"] === false) {
+              resolve(false);
+            } else {
+              common_vendor.index.authorize({
+                scope: "scope.writePhotosAlbum",
+                success: () => resolve(true),
+                fail: () => resolve(false)
+              });
+            }
+          },
+          fail: () => resolve(false)
+        });
       });
     };
     const closePreview = () => {

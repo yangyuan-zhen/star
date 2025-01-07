@@ -298,22 +298,10 @@ const saveImage = async () => {
   }
 
   try {
-    // 先获取授权状态
-    const setting = await uni.getSetting();
+    // 使用辅助函数检查权限
+    const hasAuth = await checkPhotoAlbumAuth();
 
-    // 如果从未授权过
-    if (typeof setting.authSetting["scope.writePhotosAlbum"] === "undefined") {
-      try {
-        await uni.authorize({ scope: "scope.writePhotosAlbum" });
-        // 授权成功，继续保存
-      } catch (err) {
-        // 用户拒绝授权
-        showAuthModal();
-        return;
-      }
-    }
-    // 如果之前拒绝过授权
-    else if (setting.authSetting["scope.writePhotosAlbum"] === false) {
+    if (!hasAuth) {
       showAuthModal();
       return;
     }
