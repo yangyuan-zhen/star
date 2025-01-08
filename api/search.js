@@ -229,50 +229,65 @@ const getHolidayData = () => {
         if (cachedData) {
             resolve(cachedData);
             return;
-        } 
+        }
 
-        uni.request({
-            url: `https://timor.tech/api/holiday/year/${new Date().getFullYear()}`,
-            method: 'GET',
-            success: (res) => {
-                if (res.statusCode === 200 && res.data) {
-                    // 缓存数据
-                    try {
-                        uni.setStorageSync('holidayCache', res.data);
-                        uni.setStorageSync('holidayCache_time', Date.now());
-                    } catch (e) {
-                        console.error('缓存节假日数据失败:', e);
-                    }
-                    resolve(res.data);
-                } else {
-                    // 如果请求失败，尝试使用缓存
-                    const cachedData = uni.getStorageSync('holidayCache');
-                    if (cachedData) {
-                        resolve(cachedData);
+        // 添加重试机制
+        const makeRequest = (retryCount = 0) => {
+            uni.request({
+                url: `https://timor.tech/api/holiday/year/${new Date().getFullYear()}`,
+                method: 'GET',
+                timeout: 10000, // 添加超时设置
+                success: (res) => {
+                    console.log('节假日API响应:', res); // 添加日志
+                    if (res.statusCode === 200 && res.data && res.data.code === 0) {
+                        try {
+                            uni.setStorageSync('holidayCache', res.data);
+                            uni.setStorageSync('holidayCache_time', Date.now());
+                            resolve(res.data);
+                        } catch (e) {
+                            console.error('缓存节假日数据失败:', e);
+                            resolve(res.data); // 即使缓存失败也返回数据
+                        }
+                    } else if (retryCount < RETRY_TIMES) {
+                        console.log(`节假日API重试 ${retryCount + 1}`);
+                        setTimeout(() => makeRequest(retryCount + 1), RETRY_DELAY);
                     } else {
-                        reject({
-                            code: -1,
-                            message: '获取节假日数据失败',
-                            detail: res
-                        });
+                        // 尝试使用缓存
+                        const cachedData = uni.getStorageSync('holidayCache');
+                        if (cachedData) {
+                            console.log('使用已缓存的节假日数据');
+                            resolve(cachedData);
+                        } else {
+                            reject({
+                                code: -1,
+                                message: '获取节假日数据失败',
+                                detail: res
+                            });
+                        }
+                    }
+                },
+                fail: (err) => {
+                    console.error('节假日API请求失败:', err);
+                    if (retryCount < RETRY_TIMES) {
+                        setTimeout(() => makeRequest(retryCount + 1), RETRY_DELAY);
+                    } else {
+                        // 尝试使用缓存
+                        const cachedData = uni.getStorageSync('holidayCache');
+                        if (cachedData) {
+                            resolve(cachedData);
+                        } else {
+                            reject({
+                                code: -1,
+                                message: '节假日API请求失败',
+                                detail: err
+                            });
+                        }
                     }
                 }
-            },
-            fail: (err) => {
-                console.error('请求失败详情:', err);
-                // 请求失败时尝试使用缓存
-                const cachedData = uni.getStorageSync('holidayCache');
-                if (cachedData) {
-                    resolve(cachedData);
-                } else {
-                    reject({
-                        code: -1,
-                        message: '请求失败',
-                        detail: err
-                    });
-                }
-            }
-        });
+            });
+        };
+
+        makeRequest();
     });
 };
 

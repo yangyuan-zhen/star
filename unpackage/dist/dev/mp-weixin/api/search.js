@@ -2,6 +2,8 @@
 const common_vendor = require("../common/vendor.js");
 require("../common/vendor.js");
 const CACHE_DURATION = 5 * 60 * 1e3;
+const RETRY_TIMES = 2;
+const RETRY_DELAY = 1e3;
 const getCachedData = (key) => {
   const data = common_vendor.index.getStorageSync(key);
   const time = common_vendor.index.getStorageSync(`${key}_time`);
@@ -197,45 +199,60 @@ const getHolidayData = () => {
       resolve(cachedData);
       return;
     }
-    common_vendor.index.request({
-      url: `https://timor.tech/api/holiday/year/${(/* @__PURE__ */ new Date()).getFullYear()}`,
-      method: "GET",
-      success: (res) => {
-        if (res.statusCode === 200 && res.data) {
-          try {
-            common_vendor.index.setStorageSync("holidayCache", res.data);
-            common_vendor.index.setStorageSync("holidayCache_time", Date.now());
-          } catch (e) {
-            console.error("缓存节假日数据失败:", e);
-          }
-          resolve(res.data);
-        } else {
-          const cachedData2 = common_vendor.index.getStorageSync("holidayCache");
-          if (cachedData2) {
-            resolve(cachedData2);
+    const makeRequest = (retryCount = 0) => {
+      common_vendor.index.request({
+        url: `https://timor.tech/api/holiday/year/${(/* @__PURE__ */ new Date()).getFullYear()}`,
+        method: "GET",
+        timeout: 1e4,
+        // 添加超时设置
+        success: (res) => {
+          console.log("节假日API响应:", res);
+          if (res.statusCode === 200 && res.data && res.data.code === 0) {
+            try {
+              common_vendor.index.setStorageSync("holidayCache", res.data);
+              common_vendor.index.setStorageSync("holidayCache_time", Date.now());
+              resolve(res.data);
+            } catch (e) {
+              console.error("缓存节假日数据失败:", e);
+              resolve(res.data);
+            }
+          } else if (retryCount < RETRY_TIMES) {
+            console.log(`节假日API重试 ${retryCount + 1}`);
+            setTimeout(() => makeRequest(retryCount + 1), RETRY_DELAY);
           } else {
-            reject({
-              code: -1,
-              message: "获取节假日数据失败",
-              detail: res
-            });
+            const cachedData2 = common_vendor.index.getStorageSync("holidayCache");
+            if (cachedData2) {
+              console.log("使用已缓存的节假日数据");
+              resolve(cachedData2);
+            } else {
+              reject({
+                code: -1,
+                message: "获取节假日数据失败",
+                detail: res
+              });
+            }
+          }
+        },
+        fail: (err) => {
+          console.error("节假日API请求失败:", err);
+          if (retryCount < RETRY_TIMES) {
+            setTimeout(() => makeRequest(retryCount + 1), RETRY_DELAY);
+          } else {
+            const cachedData2 = common_vendor.index.getStorageSync("holidayCache");
+            if (cachedData2) {
+              resolve(cachedData2);
+            } else {
+              reject({
+                code: -1,
+                message: "节假日API请求失败",
+                detail: err
+              });
+            }
           }
         }
-      },
-      fail: (err) => {
-        console.error("请求失败详情:", err);
-        const cachedData2 = common_vendor.index.getStorageSync("holidayCache");
-        if (cachedData2) {
-          resolve(cachedData2);
-        } else {
-          reject({
-            code: -1,
-            message: "请求失败",
-            detail: err
-          });
-        }
-      }
-    });
+      });
+    };
+    makeRequest();
   });
 };
 const getShoppingAdvice = (query, maxPrice, minPrice) => {

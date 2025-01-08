@@ -144,10 +144,8 @@ const _sfc_main = {
       }
       try {
         const hasAuth = await checkPhotoAlbumAuth();
-        if (!hasAuth) {
-          showAuthModal();
+        if (!hasAuth)
           return;
-        }
         common_vendor.index.showLoading({ title: "保存中..." });
         await common_vendor.index.saveImageToPhotosAlbum({
           filePath: previewImage.value
@@ -167,19 +165,6 @@ const _sfc_main = {
         });
       }
     };
-    const showAuthModal = () => {
-      common_vendor.index.showModal({
-        title: "提示",
-        content: "需要您授权保存图片到相册的权限",
-        confirmText: "去授权",
-        cancelText: "取消",
-        success: (res) => {
-          if (res.confirm) {
-            common_vendor.index.openSetting();
-          }
-        }
-      });
-    };
     const checkPhotoAlbumAuth = () => {
       return new Promise((resolve) => {
         common_vendor.index.getSetting({
@@ -187,12 +172,36 @@ const _sfc_main = {
             if (res.authSetting["scope.writePhotosAlbum"]) {
               resolve(true);
             } else if (res.authSetting["scope.writePhotosAlbum"] === false) {
-              resolve(false);
+              common_vendor.index.showModal({
+                title: "提示",
+                content: "需要您在设置中打开相册权限",
+                confirmText: "去设置",
+                cancelText: "取消",
+                success: (modalRes) => {
+                  if (modalRes.confirm) {
+                    common_vendor.index.openSetting({
+                      success: (settingRes) => {
+                        resolve(settingRes.authSetting["scope.writePhotosAlbum"]);
+                      },
+                      fail: () => resolve(false)
+                    });
+                  } else {
+                    resolve(false);
+                  }
+                }
+              });
             } else {
               common_vendor.index.authorize({
                 scope: "scope.writePhotosAlbum",
                 success: () => resolve(true),
-                fail: () => resolve(false)
+                fail: () => {
+                  common_vendor.index.showToast({
+                    title: "您拒绝了保存图片权限",
+                    icon: "none",
+                    duration: 2e3
+                  });
+                  resolve(false);
+                }
               });
             }
           },

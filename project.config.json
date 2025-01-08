@@ -21,8 +21,8 @@
     },
     "urlCheck": false,
     "preloadBackgroundData": false,
-    "newFeature": false,
-    "nodeModules": false,
+    "newFeature": true,
+    "nodeModules": true,
     "autoAudits": false,
     "scopeDataCheck": false,
     "uglifyFileName": false,
@@ -40,11 +40,17 @@
     "userConfirmedUseCompilerModuleSwitch": false,
     "userConfirmedBundleSwitch": false,
     "packNpmManually": false,
-    "minifyWXSS": true
+    "minifyWXSS": true,
+    "useStaticServer": true,
+    "showES6CompileOption": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "minifyWXML": true
   },
   "condition": {},
   "editorSetting": {
     "tabIndent": "insertSpaces",
     "tabSize": 2
-  }
+  },
+  "version": "1.0.0"
 }

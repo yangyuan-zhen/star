@@ -7753,6 +7753,12 @@ const createSubpackageApp = initCreateSubpackageApp();
   wx.createPluginApp = global.createPluginApp = createPluginApp;
   wx.createSubpackageApp = global.createSubpackageApp = createSubpackageApp;
 }
+const createHook = (lifecycle) => (hook, target = getCurrentInstance()) => {
+  !isInSSRComponentSetup && injectHook(lifecycle, hook, target);
+};
+const onLaunch = /* @__PURE__ */ createHook(ON_LAUNCH);
+const onShareTimeline = /* @__PURE__ */ createHook(ON_SHARE_TIMELINE);
+const onShareAppMessage = /* @__PURE__ */ createHook(ON_SHARE_APP_MESSAGE);
 const matchIconName = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const stringToIcon = (value, validate, allowSimpleName, provider = "") => {
   const colonSeparated = value.split(":");
@@ -12450,11 +12456,6 @@ let Xs = new class {
     ;
 })();
 var Zs = Xs;
-const createHook = (lifecycle) => (hook, target = getCurrentInstance()) => {
-  !isInSSRComponentSetup && injectHook(lifecycle, hook, target);
-};
-const onShareTimeline = /* @__PURE__ */ createHook(ON_SHARE_TIMELINE);
-const onShareAppMessage = /* @__PURE__ */ createHook(ON_SHARE_APP_MESSAGE);
 const fontData = [
   {
     "font_class": "arrow-down",
@@ -13114,6 +13115,7 @@ exports.index = index;
 exports.n = n$1;
 exports.nextTick$1 = nextTick$1;
 exports.o = o$1;
+exports.onLaunch = onLaunch;
 exports.onMounted = onMounted;
 exports.onShareAppMessage = onShareAppMessage;
 exports.onShareTimeline = onShareTimeline;
