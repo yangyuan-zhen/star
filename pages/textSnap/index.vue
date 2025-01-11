@@ -332,38 +332,33 @@ const checkPhotoAlbumAuth = () => {
         if (res.authSetting["scope.writePhotosAlbum"]) {
           // 已经授权，直接返回 true
           resolve(true);
-        } else if (res.authSetting["scope.writePhotosAlbum"] === false) {
-          // 之前拒绝过授权，显示打开设置的弹窗
-          uni.showModal({
-            title: "提示",
-            content: "需要您在设置中打开相册权限",
-            confirmText: "去设置",
-            cancelText: "取消",
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                uni.openSetting({
-                  success: (settingRes) => {
-                    resolve(settingRes.authSetting["scope.writePhotosAlbum"]);
-                  },
-                  fail: () => resolve(false),
-                });
-              } else {
-                resolve(false);
-              }
-            },
-          });
         } else {
-          // 首次请求授权
+          // 不管是首次请求还是之前拒绝过，都直接请求授权
           uni.authorize({
             scope: "scope.writePhotosAlbum",
             success: () => resolve(true),
             fail: () => {
-              uni.showToast({
-                title: "您拒绝了保存图片权限",
-                icon: "none",
-                duration: 2000,
+              // 用户拒绝授权，显示打开设置的弹窗
+              uni.showModal({
+                title: "提示",
+                content: "需要您在设置中打开相册权限",
+                confirmText: "去设置",
+                cancelText: "取消",
+                success: (modalRes) => {
+                  if (modalRes.confirm) {
+                    uni.openSetting({
+                      success: (settingRes) => {
+                        resolve(
+                          settingRes.authSetting["scope.writePhotosAlbum"]
+                        );
+                      },
+                      fail: () => resolve(false),
+                    });
+                  } else {
+                    resolve(false);
+                  }
+                },
               });
-              resolve(false);
             },
           });
         }

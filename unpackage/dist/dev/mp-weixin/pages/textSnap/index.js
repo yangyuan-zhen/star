@@ -171,36 +171,31 @@ const _sfc_main = {
           success: (res) => {
             if (res.authSetting["scope.writePhotosAlbum"]) {
               resolve(true);
-            } else if (res.authSetting["scope.writePhotosAlbum"] === false) {
-              common_vendor.index.showModal({
-                title: "提示",
-                content: "需要您在设置中打开相册权限",
-                confirmText: "去设置",
-                cancelText: "取消",
-                success: (modalRes) => {
-                  if (modalRes.confirm) {
-                    common_vendor.index.openSetting({
-                      success: (settingRes) => {
-                        resolve(settingRes.authSetting["scope.writePhotosAlbum"]);
-                      },
-                      fail: () => resolve(false)
-                    });
-                  } else {
-                    resolve(false);
-                  }
-                }
-              });
             } else {
               common_vendor.index.authorize({
                 scope: "scope.writePhotosAlbum",
                 success: () => resolve(true),
                 fail: () => {
-                  common_vendor.index.showToast({
-                    title: "您拒绝了保存图片权限",
-                    icon: "none",
-                    duration: 2e3
+                  common_vendor.index.showModal({
+                    title: "提示",
+                    content: "需要您在设置中打开相册权限",
+                    confirmText: "去设置",
+                    cancelText: "取消",
+                    success: (modalRes) => {
+                      if (modalRes.confirm) {
+                        common_vendor.index.openSetting({
+                          success: (settingRes) => {
+                            resolve(
+                              settingRes.authSetting["scope.writePhotosAlbum"]
+                            );
+                          },
+                          fail: () => resolve(false)
+                        });
+                      } else {
+                        resolve(false);
+                      }
+                    }
                   });
-                  resolve(false);
                 }
               });
             }
