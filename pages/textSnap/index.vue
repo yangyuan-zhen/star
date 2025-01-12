@@ -327,38 +327,44 @@ const saveImage = async () => {
 // 简化权限检查函数
 const checkPhotoAlbumAuth = () => {
   return new Promise((resolve) => {
+    // 先获取权限状态
     uni.getSetting({
       success: (res) => {
-        if (res.authSetting["scope.writePhotosAlbum"]) {
-          // 已经授权，直接返回 true
+        if (res.authSetting["scope.writePhotosAlbum"] === true) {
+          // 已授权，直接返回true
           resolve(true);
+        } else if (res.authSetting["scope.writePhotosAlbum"] === false) {
+          // 已明确拒绝，则引导去设置页面打开权限
+          uni.showModal({
+            title: "提示",
+            content: "需要您在设置中打开相册权限",
+            confirmText: "去设置",
+            cancelText: "取消",
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                uni.openSetting({
+                  success: (settingRes) => {
+                    resolve(settingRes.authSetting["scope.writePhotosAlbum"]);
+                  },
+                  fail: () => resolve(false),
+                });
+              } else {
+                resolve(false);
+              }
+            },
+          });
         } else {
-          // 不管是首次请求还是之前拒绝过，都直接请求授权
+          // 首次请求，调用authorize
           uni.authorize({
             scope: "scope.writePhotosAlbum",
             success: () => resolve(true),
             fail: () => {
-              // 用户拒绝授权，显示打开设置的弹窗
-              uni.showModal({
-                title: "提示",
-                content: "需要您在设置中打开相册权限",
-                confirmText: "去设置",
-                cancelText: "取消",
-                success: (modalRes) => {
-                  if (modalRes.confirm) {
-                    uni.openSetting({
-                      success: (settingRes) => {
-                        resolve(
-                          settingRes.authSetting["scope.writePhotosAlbum"]
-                        );
-                      },
-                      fail: () => resolve(false),
-                    });
-                  } else {
-                    resolve(false);
-                  }
-                },
+              // 用户拒绝授权
+              uni.showToast({
+                title: "保存图片需要相册权限",
+                icon: "none",
               });
+              resolve(false);
             },
           });
         }
