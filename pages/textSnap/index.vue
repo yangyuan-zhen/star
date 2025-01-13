@@ -294,15 +294,27 @@ const saveImage = async () => {
 
   try {
     uni.showLoading({ title: "保存中..." });
-    await uni.saveImageToPhotosAlbum({
-      filePath: previewImage.value,
+    await new Promise((resolve, reject) => {
+      uni.saveImageToPhotosAlbum({
+        filePath: previewImage.value,
+        success: resolve,
+        fail: (error) => {
+          console.error("保存图片详细错误：", error);
+          reject(error);
+        },
+      });
     });
+
     uni.hideLoading();
     uni.showToast({ title: "保存成功", icon: "success" });
   } catch (error) {
     uni.hideLoading();
     console.error("保存失败:", error);
-    uni.showToast({ title: "保存失败，请重试", icon: "none" });
+    uni.showToast({
+      title: `保存失败: ${error.errMsg || "未知错误"}`,
+      icon: "none",
+      duration: 2000,
+    });
   }
 };
 
