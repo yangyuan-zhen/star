@@ -140,15 +140,26 @@ const _sfc_main = {
         return;
       try {
         common_vendor.index.showLoading({ title: "保存中..." });
-        await common_vendor.index.saveImageToPhotosAlbum({
-          filePath: previewImage.value
+        await new Promise((resolve, reject) => {
+          common_vendor.index.saveImageToPhotosAlbum({
+            filePath: previewImage.value,
+            success: resolve,
+            fail: (error) => {
+              console.error("保存图片详细错误：", error);
+              reject(error);
+            }
+          });
         });
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({ title: "保存成功", icon: "success" });
       } catch (error) {
         common_vendor.index.hideLoading();
         console.error("保存失败:", error);
-        common_vendor.index.showToast({ title: "保存失败，请重试", icon: "none" });
+        common_vendor.index.showToast({
+          title: `保存失败: ${error.errMsg || "未知错误"}`,
+          icon: "none",
+          duration: 2e3
+        });
       }
     };
     let isCheckingAuth = false;
