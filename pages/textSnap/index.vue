@@ -307,84 +307,39 @@ const saveImage = async () => {
 };
 
 // 简化权限检查函数
+let isCheckingAuth = false;
 const checkPhotoAlbumAuth = () => {
-  let hasShownModal = false; // 避免重复弹窗
+  if (isCheckingAuth) return Promise.resolve(false); // 防止重复调用
+  isCheckingAuth = true;
+
   return new Promise((resolve) => {
     uni.getSetting({
       success(res) {
         const authStatus = res.authSetting["scope.writePhotosAlbum"];
         if (authStatus === true) {
-          // 已授权
           resolve(true);
         } else if (authStatus === false) {
-          // 用户拒绝过权限，引导去设置页面
-          if (!hasShownModal) {
-            hasShownModal = true; // 设置标记，避免重复弹窗
-            uni.showModal({
-              title: "权限提示",
-              content: "保存图片需要相册权限，请到设置页面开启权限。",
-              confirmText: "去设置",
-              cancelText: "取消",
-              success(modalRes) {
-                if (modalRes.confirm) {
-                  uni.openSetting({
-                    success(settingRes) {
-                      resolve(
-                        settingRes.authSetting["scope.writePhotosAlbum"] ||
-                          false
-                      );
-                    },
-                    fail: () => {
-                      uni.showToast({
-                        title: "设置失败，请重试",
-                        icon: "none",
-                      });
-                      resolve(false);
-                    },
-                  });
-                } else {
-                  resolve(false);
-                }
-              },
-            });
-          }
+          uni.showToast({
+            title: "权限已被拒绝，请到设置中手动开启",
+            icon: "none",
+          });
+          resolve(false);
         } else {
-          // 首次请求，先提示用户授权
-          uni.showModal({
-            title: "权限提示",
-            content: "保存图片需要访问您的相册权限，是否授权？",
-            success(modalRes) {
-              if (modalRes.confirm) {
-                // 调用授权接口
-                uni.authorize({
-                  scope: "scope.writePhotosAlbum",
-                  success: () => resolve(true),
-                  fail: () => {
-                    uni.showToast({
-                      title: "您已拒绝授权",
-                      icon: "none",
-                    });
-                    resolve(false);
-                  },
-                });
-              } else {
-                uni.showToast({
-                  title: "您已取消授权",
-                  icon: "none",
-                });
-                resolve(false);
-              }
+          uni.authorize({
+            scope: "scope.writePhotosAlbum",
+            success: () => resolve(true),
+            fail: () => {
+              uni.showToast({
+                title: "您已拒绝授权",
+                icon: "none",
+              });
+              resolve(false);
             },
           });
         }
       },
-      fail: () => {
-        uni.showToast({
-          title: "获取权限状态失败，请重试",
-          icon: "none",
-        });
-        resolve(false);
-      },
+      fail: () => resolve(false),
+      complete: () => (isCheckingAuth = false), // 状态复位
     });
   });
 };

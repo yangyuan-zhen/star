@@ -151,8 +151,11 @@ const _sfc_main = {
         common_vendor.index.showToast({ title: "保存失败，请重试", icon: "none" });
       }
     };
+    let isCheckingAuth = false;
     const checkPhotoAlbumAuth = () => {
-      let hasShownModal = false;
+      if (isCheckingAuth)
+        return Promise.resolve(false);
+      isCheckingAuth = true;
       return new Promise((resolve) => {
         common_vendor.index.getSetting({
           success(res) {
@@ -160,70 +163,28 @@ const _sfc_main = {
             if (authStatus === true) {
               resolve(true);
             } else if (authStatus === false) {
-              if (!hasShownModal) {
-                hasShownModal = true;
-                common_vendor.index.showModal({
-                  title: "权限提示",
-                  content: "保存图片需要相册权限，请到设置页面开启权限。",
-                  confirmText: "去设置",
-                  cancelText: "取消",
-                  success(modalRes) {
-                    if (modalRes.confirm) {
-                      common_vendor.index.openSetting({
-                        success(settingRes) {
-                          resolve(
-                            settingRes.authSetting["scope.writePhotosAlbum"] || false
-                          );
-                        },
-                        fail: () => {
-                          common_vendor.index.showToast({
-                            title: "设置失败，请重试",
-                            icon: "none"
-                          });
-                          resolve(false);
-                        }
-                      });
-                    } else {
-                      resolve(false);
-                    }
-                  }
-                });
-              }
+              common_vendor.index.showToast({
+                title: "权限已被拒绝，请到设置中手动开启",
+                icon: "none"
+              });
+              resolve(false);
             } else {
-              common_vendor.index.showModal({
-                title: "权限提示",
-                content: "保存图片需要访问您的相册权限，是否授权？",
-                success(modalRes) {
-                  if (modalRes.confirm) {
-                    common_vendor.index.authorize({
-                      scope: "scope.writePhotosAlbum",
-                      success: () => resolve(true),
-                      fail: () => {
-                        common_vendor.index.showToast({
-                          title: "您已拒绝授权",
-                          icon: "none"
-                        });
-                        resolve(false);
-                      }
-                    });
-                  } else {
-                    common_vendor.index.showToast({
-                      title: "您已取消授权",
-                      icon: "none"
-                    });
-                    resolve(false);
-                  }
+              common_vendor.index.authorize({
+                scope: "scope.writePhotosAlbum",
+                success: () => resolve(true),
+                fail: () => {
+                  common_vendor.index.showToast({
+                    title: "您已拒绝授权",
+                    icon: "none"
+                  });
+                  resolve(false);
                 }
               });
             }
           },
-          fail: () => {
-            common_vendor.index.showToast({
-              title: "获取权限状态失败，请重试",
-              icon: "none"
-            });
-            resolve(false);
-          }
+          fail: () => resolve(false),
+          complete: () => isCheckingAuth = false
+          // 状态复位
         });
       });
     };
