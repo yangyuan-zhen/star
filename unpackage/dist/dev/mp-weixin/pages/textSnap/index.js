@@ -163,11 +163,43 @@ const _sfc_main = {
             if (authStatus === true) {
               resolve(true);
             } else if (authStatus === false) {
-              common_vendor.index.showToast({
-                title: "权限已被拒绝，请到设置中手动开启",
-                icon: "none"
+              common_vendor.index.showModal({
+                title: "权限提示",
+                content: "保存图片需要相册权限，请到设置页面开启权限。",
+                confirmText: "去设置",
+                cancelText: "取消",
+                success(modalRes) {
+                  if (modalRes.confirm) {
+                    common_vendor.index.openSetting({
+                      success(settingRes) {
+                        const newAuthStatus = settingRes.authSetting["scope.writePhotosAlbum"];
+                        if (newAuthStatus) {
+                          common_vendor.index.showToast({
+                            title: "权限开启成功",
+                            icon: "success"
+                          });
+                          resolve(true);
+                        } else {
+                          common_vendor.index.showToast({
+                            title: "权限未开启",
+                            icon: "none"
+                          });
+                          resolve(false);
+                        }
+                      },
+                      fail: () => {
+                        common_vendor.index.showToast({
+                          title: "设置失败，请重试",
+                          icon: "none"
+                        });
+                        resolve(false);
+                      }
+                    });
+                  } else {
+                    resolve(false);
+                  }
+                }
               });
-              resolve(false);
             } else {
               common_vendor.index.authorize({
                 scope: "scope.writePhotosAlbum",
@@ -182,7 +214,13 @@ const _sfc_main = {
               });
             }
           },
-          fail: () => resolve(false),
+          fail: () => {
+            common_vendor.index.showToast({
+              title: "获取权限状态失败，请重试",
+              icon: "none"
+            });
+            resolve(false);
+          },
           complete: () => isCheckingAuth = false
           // 状态复位
         });

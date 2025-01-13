@@ -308,6 +308,7 @@ const saveImage = async () => {
 
 // 简化权限检查函数
 let isCheckingAuth = false;
+
 const checkPhotoAlbumAuth = () => {
   if (isCheckingAuth) return Promise.resolve(false); // 防止重复调用
   isCheckingAuth = true;
@@ -317,14 +318,50 @@ const checkPhotoAlbumAuth = () => {
       success(res) {
         const authStatus = res.authSetting["scope.writePhotosAlbum"];
         if (authStatus === true) {
+          // 用户已授权
           resolve(true);
         } else if (authStatus === false) {
-          uni.showToast({
-            title: "权限已被拒绝，请到设置中手动开启",
-            icon: "none",
+          // 用户曾拒绝授权，引导到设置页面
+          uni.showModal({
+            title: "权限提示",
+            content: "保存图片需要相册权限，请到设置页面开启权限。",
+            confirmText: "去设置",
+            cancelText: "取消",
+            success(modalRes) {
+              if (modalRes.confirm) {
+                uni.openSetting({
+                  success(settingRes) {
+                    const newAuthStatus =
+                      settingRes.authSetting["scope.writePhotosAlbum"];
+                    if (newAuthStatus) {
+                      uni.showToast({
+                        title: "权限开启成功",
+                        icon: "success",
+                      });
+                      resolve(true);
+                    } else {
+                      uni.showToast({
+                        title: "权限未开启",
+                        icon: "none",
+                      });
+                      resolve(false);
+                    }
+                  },
+                  fail: () => {
+                    uni.showToast({
+                      title: "设置失败，请重试",
+                      icon: "none",
+                    });
+                    resolve(false);
+                  },
+                });
+              } else {
+                resolve(false);
+              }
+            },
           });
-          resolve(false);
         } else {
+          // 用户首次授权
           uni.authorize({
             scope: "scope.writePhotosAlbum",
             success: () => resolve(true),
@@ -338,7 +375,13 @@ const checkPhotoAlbumAuth = () => {
           });
         }
       },
-      fail: () => resolve(false),
+      fail: () => {
+        uni.showToast({
+          title: "获取权限状态失败，请重试",
+          icon: "none",
+        });
+        resolve(false);
+      },
       complete: () => (isCheckingAuth = false), // 状态复位
     });
   });
