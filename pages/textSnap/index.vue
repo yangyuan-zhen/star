@@ -289,87 +289,102 @@ const generatePreview = async () => {
 
 // 修改保存图片到相册的方法
 const saveImage = async () => {
-  if (!previewImage.value) {
-    uni.showToast({
-      title: "请先生成预览图",
-      icon: "none",
-    });
-    return;
-  }
+  const hasAuth = await checkPhotoAlbumAuth(); // 检查并获取权限
+  if (!hasAuth) return; // 如果用户未授权，直接退出
 
   try {
-    // 使用辅助函数检查权限
-    const hasAuth = await checkPhotoAlbumAuth();
-    if (!hasAuth) return; // 如果没有权限，checkPhotoAlbumAuth 中已经显示了提示，这里直接返回
-
-    // 有权限，开始保存
     uni.showLoading({ title: "保存中..." });
     await uni.saveImageToPhotosAlbum({
       filePath: previewImage.value,
     });
-
     uni.hideLoading();
-    uni.showToast({
-      title: "保存成功",
-      icon: "success",
-    });
-    closePreview();
+    uni.showToast({ title: "保存成功", icon: "success" });
   } catch (error) {
     uni.hideLoading();
     console.error("保存失败:", error);
-    uni.showToast({
-      title: "保存失败，请重试",
-      icon: "none",
-    });
+    uni.showToast({ title: "保存失败，请重试", icon: "none" });
   }
 };
 
 // 简化权限检查函数
 const checkPhotoAlbumAuth = () => {
+  let hasShownModal = false; // 避免重复弹窗
   return new Promise((resolve) => {
-    // 先获取权限状态
     uni.getSetting({
-      success: (res) => {
-        if (res.authSetting["scope.writePhotosAlbum"] === true) {
-          // 已授权，直接返回true
+      success(res) {
+        const authStatus = res.authSetting["scope.writePhotosAlbum"];
+        if (authStatus === true) {
+          // 已授权
           resolve(true);
-        } else if (res.authSetting["scope.writePhotosAlbum"] === false) {
-          // 已明确拒绝，则引导去设置页面打开权限
+        } else if (authStatus === false) {
+          // 用户拒绝过权限，引导去设置页面
+          if (!hasShownModal) {
+            hasShownModal = true; // 设置标记，避免重复弹窗
+            uni.showModal({
+              title: "权限提示",
+              content: "保存图片需要相册权限，请到设置页面开启权限。",
+              confirmText: "去设置",
+              cancelText: "取消",
+              success(modalRes) {
+                if (modalRes.confirm) {
+                  uni.openSetting({
+                    success(settingRes) {
+                      resolve(
+                        settingRes.authSetting["scope.writePhotosAlbum"] ||
+                          false
+                      );
+                    },
+                    fail: () => {
+                      uni.showToast({
+                        title: "设置失败，请重试",
+                        icon: "none",
+                      });
+                      resolve(false);
+                    },
+                  });
+                } else {
+                  resolve(false);
+                }
+              },
+            });
+          }
+        } else {
+          // 首次请求，先提示用户授权
           uni.showModal({
-            title: "提示",
-            content: "需要您在设置中打开相册权限",
-            confirmText: "去设置",
-            cancelText: "取消",
-            success: (modalRes) => {
+            title: "权限提示",
+            content: "保存图片需要访问您的相册权限，是否授权？",
+            success(modalRes) {
               if (modalRes.confirm) {
-                uni.openSetting({
-                  success: (settingRes) => {
-                    resolve(settingRes.authSetting["scope.writePhotosAlbum"]);
+                // 调用授权接口
+                uni.authorize({
+                  scope: "scope.writePhotosAlbum",
+                  success: () => resolve(true),
+                  fail: () => {
+                    uni.showToast({
+                      title: "您已拒绝授权",
+                      icon: "none",
+                    });
+                    resolve(false);
                   },
-                  fail: () => resolve(false),
                 });
               } else {
+                uni.showToast({
+                  title: "您已取消授权",
+                  icon: "none",
+                });
                 resolve(false);
               }
             },
           });
-        } else {
-          // 首次请求，调用authorize
-          uni.authorize({
-            scope: "scope.writePhotosAlbum",
-            success: () => resolve(true),
-            fail: () => {
-              // 用户拒绝授权
-              uni.showToast({
-                title: "保存图片需要相册权限",
-                icon: "none",
-              });
-              resolve(false);
-            },
-          });
         }
       },
-      fail: () => resolve(false),
+      fail: () => {
+        uni.showToast({
+          title: "获取权限状态失败，请重试",
+          icon: "none",
+        });
+        resolve(false);
+      },
     });
   });
 };

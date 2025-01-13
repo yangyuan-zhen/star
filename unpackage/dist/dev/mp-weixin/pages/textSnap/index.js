@@ -135,76 +135,95 @@ const _sfc_main = {
       }
     };
     const saveImage = async () => {
-      if (!previewImage.value) {
-        common_vendor.index.showToast({
-          title: "请先生成预览图",
-          icon: "none"
-        });
+      const hasAuth = await checkPhotoAlbumAuth();
+      if (!hasAuth)
         return;
-      }
       try {
-        const hasAuth = await checkPhotoAlbumAuth();
-        if (!hasAuth)
-          return;
         common_vendor.index.showLoading({ title: "保存中..." });
         await common_vendor.index.saveImageToPhotosAlbum({
           filePath: previewImage.value
         });
         common_vendor.index.hideLoading();
-        common_vendor.index.showToast({
-          title: "保存成功",
-          icon: "success"
-        });
-        closePreview();
+        common_vendor.index.showToast({ title: "保存成功", icon: "success" });
       } catch (error) {
         common_vendor.index.hideLoading();
         console.error("保存失败:", error);
-        common_vendor.index.showToast({
-          title: "保存失败，请重试",
-          icon: "none"
-        });
+        common_vendor.index.showToast({ title: "保存失败，请重试", icon: "none" });
       }
     };
     const checkPhotoAlbumAuth = () => {
+      let hasShownModal = false;
       return new Promise((resolve) => {
         common_vendor.index.getSetting({
-          success: (res) => {
-            if (res.authSetting["scope.writePhotosAlbum"] === true) {
+          success(res) {
+            const authStatus = res.authSetting["scope.writePhotosAlbum"];
+            if (authStatus === true) {
               resolve(true);
-            } else if (res.authSetting["scope.writePhotosAlbum"] === false) {
+            } else if (authStatus === false) {
+              if (!hasShownModal) {
+                hasShownModal = true;
+                common_vendor.index.showModal({
+                  title: "权限提示",
+                  content: "保存图片需要相册权限，请到设置页面开启权限。",
+                  confirmText: "去设置",
+                  cancelText: "取消",
+                  success(modalRes) {
+                    if (modalRes.confirm) {
+                      common_vendor.index.openSetting({
+                        success(settingRes) {
+                          resolve(
+                            settingRes.authSetting["scope.writePhotosAlbum"] || false
+                          );
+                        },
+                        fail: () => {
+                          common_vendor.index.showToast({
+                            title: "设置失败，请重试",
+                            icon: "none"
+                          });
+                          resolve(false);
+                        }
+                      });
+                    } else {
+                      resolve(false);
+                    }
+                  }
+                });
+              }
+            } else {
               common_vendor.index.showModal({
-                title: "提示",
-                content: "需要您在设置中打开相册权限",
-                confirmText: "去设置",
-                cancelText: "取消",
-                success: (modalRes) => {
+                title: "权限提示",
+                content: "保存图片需要访问您的相册权限，是否授权？",
+                success(modalRes) {
                   if (modalRes.confirm) {
-                    common_vendor.index.openSetting({
-                      success: (settingRes) => {
-                        resolve(settingRes.authSetting["scope.writePhotosAlbum"]);
-                      },
-                      fail: () => resolve(false)
+                    common_vendor.index.authorize({
+                      scope: "scope.writePhotosAlbum",
+                      success: () => resolve(true),
+                      fail: () => {
+                        common_vendor.index.showToast({
+                          title: "您已拒绝授权",
+                          icon: "none"
+                        });
+                        resolve(false);
+                      }
                     });
                   } else {
+                    common_vendor.index.showToast({
+                      title: "您已取消授权",
+                      icon: "none"
+                    });
                     resolve(false);
                   }
                 }
               });
-            } else {
-              common_vendor.index.authorize({
-                scope: "scope.writePhotosAlbum",
-                success: () => resolve(true),
-                fail: () => {
-                  common_vendor.index.showToast({
-                    title: "保存图片需要相册权限",
-                    icon: "none"
-                  });
-                  resolve(false);
-                }
-              });
             }
           },
-          fail: () => resolve(false)
+          fail: () => {
+            common_vendor.index.showToast({
+              title: "获取权限状态失败，请重试",
+              icon: "none"
+            });
+            resolve(false);
+          }
         });
       });
     };
