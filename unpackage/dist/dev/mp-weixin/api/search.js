@@ -18,7 +18,7 @@ const getWeatherReport = (city) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0",
+        "Authorization": "Bearer pat_145FsZZU196i6yRVzg0SAyNtMnn3UEQANCdbdNWeOV6eFFxYPBJ2M0hh46s6ob5u",
         "Content-Type": "application/json"
       },
       data: {
@@ -57,7 +57,7 @@ const getBookRecommend = (bookName) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0",
+        "Authorization": "Bearer pat_145FsZZU196i6yRVzg0SAyNtMnn3UEQANCdbdNWeOV6eFFxYPBJ2M0hh46s6ob5u",
         "Content-Type": "application/json"
       },
       data: {
@@ -96,7 +96,7 @@ const translateText = (text) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0",
+        "Authorization": "Bearer pat_145FsZZU196i6yRVzg0SAyNtMnn3UEQANCdbdNWeOV6eFFxYPBJ2M0hh46s6ob5u",
         "Content-Type": "application/json"
       },
       data: {
@@ -261,7 +261,7 @@ const getShoppingAdvice = (query, maxPrice, minPrice) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_Ne72TLPjTvO2VU11SoIFPHwb3aDiR5CJHrMQTca061xHVpEmMobEGrRBsUAOZ1E0",
+        "Authorization": "Bearer pat_145FsZZU196i6yRVzg0SAyNtMnn3UEQANCdbdNWeOV6eFFxYPBJ2M0hh46s6ob5u",
         "Content-Type": "application/json"
       },
       data: {
