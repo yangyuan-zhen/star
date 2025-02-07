@@ -18,7 +18,7 @@ const getWeatherReport = (city) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_145FsZZU196i6yRVzg0SAyNtMnn3UEQANCdbdNWeOV6eFFxYPBJ2M0hh46s6ob5u",
+        "Authorization": "Bearer pat_PguiB1mlb2oAqFkb4mdB1i2BFaIhsk6JPNzwMXXhdIljvXuxGgxPzEJIiGYKIckJ",
         "Content-Type": "application/json"
       },
       data: {
@@ -57,7 +57,7 @@ const getBookRecommend = (bookName) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_145FsZZU196i6yRVzg0SAyNtMnn3UEQANCdbdNWeOV6eFFxYPBJ2M0hh46s6ob5u",
+        "Authorization": "Bearer pat_PguiB1mlb2oAqFkb4mdB1i2BFaIhsk6JPNzwMXXhdIljvXuxGgxPzEJIiGYKIckJ",
         "Content-Type": "application/json"
       },
       data: {
@@ -96,7 +96,7 @@ const translateText = (text) => {
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_145FsZZU196i6yRVzg0SAyNtMnn3UEQANCdbdNWeOV6eFFxYPBJ2M0hh46s6ob5u",
+        "Authorization": "Bearer pat_PguiB1mlb2oAqFkb4mdB1i2BFaIhsk6JPNzwMXXhdIljvXuxGgxPzEJIiGYKIckJ",
         "Content-Type": "application/json"
       },
       data: {
@@ -257,35 +257,32 @@ const getHolidayData = () => {
 };
 const getShoppingAdvice = (query, maxPrice, minPrice) => {
   return new Promise((resolve, reject) => {
+    if (!query || !maxPrice || !minPrice) {
+      reject({
+        code: -1,
+        message: "请填写完整的查询信息"
+      });
+      return;
+    }
     common_vendor.index.request({
       url: "https://api.coze.cn/v1/workflow/run",
       method: "POST",
       header: {
-        "Authorization": "Bearer pat_145FsZZU196i6yRVzg0SAyNtMnn3UEQANCdbdNWeOV6eFFxYPBJ2M0hh46s6ob5u",
+        "Authorization": "Bearer pat_PguiB1mlb2oAqFkb4mdB1i2BFaIhsk6JPNzwMXXhdIljvXuxGgxPzEJIiGYKIckJ",
         "Content-Type": "application/json"
       },
       data: {
-        workflow_id: "7450799344502423603",
-        parameters: {
-          query,
-          max_price: maxPrice,
-          min_price: minPrice
+        "workflow_id": "7450799344502423603",
+        "parameters": {
+          "query": query,
+          "max_price": maxPrice,
+          "min_price": minPrice
         }
       },
       success: (res) => {
-        if (res.statusCode === 401 || res.data && res.data.code === 401) {
-          common_vendor.index.showToast({
-            title: "API授权已过期，请等待开发者更新",
-            icon: "none",
-            duration: 3e3
-          });
-          reject({ code: 401, message: "API授权已过期" });
-          return;
-        }
         if (res.data.code === 0) {
           try {
-            const result = JSON.parse(res.data.data);
-            resolve(result);
+            resolve(res.data.data);
           } catch (error) {
             reject({
               code: -1,

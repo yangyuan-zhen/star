@@ -19,25 +19,50 @@ const _sfc_main = {
     const result = common_vendor.ref(null);
     const showResults = common_vendor.ref(false);
     const getAdvice = async () => {
+      if (Number(minPrice.value) > Number(maxPrice.value)) {
+        common_vendor.index.showToast({
+          title: "最低价格不能大于最高价格",
+          icon: "none",
+          duration: 2e3
+        });
+        return;
+      }
       try {
         loading.value = true;
+        console.log("发起API请求...", {
+          query: query.value,
+          minPrice: minPrice.value,
+          maxPrice: maxPrice.value
+        });
         const res = await api_search.getShoppingAdvice(
           query.value,
           maxPrice.value,
           minPrice.value
         );
-        result.value = res;
+        console.log("API响应结果：", res);
+        if (res) {
+          result.value = { output: res };
+        } else {
+          result.value = {};
+        }
+        console.log("result.value的值：", result.value);
+        console.log("解析后的结果：", parsedResults.value);
         if (parsedResults.value.length > 0) {
           showResults.value = true;
+        } else {
+          console.log("没有解析到有效结果");
+          common_vendor.index.showToast({
+            title: "未获取到商品推荐",
+            icon: "none",
+            duration: 2e3
+          });
         }
       } catch (error) {
-        if (error.code === 401) {
-          loading.value = false;
-          return;
-        }
+        console.error("请求失败：", error);
         common_vendor.index.showToast({
-          title: "获取建议失败",
-          icon: "error"
+          title: error.message || "获取建议失败",
+          icon: "none",
+          duration: 2e3
         });
       } finally {
         loading.value = false;
@@ -45,50 +70,35 @@ const _sfc_main = {
     };
     common_vendor.onUnmounted(() => {
     });
-    const onShareAppMessage = () => {
-      return {
-        title: "买什么 - AI智能购物建议",
-        path: "/pages/shopping/index",
-        imageUrl: ""
-        // 如果有分享图片的话
-      };
-    };
-    const onShareTimeline = () => {
-      return {
-        title: "买什么 - AI智能购物建议",
-        query: "/pages/shopping/index",
-        // 分享链接
-        imageUrl: ""
-        // 如果有分享图片的话
-      };
-    };
-    __expose({
-      onShareAppMessage,
-      onShareTimeline
-    });
     const parsedResults = common_vendor.computed(() => {
-      if (!result.value)
+      var _a;
+      if (!((_a = result.value) == null ? void 0 : _a.output))
         return [];
       try {
-        const outputText = result.value.output || "";
-        const products = outputText.split("\n\n").slice(1).filter(Boolean);
+        const text = result.value.output;
+        const products = text.match(/- 🛍️ 商品名称:[\s\S]*?(?=(?:- 🛍️ 商品名称:|$))/g) || [];
         const results = products.map((product) => {
-          const nameMatch = product.match(/商品名称：([^\n]+)/);
-          const priceMatch = product.match(/价格：([^\n]+)/);
-          const channelMatch = product.match(/购买渠道：([^\n]+)/);
-          const worthMatch = product.match(/是否值得购买：([^\n]+)/);
-          if (nameMatch && priceMatch && channelMatch) {
-            return {
-              name: nameMatch[1].trim().replace(/🛍️\s*/, ""),
-              price: priceMatch[1].trim().replace(/💲\s*/, ""),
-              channel: channelMatch[1].trim().replace(/🛒\s*/, ""),
-              worth: worthMatch ? worthMatch[1].trim().replace(/⭐\s*/, "") : "暂无评估"
-            };
+          var _a2, _b;
+          try {
+            const nameMatch = product.match(/商品名称:\s*([^\n]+)/);
+            const priceMatch = product.match(/价格:\s*([\d.]+)/);
+            const channelMatch = product.match(/购买渠道:\s*([^\n]+)/);
+            const worthMatch = product.match(/是否值得购买：\s*([^。\n]+)/);
+            if (!(nameMatch == null ? void 0 : nameMatch[1]) || !(priceMatch == null ? void 0 : priceMatch[1]))
+              return null;
+            const name = nameMatch[1].trim().replace(/\\n/g, "").replace(/\[点击.*?\]/g, "").replace(/🛍️/g, "");
+            const price = priceMatch[1].trim();
+            const channel = ((_a2 = channelMatch == null ? void 0 : channelMatch[1]) == null ? void 0 : _a2.trim().replace(/\\n/g, "").replace(/\[点击.*?\]/g, "").replace(/🛒/g, "")) || "平台未注明";
+            const worth = ((_b = worthMatch == null ? void 0 : worthMatch[1]) == null ? void 0 : _b.trim().replace(/\\n/g, "").replace(/\[点击.*?\]/g, "").replace(/。$/, "").replace(/⭐/g, "").replace(/https?:\/\/[^\s)]+/g, "")) || "暂无评估";
+            return { name, price, channel, worth };
+          } catch (error) {
+            console.error("解析错误：", error);
+            return null;
           }
-          return null;
         }).filter(Boolean);
         return results;
       } catch (error) {
+        console.error("解析错误：", error);
         return [];
       }
     });
@@ -97,16 +107,36 @@ const _sfc_main = {
       const systemInfo = common_vendor.index.getSystemInfoSync();
       scrollHeight.value = systemInfo.windowHeight - 44 - 32;
     });
+    const onShareAppMessage = () => {
+      return {
+        title: "买什么 - AI智能购物建议",
+        path: "/pages/shopping/index",
+        imageUrl: ""
+        // 如有分享图片可填写
+      };
+    };
+    const onShareTimeline = () => {
+      return {
+        title: "买什么 - AI智能购物建议",
+        query: "/pages/shopping/index",
+        imageUrl: ""
+        // 如有分享图片可填写
+      };
+    };
+    __expose({
+      onShareAppMessage,
+      onShareTimeline
+    });
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: !showResults.value
       }, !showResults.value ? {
         b: query.value,
         c: common_vendor.o(($event) => query.value = $event.detail.value),
-        d: minPrice.value,
-        e: common_vendor.o(($event) => minPrice.value = $event.detail.value),
-        f: maxPrice.value,
-        g: common_vendor.o(($event) => maxPrice.value = $event.detail.value),
+        d: maxPrice.value,
+        e: common_vendor.o(($event) => maxPrice.value = $event.detail.value),
+        f: minPrice.value,
+        g: common_vendor.o(($event) => minPrice.value = $event.detail.value),
         h: common_vendor.t(loading.value ? "分析中..." : "获取建议"),
         i: common_vendor.o(getAdvice),
         j: loading.value,
@@ -123,7 +153,7 @@ const _sfc_main = {
       } : {
         m: common_vendor.p({
           type: "back",
-          size: "12"
+          size: "10"
         }),
         n: common_vendor.o(($event) => showResults.value = false),
         o: common_vendor.f(parsedResults.value, (item, index, i0) => {
@@ -131,17 +161,11 @@ const _sfc_main = {
             a: common_vendor.t(item.name),
             b: common_vendor.t(item.price),
             c: common_vendor.t(item.channel),
-            d: "d650adc9-3-" + i0,
-            e: common_vendor.t(item.worth),
-            f: index
+            d: common_vendor.t(item.worth),
+            e: index
           };
         }),
-        p: common_vendor.p({
-          type: "checkmarkempty",
-          size: "16",
-          color: "#52c41a"
-        }),
-        q: scrollHeight.value + "px"
+        p: scrollHeight.value + "px"
       });
     };
   }

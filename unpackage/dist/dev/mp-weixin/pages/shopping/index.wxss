@@ -30,8 +30,6 @@
   padding: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   margin-bottom: 12px;
-  width: auto;
-  box-sizing: border-box;
 }
 .input-group.data-v-d650adc9 {
   margin-bottom: 12px;
@@ -62,7 +60,6 @@
   border-radius: 6px;
   font-size: 15px;
   border: none;
-  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -99,12 +96,8 @@
   background: transparent;
   border: none;
   padding: 8px;
-  margin: 0;
-  line-height: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
-  outline: none;
 }
 .back-btn.data-v-d650adc9:active {
   opacity: 0.7;
@@ -117,7 +110,6 @@
 .content-container.data-v-d650adc9 {
   flex: 1;
   padding: 16px;
-  box-sizing: border-box;
   margin: 0 auto;
   width: 100%;
   max-width: 600px;
@@ -127,63 +119,33 @@
 }
 .result-card.data-v-d650adc9 {
   background: #fff;
-  border-radius: 12px;
   padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
 }
-.result-card.data-v-d650adc9:active {
-  transform: scale(0.99);
-  transition: transform 0.2s ease;
-}
-.product-name.data-v-d650adc9 {
+.result-card .product-name.data-v-d650adc9 {
   font-size: 15px;
-  font-weight: 500;
   color: #333;
+  margin-bottom: 8px;
   line-height: 1.4;
-  margin-bottom: 12px;
 }
-.product-info.data-v-d650adc9 {
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-  gap: 8px;
-}
-.price-tag.data-v-d650adc9 {
-  background: #fff5f5;
+.result-card .price.data-v-d650adc9 {
+  font-size: 16px;
   color: #ff4d4f;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
+  margin-bottom: 8px;
 }
-.channel-tag.data-v-d650adc9 {
-  background: #f0f5ff;
-  color: #4096ff;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 13px;
-}
-.worth-info.data-v-d650adc9 {
-  display: flex;
-  align-items: center;
-  color: #52c41a;
+.result-card .worth-info.data-v-d650adc9 {
   font-size: 14px;
+  color: #666;
   line-height: 1.4;
-  background: #f6ffed;
-  padding: 8px 12px;
-  border-radius: 6px;
 }
-.worth-icon.data-v-d650adc9 {
-  font-size: 16px;
-  margin-right: 6px;
-  color: #52c41a;
+.result-card .worth-info .channel.data-v-d650adc9 {
+  color: #1890ff;
 }
-.input-icon.data-v-d650adc9,
-.btn-icon.data-v-d650adc9,
-.icon-spin.data-v-d650adc9 {
-  display: none;
+.result-card .worth-info .separator.data-v-d650adc9 {
+  margin: 0 4px;
+}
+.result-card .worth-info .worth.data-v-d650adc9 {
+  color: #666;
 }
 .tips-container.data-v-d650adc9 {
   margin-top: 16px;
@@ -197,41 +159,12 @@
   margin-bottom: 8px;
   padding: 4px 0;
 }
-.tip-item.data-v-d650adc9:last-child {
-  margin-bottom: 0;
-}
 .tip-item .uni-icons.data-v-d650adc9 {
   margin-top: 3px;
 }
 .tip-text.data-v-d650adc9 {
   font-size: 13px;
   color: #909399;
-  line-height: 1.4;
   margin-left: 6px;
   flex: 1;
-}
-@media screen and (min-width: 375px) {
-.content-container.data-v-d650adc9 {
-    padding: 16px;
-}
-.result-card.data-v-d650adc9 {
-    padding: 16px;
-}
-}
-@media screen and (max-width: 374px) {
-.content-container.data-v-d650adc9 {
-    padding: 12px;
-}
-.result-card.data-v-d650adc9 {
-    padding: 12px;
-}
-.product-name.data-v-d650adc9 {
-    font-size: 14px;
-}
-.price-tag.data-v-d650adc9 {
-    font-size: 15px;
-}
-.channel-tag.data-v-d650adc9 {
-    font-size: 12px;
-}
 }
