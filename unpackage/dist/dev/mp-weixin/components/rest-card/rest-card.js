@@ -137,7 +137,7 @@ const _sfc_main = {
           });
         }
       } catch (e) {
-        console.error("Storage operation failed:", e);
+        common_vendor.index.__f__("error", "at components/rest-card/rest-card.vue:242", "Storage operation failed:", e);
       }
     };
     common_vendor.onMounted(() => {
@@ -210,3 +210,4 @@ const _sfc_main = {
 };
 const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-c9d65e26"]]);
 wx.createComponent(Component);
+//# sourceMappingURL=../../../.sourcemap/mp-weixin/components/rest-card/rest-card.js.map

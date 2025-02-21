@@ -5,6 +5,13 @@
   "versionName": "1.0.0",
   "versionCode": "100",
   "transformPx": false,
+  "app-plus": {
+    "permission": {
+      "location": {
+        "description": "您的位置信息将用于获取天气数据"
+      }
+    }
+  },
   "mp-weixin": {
     "appid": "wx9652b8bd8ff5fdd2",
     "setting": {
@@ -18,11 +25,19 @@
     "uniStatistics": {
       "enable": false
     },
-    "requiredPrivateInfos": ["chooseAddress", "chooseLocation", "choosePoi"],
+    "requiredPrivateInfos": [
+      "chooseAddress",
+      "chooseLocation",
+      "choosePoi",
+      "getLocation"
+    ],
     "cloudfunctionRoot": "cloudfunctions/",
     "permission": {
       "scope.writePhotosAlbum": {
         "desc": "用于保存图片到相册"
+      },
+      "scope.userLocation": {
+        "desc": "您的位置信息将用于获取天气数据"
       }
     }
   },

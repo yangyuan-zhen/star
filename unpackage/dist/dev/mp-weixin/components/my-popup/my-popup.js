@@ -19,11 +19,11 @@ const _sfc_main = {
   },
   methods: {
     open() {
-      console.log("Opening popup");
+      common_vendor.index.__f__("log", "at components/my-popup/my-popup.vue:42", "Opening popup");
       this.showPopup = true;
     },
     close() {
-      console.log("Closing popup");
+      common_vendor.index.__f__("log", "at components/my-popup/my-popup.vue:46", "Closing popup");
       this.showPopup = false;
     },
     onMaskClick() {
@@ -49,3 +49,4 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
 }
 const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
 wx.createComponent(Component);
+//# sourceMappingURL=../../../.sourcemap/mp-weixin/components/my-popup/my-popup.js.map

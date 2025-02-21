@@ -36,7 +36,7 @@ const getWeatherReport = (city) => {
             url: 'https://api.coze.cn/v1/workflow/run',
             method: 'POST',
             header: {
-                'Authorization': 'Bearer pat_PguiB1mlb2oAqFkb4mdB1i2BFaIhsk6JPNzwMXXhdIljvXuxGgxPzEJIiGYKIckJ',
+                'Authorization': 'Bearer pat_0xvh1L4lHPEiozeyZ0u9TnnVwD4cO8GkaM87ceE4z5is1uIuydjQ4AnzsIpgNFoV',
                 'Content-Type': 'application/json'
             },
             data: {
@@ -78,7 +78,7 @@ const getBookRecommend = (bookName) => {
             url: 'https://api.coze.cn/v1/workflow/run',
             method: 'POST',
             header: {
-                'Authorization': 'Bearer pat_PguiB1mlb2oAqFkb4mdB1i2BFaIhsk6JPNzwMXXhdIljvXuxGgxPzEJIiGYKIckJ',
+                'Authorization': 'Bearer pat_0xvh1L4lHPEiozeyZ0u9TnnVwD4cO8GkaM87ceE4z5is1uIuydjQ4AnzsIpgNFoV',
                 'Content-Type': 'application/json'
             },
             data: {
@@ -120,7 +120,7 @@ const translateText = (text) => {
             url: 'https://api.coze.cn/v1/workflow/run',
             method: 'POST',
             header: {
-                'Authorization': 'Bearer pat_PguiB1mlb2oAqFkb4mdB1i2BFaIhsk6JPNzwMXXhdIljvXuxGgxPzEJIiGYKIckJ',
+                'Authorization': 'Bearer pat_0xvh1L4lHPEiozeyZ0u9TnnVwD4cO8GkaM87ceE4z5is1uIuydjQ4AnzsIpgNFoV',
                 'Content-Type': 'application/json'
             },
             data: {
@@ -305,7 +305,7 @@ const handleApiError = (error) => {
 };
 
 // 买什么接口
-const getShoppingAdvice = (query, maxPrice, minPrice) => {
+const getShoppingAdvice = (query, maxPrice, minPrice, location = '') => {
     return new Promise((resolve, reject) => {
         // 参数验证
         if (!query || !maxPrice || !minPrice) {
@@ -320,7 +320,7 @@ const getShoppingAdvice = (query, maxPrice, minPrice) => {
             url: 'https://api.coze.cn/v1/workflow/run',
             method: 'POST',
             header: {
-                'Authorization': 'Bearer pat_PguiB1mlb2oAqFkb4mdB1i2BFaIhsk6JPNzwMXXhdIljvXuxGgxPzEJIiGYKIckJ',
+                'Authorization': 'Bearer pat_0xvh1L4lHPEiozeyZ0u9TnnVwD4cO8GkaM87ceE4z5is1uIuydjQ4AnzsIpgNFoV',
                 'Content-Type': 'application/json'
             },
             data: {
@@ -328,7 +328,8 @@ const getShoppingAdvice = (query, maxPrice, minPrice) => {
                 "parameters": {
                     "query": query,
                     "max_price": maxPrice,
-                    "min_price": minPrice
+                    "min_price": minPrice,
+                    "location": location
                 }
             },
             success: (res) => {
@@ -356,6 +357,134 @@ const getShoppingAdvice = (query, maxPrice, minPrice) => {
     });
 };
 
+// 和风天气API接口
+const QWEATHER_KEY = '7fdcb07d68dc4296bd06970b643ec23a';
+
+const getQWeather = (location) => {
+    return new Promise((resolve, reject) => {
+        // 先检查缓存
+        const cachedData = getCachedData('weatherCache');
+        if (cachedData) {
+            resolve(cachedData);
+            return;
+        }
+
+        uni.request({
+            url: 'https://devapi.qweather.com/v7/weather/now',
+            method: 'GET',
+            data: {
+                location: location || '101010100',
+                key: QWEATHER_KEY
+            },
+            success: (res) => {
+                if (res.statusCode === 200 && res.data.code === '200') {
+                    try {
+                        // 缓存数据
+                        uni.setStorageSync('weatherCache', res.data);
+                        uni.setStorageSync('weatherCache_time', Date.now());
+                        resolve(res.data);
+                    } catch (error) {
+                        console.error('缓存天气数据失败:', error);
+                        resolve(res.data); // 即使缓存失败也返回数据
+                    }
+                } else {
+                    reject({
+                        code: -1,
+                        message: res.data.code || '获取天气数据失败'
+                    });
+                }
+            },
+            fail: (err) => {
+                reject(err);
+            }
+        });
+    });
+};
+
+// 和风天气城市查询接口
+const getLocationId = (longitude, latitude) => {
+    return new Promise((resolve, reject) => {
+        // 先检查缓存
+        const cachedLocation = getCachedData('locationCache');
+        if (cachedLocation) {
+            resolve(cachedLocation);
+            return;
+        }
+
+        uni.request({
+            url: 'https://geoapi.qweather.com/v2/city/lookup',
+            method: 'GET',
+            data: {
+                location: `${longitude},${latitude}`,
+                key: QWEATHER_KEY
+            },
+            success: (res) => {
+                if (res.statusCode === 200 && res.data.code === '200' && res.data.location?.[0]) {
+                    try {
+                        // 缓存数据
+                        uni.setStorageSync('locationCache', res.data.location[0]);
+                        uni.setStorageSync('locationCache_time', Date.now());
+                        resolve(res.data.location[0]);
+                    } catch (error) {
+                        console.error('缓存位置数据失败:', error);
+                        resolve(res.data.location[0]); // 即使缓存失败也返回数据
+                    }
+                } else {
+                    reject({
+                        code: -1,
+                        message: res.data.code || '获取城市信息失败'
+                    });
+                }
+            },
+            fail: (err) => {
+                reject(err);
+            }
+        });
+    });
+};
+
+// 待办事项分析接口
+const analyzeTodoList = (input) => {
+    return new Promise((resolve, reject) => {
+        uni.request({
+            url: 'https://api.coze.cn/v1/workflow/run',
+            method: 'POST',
+            header: {
+                'Authorization': 'Bearer pat_0xvh1L4lHPEiozeyZ0u9TnnVwD4cO8GkaM87ceE4z5is1uIuydjQ4AnzsIpgNFoV',
+                'Content-Type': 'application/json'
+            },
+            data: {
+                "workflow_id": "7473912204761677875",
+                "parameters": {
+                    "input": input
+                }
+            },
+            success: (res) => {
+                if (res.data.code === 0) {
+                    try {
+                        // 解析返回的数据
+                        const todoData = JSON.parse(res.data.data);
+                        resolve(todoData);
+                    } catch (error) {
+                        reject({
+                            code: -1,
+                            message: '数据解析失败'
+                        });
+                    }
+                } else {
+                    reject({
+                        code: -1,
+                        message: res.data.msg || '待办事项分析失败'
+                    });
+                }
+            },
+            fail: (err) => {
+                reject(err);
+            }
+        });
+    });
+};
+
 // 统一导出所有函数
 export {
     getWeatherReport,
@@ -363,5 +492,9 @@ export {
     translateText,
     getMovieData,
     getHolidayData,
-    getShoppingAdvice
+    getShoppingAdvice,
+    getQWeather,
+    getLocationId,
+    analyzeTodoList,
+    QWEATHER_KEY
 }

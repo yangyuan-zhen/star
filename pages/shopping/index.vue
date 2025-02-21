@@ -104,6 +104,59 @@ const result = ref(null);
 const showResults = ref(false);
 let loadingTimer = null;
 
+// 在 script setup 中添加以下代码
+const userLocation = ref("");
+
+// 获取用户地址的方法
+const getLocation = () => {
+  return new Promise((resolve, reject) => {
+    uni.getLocation({
+      type: "gcj02",
+      success: async (res) => {
+        try {
+          // 使用和风天气API的城市查询接口获取位置ID
+          const locationRes = await uni.request({
+            url: `https://geoapi.qweather.com/v2/city/lookup`,
+            method: "GET",
+            data: {
+              location: `${res.longitude},${res.latitude}`,
+              key: "7fdcb07d68dc4296bd06970b643ec23a",
+            },
+          });
+
+          if (
+            locationRes.statusCode === 200 &&
+            locationRes.data.code === "200"
+          ) {
+            const cityData = locationRes.data.location[0];
+            userLocation.value = cityData.id;
+            resolve(cityData.name);
+          } else {
+            reject(new Error("获取城市信息失败"));
+          }
+        } catch (error) {
+          reject(error);
+        }
+      },
+      fail: (err) => {
+        if (err.errMsg.includes("auth deny")) {
+          uni.showModal({
+            title: "提示",
+            content:
+              "需要获取您的位置才能为您推荐附近的商品，是否打开设置页面重新授权？",
+            success: (res) => {
+              if (res.confirm) {
+                uni.openSetting();
+              }
+            },
+          });
+        }
+        reject(err);
+      },
+    });
+  });
+};
+
 // 调用API获取建议，并解析返回数据
 const getAdvice = async () => {
   // 价格校验：确保最低价不大于最高价
@@ -118,17 +171,31 @@ const getAdvice = async () => {
 
   try {
     loading.value = true;
+
+    // 获取位置信息
+    let cityName = "";
+    if (!userLocation.value) {
+      try {
+        cityName = await getLocation();
+      } catch (error) {
+        console.warn("获取位置失败:", error);
+        // 获取位置失败时不阻止后续操作
+      }
+    }
+
     console.log("发起API请求...", {
       query: query.value,
       minPrice: minPrice.value,
       maxPrice: maxPrice.value,
+      location: cityName,
     });
 
     // 修正参数顺序，确保与API定义一致
     const res = await getShoppingAdvice(
       query.value,
       maxPrice.value,
-      minPrice.value
+      minPrice.value,
+      cityName // 添加位置参数
     );
     console.log("API响应结果：", res);
 
@@ -227,9 +294,15 @@ const parsedResults = computed(() => {
 
 // 计算滚动区域的高度
 const scrollHeight = ref(0);
-onMounted(() => {
+onMounted(async () => {
+  try {
+    await getLocation();
+  } catch (error) {
+    console.warn("初始化获取位置失败:", error);
+  }
+
+  // 原有的 onMounted 逻辑
   const systemInfo = uni.getSystemInfoSync();
-  // 44：导航栏高度，32：上下 padding 总和
   scrollHeight.value = systemInfo.windowHeight - 44 - 32;
 });
 

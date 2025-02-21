@@ -18,6 +18,49 @@ const _sfc_main = {
     const loading = common_vendor.ref(false);
     const result = common_vendor.ref(null);
     const showResults = common_vendor.ref(false);
+    const userLocation = common_vendor.ref("");
+    const getLocation = () => {
+      return new Promise((resolve, reject) => {
+        common_vendor.index.getLocation({
+          type: "gcj02",
+          success: async (res) => {
+            try {
+              const locationRes = await common_vendor.index.request({
+                url: `https://geoapi.qweather.com/v2/city/lookup`,
+                method: "GET",
+                data: {
+                  location: `${res.longitude},${res.latitude}`,
+                  key: "7fdcb07d68dc4296bd06970b643ec23a"
+                }
+              });
+              if (locationRes.statusCode === 200 && locationRes.data.code === "200") {
+                const cityData = locationRes.data.location[0];
+                userLocation.value = cityData.id;
+                resolve(cityData.name);
+              } else {
+                reject(new Error("获取城市信息失败"));
+              }
+            } catch (error) {
+              reject(error);
+            }
+          },
+          fail: (err) => {
+            if (err.errMsg.includes("auth deny")) {
+              common_vendor.index.showModal({
+                title: "提示",
+                content: "需要获取您的位置才能为您推荐附近的商品，是否打开设置页面重新授权？",
+                success: (res) => {
+                  if (res.confirm) {
+                    common_vendor.index.openSetting();
+                  }
+                }
+              });
+            }
+            reject(err);
+          }
+        });
+      });
+    };
     const getAdvice = async () => {
       if (Number(minPrice.value) > Number(maxPrice.value)) {
         common_vendor.index.showToast({
@@ -29,28 +72,39 @@ const _sfc_main = {
       }
       try {
         loading.value = true;
-        console.log("发起API请求...", {
+        let cityName = "";
+        if (!userLocation.value) {
+          try {
+            cityName = await getLocation();
+          } catch (error) {
+            common_vendor.index.__f__("warn", "at pages/shopping/index.vue:181", "获取位置失败:", error);
+          }
+        }
+        common_vendor.index.__f__("log", "at pages/shopping/index.vue:186", "发起API请求...", {
           query: query.value,
           minPrice: minPrice.value,
-          maxPrice: maxPrice.value
+          maxPrice: maxPrice.value,
+          location: cityName
         });
         const res = await api_search.getShoppingAdvice(
           query.value,
           maxPrice.value,
-          minPrice.value
+          minPrice.value,
+          cityName
+          // 添加位置参数
         );
-        console.log("API响应结果：", res);
+        common_vendor.index.__f__("log", "at pages/shopping/index.vue:200", "API响应结果：", res);
         if (res) {
           result.value = { output: res };
         } else {
           result.value = {};
         }
-        console.log("result.value的值：", result.value);
-        console.log("解析后的结果：", parsedResults.value);
+        common_vendor.index.__f__("log", "at pages/shopping/index.vue:209", "result.value的值：", result.value);
+        common_vendor.index.__f__("log", "at pages/shopping/index.vue:210", "解析后的结果：", parsedResults.value);
         if (parsedResults.value.length > 0) {
           showResults.value = true;
         } else {
-          console.log("没有解析到有效结果");
+          common_vendor.index.__f__("log", "at pages/shopping/index.vue:215", "没有解析到有效结果");
           common_vendor.index.showToast({
             title: "未获取到商品推荐",
             icon: "none",
@@ -58,7 +112,7 @@ const _sfc_main = {
           });
         }
       } catch (error) {
-        console.error("请求失败：", error);
+        common_vendor.index.__f__("error", "at pages/shopping/index.vue:223", "请求失败：", error);
         common_vendor.index.showToast({
           title: error.message || "获取建议失败",
           icon: "none",
@@ -92,18 +146,23 @@ const _sfc_main = {
             const worth = ((_b = worthMatch == null ? void 0 : worthMatch[1]) == null ? void 0 : _b.trim().replace(/\\n/g, "").replace(/\[点击.*?\]/g, "").replace(/。$/, "").replace(/⭐/g, "").replace(/https?:\/\/[^\s)]+/g, "")) || "暂无评估";
             return { name, price, channel, worth };
           } catch (error) {
-            console.error("解析错误：", error);
+            common_vendor.index.__f__("error", "at pages/shopping/index.vue:282", "解析错误：", error);
             return null;
           }
         }).filter(Boolean);
         return results;
       } catch (error) {
-        console.error("解析错误：", error);
+        common_vendor.index.__f__("error", "at pages/shopping/index.vue:290", "解析错误：", error);
         return [];
       }
     });
     const scrollHeight = common_vendor.ref(0);
-    common_vendor.onMounted(() => {
+    common_vendor.onMounted(async () => {
+      try {
+        await getLocation();
+      } catch (error) {
+        common_vendor.index.__f__("warn", "at pages/shopping/index.vue:301", "初始化获取位置失败:", error);
+      }
       const systemInfo = common_vendor.index.getSystemInfoSync();
       scrollHeight.value = systemInfo.windowHeight - 44 - 32;
     });
@@ -173,3 +232,4 @@ const _sfc_main = {
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-d650adc9"]]);
 _sfc_main.__runtimeHooks = 6;
 wx.createPage(MiniProgramPage);
+//# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/shopping/index.js.map

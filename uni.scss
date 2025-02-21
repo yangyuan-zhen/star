@@ -13,26 +13,74 @@
  */
 
 /* 主要颜色 */
-$uni-color-primary: #007aff;
-$uni-color-error: #dd524d;
+$theme-color: #f0f8ff; // 主题浅蓝色
+$brand-color: #1890ff; // 品牌蓝色
+$text-color: #333333; // 主要文字颜色
+$text-color-secondary: #666666; // 次要文字颜色
 
 /* 文字颜色 */
-$uni-text-color: #333;
-$uni-text-color-grey: #999;
+$uni-text-color: #333; //基本色
+$uni-text-color-inverse: #fff; //反色
+$uni-text-color-grey: #999; //辅助灰色，如加载更多的提示信息
+$uni-text-color-placeholder: #808080;
+$uni-text-color-disable: #c0c0c0;
 
 /* 背景颜色 */
-$uni-bg-color: #ffffff;
+$uni-bg-color: $theme-color;
 $uni-bg-color-grey: #f8f8f8;
+$uni-bg-color-hover: #f1f1f1; //点击状态颜色
+$uni-bg-color-mask: rgba(0, 0, 0, 0.4); //遮罩颜色
+
+/* 边框颜色 */
+$uni-border-color: #c8c7cc;
 
 /* 文字尺寸 */
-$uni-font-size-sm: 24rpx;
-$uni-font-size-base: 28rpx;
-$uni-font-size-lg: 32rpx;
+$uni-font-size-sm: 12px;
+$uni-font-size-base: 14px;
+$uni-font-size-lg: 16px;
 
-/* 间距 */
+/* 图片尺寸 */
+$uni-img-size-sm: 20px;
+$uni-img-size-base: 26px;
+$uni-img-size-lg: 40px;
+
+/* Border Radius */
+$uni-border-radius-sm: 2px;
+$uni-border-radius-base: 3px;
+$uni-border-radius-lg: 6px;
+$uni-border-radius-circle: 50%;
+
+/* 水平间距 */
 $uni-spacing-sm: 8rpx;
 $uni-spacing-base: 16rpx;
 $uni-spacing-lg: 24rpx;
+
+/* 垂直间距 */
+$uni-spacing-col-sm: 4rpx;
+$uni-spacing-col-base: 8rpx;
+$uni-spacing-col-lg: 12rpx;
+
+/* 透明度 */
+$uni-opacity-disabled: 0.3; // 组件禁用态的透明度
+
+/* 文章场景相关 */
+$uni-color-title: #2c405a; // 文章标题颜色
+$uni-font-size-title: 20px;
+$uni-color-subtitle: #555555; // 二级标题颜色
+$uni-font-size-subtitle: 26px;
+$uni-color-paragraph: #3f536e; // 文章段落颜色
+$uni-font-size-paragraph: 15px;
+
+/* 主要颜色 */
+$uni-color-primary: #007aff;
+$uni-color-error: #dd524d;
+
+/* 文字尺寸 */
+$uni-font-size-xs: 22rpx;
+$uni-font-size-sm: 26rpx;
+$uni-font-size-base: 30rpx;
+$uni-font-size-xl: 40rpx;
+$uni-font-size-xxl: 48rpx;
 
 /* 圆角 */
 $uni-border-radius: 8rpx;
@@ -48,20 +96,8 @@ $uni-color-border: #e5e5ea;
 $uni-color-disabled: #c7c7cc;
 
 /* 扩展文字尺寸 */
-$uni-font-size-xs: 22rpx;
-$uni-font-size-sm: 26rpx;
-$uni-font-size-base: 30rpx;
-$uni-font-size-lg: 34rpx;
 $uni-font-size-xl: 40rpx;
 $uni-font-size-xxl: 48rpx;
-
-/* 扩展间距 */
-$uni-spacing-xs: 16rpx;
-$uni-spacing-sm: 24rpx;
-$uni-spacing-base: 32rpx;
-$uni-spacing-lg: 40rpx;
-$uni-spacing-xl: 48rpx;
-$uni-spacing-xxl: 64rpx;
 
 /* 扩展圆角 */
 $uni-radius-sm: 16rpx;

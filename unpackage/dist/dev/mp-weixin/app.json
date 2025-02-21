@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/index/index",
     "pages/note/index",
     "pages/more/index",
     "pages/textSnap/index",
@@ -20,8 +21,8 @@
     "borderStyle": "black",
     "list": [
       {
-        "pagePath": "pages/note/index",
-        "text": "备忘录",
+        "pagePath": "pages/index/index",
+        "text": "首页",
         "iconPath": "static/tabs/note.png",
         "selectedIconPath": "static/tabs/note-active.png"
       },
@@ -36,11 +37,15 @@
   "requiredPrivateInfos": [
     "chooseAddress",
     "chooseLocation",
-    "choosePoi"
+    "choosePoi",
+    "getLocation"
   ],
   "permission": {
     "scope.writePhotosAlbum": {
       "desc": "用于保存图片到相册"
+    },
+    "scope.userLocation": {
+      "desc": "您的位置信息将用于获取天气数据"
     }
   },
   "usingComponents": {}

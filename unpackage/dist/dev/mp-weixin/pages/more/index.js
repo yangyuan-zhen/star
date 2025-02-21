@@ -31,7 +31,7 @@ const _sfc_main = {
           animationType: "slide-in-right",
           animationDuration: 300,
           fail: (err) => {
-            console.error("页面跳转失败:", err);
+            common_vendor.index.__f__("error", "at pages/more/index.vue:203", "页面跳转失败:", err);
             common_vendor.index.showToast({
               title: "页面跳转失败",
               icon: "none"
@@ -71,7 +71,7 @@ const _sfc_main = {
       if (popup.value) {
         popup.value.open();
       } else {
-        console.error("popup ref is not initialized");
+        common_vendor.index.__f__("error", "at pages/more/index.vue:247", "popup ref is not initialized");
       }
     };
     const hideCustomDialog = () => {
@@ -151,7 +151,7 @@ const _sfc_main = {
           holidayData.value = response.holiday;
         }
       } catch (error) {
-        console.error("获取节假日数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/more/index.vue:358", "获取节假日数据失败:", error);
       }
     };
     const nextHoliday = common_vendor.computed(() => {
@@ -270,7 +270,7 @@ const _sfc_main = {
           workEndTime: "18:00"
         };
       }
-      console.log("popup ref:", popup.value);
+      common_vendor.index.__f__("log", "at pages/more/index.vue:508", "popup ref:", popup.value);
       fetchHolidayData();
     });
     return (_ctx, _cache) => {
@@ -350,3 +350,4 @@ const _sfc_main = {
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-9cb5c55a"]]);
 _sfc_main.__runtimeHooks = 6;
 wx.createPage(MiniProgramPage);
+//# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/more/index.js.map

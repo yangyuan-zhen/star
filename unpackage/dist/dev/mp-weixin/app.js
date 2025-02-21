@@ -2,6 +2,7 @@
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const common_vendor = require("./common/vendor.js");
 if (!Math) {
+  "./pages/index/index.js";
   "./pages/note/index.js";
   "./pages/more/index.js";
   "./pages/textSnap/index.js";
@@ -18,7 +19,7 @@ const _sfc_main = {
       const updateManager = common_vendor.index.getUpdateManager();
       updateManager.onCheckForUpdate((res) => {
         if (res.hasUpdate) {
-          console.log("发现新版本");
+          common_vendor.index.__f__("log", "at App.vue:13", "发现新版本");
         }
       });
       updateManager.onUpdateReady(() => {
@@ -54,3 +55,4 @@ function createApp() {
 }
 createApp().app.mount("#app");
 exports.createApp = createApp;
+//# sourceMappingURL=../.sourcemap/mp-weixin/app.js.map

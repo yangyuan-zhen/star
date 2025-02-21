@@ -19,7 +19,7 @@ const _sfc_main = {
       loading.value = true;
       try {
         const res = await api_search.getBookRecommend(bookName.value);
-        console.log("API返回结果:", res);
+        common_vendor.index.__f__("log", "at pages/book/index.vue:62", "API返回结果:", res);
         if (typeof res === "string" && res.includes("Error")) {
           throw new Error("服务请求失败，请稍后重试");
         }
@@ -35,11 +35,11 @@ const _sfc_main = {
             throw new Error("未找到图片地址");
           }
         } catch (parseError) {
-          console.error("数据解析错误:", parseError);
+          common_vendor.index.__f__("error", "at pages/book/index.vue:82", "数据解析错误:", parseError);
           throw new Error("数据格式错误");
         }
       } catch (error) {
-        console.error("处理错误:", error);
+        common_vendor.index.__f__("error", "at pages/book/index.vue:86", "处理错误:", error);
         common_vendor.index.showToast({
           title: error.message || "请求失败，请稍后重试",
           icon: "none",
@@ -55,18 +55,18 @@ const _sfc_main = {
           throw new Error("图片地址不能为空");
         }
         await common_vendor.index.showLoading({ title: "处理中..." });
-        const callFunctionResult = await common_vendor.Zs.callFunction({
+        const callFunctionResult = await common_vendor.er.callFunction({
           name: "downloadImage",
           data: {
             imageUrl: imageUrl.value
           }
         });
-        console.log("云函数调用结果:", callFunctionResult);
+        common_vendor.index.__f__("log", "at pages/book/index.vue:113", "云函数调用结果:", callFunctionResult);
         if (!callFunctionResult || !callFunctionResult.result) {
           throw new Error("云函数返回结果为空");
         }
         const result = callFunctionResult.result;
-        console.log("云函数返回数据:", result);
+        common_vendor.index.__f__("log", "at pages/book/index.vue:120", "云函数返回数据:", result);
         if (result.code !== 0) {
           throw new Error(result.msg || "处理图片失败");
         }
@@ -88,7 +88,7 @@ const _sfc_main = {
           icon: "success"
         });
       } catch (error) {
-        console.error("保存失败:", error);
+        common_vendor.index.__f__("error", "at pages/book/index.vue:151", "保存失败:", error);
         common_vendor.index.showToast({
           title: error.message || "保存失败",
           icon: "none",
@@ -100,15 +100,15 @@ const _sfc_main = {
     };
     const handleImageLoad = () => {
       imageLoaded.value = true;
-      console.log("图片加载成功");
+      common_vendor.index.__f__("log", "at pages/book/index.vue:164", "图片加载成功");
     };
     const handleImageError = async (retryCount = 0) => {
       if (retryCount < 3) {
-        console.log(`图片加载失败，第${retryCount + 1}次重试`);
+        common_vendor.index.__f__("log", "at pages/book/index.vue:169", `图片加载失败，第${retryCount + 1}次重试`);
         await new Promise((resolve) => setTimeout(resolve, 1e3));
         imageUrl.value = `${imageUrl.value}?retry=${retryCount}`;
       } else {
-        console.error("图片加载失败");
+        common_vendor.index.__f__("error", "at pages/book/index.vue:173", "图片加载失败");
         common_vendor.index.showToast({
           title: "图片加载失败",
           icon: "none"
@@ -151,3 +151,4 @@ const _sfc_main = {
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-0452ab4c"]]);
 _sfc_main.__runtimeHooks = 6;
 wx.createPage(MiniProgramPage);
+//# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/book/index.js.map

@@ -47,7 +47,7 @@ const _sfc_main = {
       try {
         const result = await api_search.translateText(inputText.value);
         translatedText.value = result.output;
-        console.log(result);
+        common_vendor.index.__f__("log", "at pages/translation/index.vue:134", result);
       } catch (error) {
         common_vendor.index.showToast({
           title: error.message || "翻译失败，请稍后重试",
@@ -114,3 +114,4 @@ const _sfc_main = {
 };
 _sfc_main.__runtimeHooks = 6;
 wx.createPage(_sfc_main);
+//# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/translation/index.js.map

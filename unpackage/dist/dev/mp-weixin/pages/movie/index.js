@@ -17,7 +17,7 @@ const _sfc_main = {
         const data = await api_search.getMovieData();
         todayMovie.value = data;
       } catch (error) {
-        console.error("获取电影数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/movie/index.vue:74", "获取电影数据失败:", error);
         common_vendor.index.showToast({
           title: "获取电影数据失败",
           icon: "none"
@@ -93,3 +93,4 @@ const _sfc_main = {
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-a135a866"]]);
 _sfc_main.__runtimeHooks = 6;
 wx.createPage(MiniProgramPage);
+//# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/movie/index.js.map

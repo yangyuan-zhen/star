@@ -97,7 +97,7 @@ const _sfc_main = {
         ctx.drawImage(logoImage, logoX, logoY, logoSize, logoSize);
         return canvas;
       } catch (error) {
-        console.error("绘制失败:", error);
+        common_vendor.index.__f__("error", "at pages/textSnap/index.vue:246", "绘制失败:", error);
         throw error;
       }
     };
@@ -126,7 +126,7 @@ const _sfc_main = {
         showPreview.value = true;
         common_vendor.index.hideLoading();
       } catch (error) {
-        console.error("生成预览失败:", error);
+        common_vendor.index.__f__("error", "at pages/textSnap/index.vue:281", "生成预览失败:", error);
         common_vendor.index.hideLoading();
         common_vendor.index.showToast({
           title: "生成预览失败",
@@ -145,7 +145,7 @@ const _sfc_main = {
             filePath: previewImage.value,
             success: resolve,
             fail: (error) => {
-              console.error("保存图片详细错误：", error);
+              common_vendor.index.__f__("error", "at pages/textSnap/index.vue:302", "保存图片详细错误：", error);
               reject(error);
             }
           });
@@ -154,7 +154,7 @@ const _sfc_main = {
         common_vendor.index.showToast({ title: "保存成功", icon: "success" });
       } catch (error) {
         common_vendor.index.hideLoading();
-        console.error("保存失败:", error);
+        common_vendor.index.__f__("error", "at pages/textSnap/index.vue:312", "保存失败:", error);
         common_vendor.index.showToast({
           title: `保存失败: ${error.errMsg || "未知错误"}`,
           icon: "none",
@@ -369,3 +369,4 @@ const _sfc_main = {
 const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-d8f14a53"]]);
 _sfc_main.__runtimeHooks = 6;
 wx.createPage(MiniProgramPage);
+//# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/textSnap/index.js.map
