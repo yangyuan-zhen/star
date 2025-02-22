@@ -1,0 +1,250 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 主要颜色 */
+/* 文字颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+/* 主要颜色 */
+/* 文字尺寸 */
+/* 圆角 */
+/* 新增颜色变量 */
+/* 扩展文字尺寸 */
+/* 扩展圆角 */
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 主要颜色 */
+/* 文字颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+/* 主要颜色 */
+/* 文字尺寸 */
+/* 圆角 */
+/* 新增颜色变量 */
+/* 扩展文字尺寸 */
+/* 扩展圆角 */
+.movie-calendar.data-v-a135a866 {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 20px;
+}
+.date-header.data-v-a135a866 {
+  margin-bottom: 1px;
+}
+.date-number.data-v-a135a866 {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333;
+}
+.date-info.data-v-a135a866 {
+  font-size: 16px;
+  color: #666;
+}
+.movie-card.data-v-a135a866 {
+  background: white;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+}
+.movie-poster.data-v-a135a866 {
+  width: 100%;
+  height: 900rpx;
+  border-radius: 8rpx;
+  margin-bottom: 16rpx;
+  object-fit: cover;
+}
+.movie-title.data-v-a135a866 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
+.movie-tags.data-v-a135a866 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.tag.data-v-a135a866 {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.rating.data-v-a135a866 {
+  background: #ffe1b3;
+  color: #ff9900;
+}
+.year.data-v-a135a866 {
+  background: #e8f3ff;
+  color: #2196f3;
+}
+.type.data-v-a135a866 {
+  background: #f0f0f0;
+  color: #666;
+}
+.movie-quote.data-v-a135a866 {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  margin: 12px 0;
+  font-style: italic;
+}
+.movie-meta.data-v-a135a866 {
+  font-size: 12px;
+  color: #999;
+}
+.calendar-nav.data-v-a135a866 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+.nav-btn.data-v-a135a866 {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  background: white;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #666;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.today-btn.data-v-a135a866 {
+  padding: 8px 20px;
+  background: #333;
+  color: white;
+  border-radius: 20px;
+  font-size: 14px;
+}
+.source-info.data-v-a135a866 {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1px solid #eee;
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
+}
+.header-container.data-v-a135a866 {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+.history-icon.data-v-a135a866 {
+  width: 32px;
+  height: 32px;
+  padding: 10px;
+  opacity: 0.6;
+}
+.history-icon-hover.data-v-a135a866 {
+  opacity: 1;
+  transform: scale(1.1);
+  transition: transform 0.2s, opacity 0.2s;
+}
+.skeleton .skeleton-poster.data-v-a135a866 {
+  width: 100%;
+  height: 900rpx;
+  background: #f0f0f0;
+  border-radius: 8rpx;
+  margin-bottom: 16rpx;
+}
+.skeleton .skeleton-content.data-v-a135a866 {
+  padding: 10px;
+}
+.skeleton .skeleton-title.data-v-a135a866 {
+  height: 24px;
+  background: #f0f0f0;
+  margin-bottom: 12px;
+  width: 60%;
+  border-radius: 4px;
+}
+.skeleton .skeleton-tags.data-v-a135a866 {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.skeleton .skeleton-tag.data-v-a135a866 {
+  width: 60px;
+  height: 20px;
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+.skeleton .skeleton-text.data-v-a135a866 {
+  height: 16px;
+  background: #f0f0f0;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+.skeleton .skeleton-text.data-v-a135a866:nth-child(2) {
+  width: 90%;
+}
+.skeleton .skeleton-meta.data-v-a135a866 {
+  height: 14px;
+  background: #f0f0f0;
+  width: 70%;
+  border-radius: 4px;
+}
+.skeleton .skeleton-poster.data-v-a135a866,
+.skeleton .skeleton-title.data-v-a135a866,
+.skeleton .skeleton-tag.data-v-a135a866,
+.skeleton .skeleton-text.data-v-a135a866,
+.skeleton .skeleton-meta.data-v-a135a866 {
+  position: relative;
+  overflow: hidden;
+}
+.skeleton .skeleton-poster.data-v-a135a866::after,
+.skeleton .skeleton-title.data-v-a135a866::after,
+.skeleton .skeleton-tag.data-v-a135a866::after,
+.skeleton .skeleton-text.data-v-a135a866::after,
+.skeleton .skeleton-meta.data-v-a135a866::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer-a135a866 1.5s infinite;
+}
+@keyframes shimmer-a135a866 {
+0% {
+    transform: translateX(-100%);
+}
+100% {
+    transform: translateX(100%);
+}
+}

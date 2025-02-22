@@ -1,0 +1,248 @@
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 主要颜色 */
+/* 文字颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+/* 主要颜色 */
+/* 文字尺寸 */
+/* 圆角 */
+/* 新增颜色变量 */
+/* 扩展文字尺寸 */
+/* 扩展圆角 */
+/**
+ * 这里是uni-app内置的常用样式变量
+ *
+ * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
+ * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ *
+ */
+/**
+ * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
+ *
+ * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
+ */
+/* 主要颜色 */
+/* 文字颜色 */
+/* 背景颜色 */
+/* 边框颜色 */
+/* 文字尺寸 */
+/* 图片尺寸 */
+/* Border Radius */
+/* 水平间距 */
+/* 垂直间距 */
+/* 透明度 */
+/* 文章场景相关 */
+/* 主要颜色 */
+/* 文字尺寸 */
+/* 圆角 */
+/* 新增颜色变量 */
+/* 扩展文字尺寸 */
+/* 扩展圆角 */
+.more-container.data-v-9cb5c55a {
+  min-height: 100vh;
+  padding: 20rpx;
+}
+.grid-container.data-v-9cb5c55a {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24rpx;
+  padding: 20rpx;
+  margin-top: 30rpx;
+}
+.grid-card.data-v-9cb5c55a {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.8) 100%);
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+.grid-card.data-v-9cb5c55a:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.03);
+}
+.grid-card.data-v-9cb5c55a::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rpx;
+  background: linear-gradient(90deg, var(--card-color, #007aff) 0%, var(--card-color-secondary, #00bcd4) 100%);
+  opacity: 0.8;
+}
+.grid-card .card-content.data-v-9cb5c55a {
+  padding: 30rpx 20rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+}
+.grid-card .icon-wrapper.data-v-9cb5c55a {
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 122, 255, 0.1);
+  border-radius: 16rpx;
+  margin-bottom: 8rpx;
+}
+.grid-card .card-title.data-v-9cb5c55a {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 600;
+}
+.grid-card .card-desc.data-v-9cb5c55a {
+  font-size: 22rpx;
+  color: #666;
+  margin-top: 4rpx;
+}
+.grid-card.data-v-9cb5c55a:nth-child(1) {
+  --card-color: #007aff;
+  --card-color-secondary: #00bcd4;
+}
+.grid-card.data-v-9cb5c55a:nth-child(2) {
+  --card-color: #ff6b6b;
+  --card-color-secondary: #ffd93d;
+}
+.grid-card.data-v-9cb5c55a:nth-child(3) {
+  --card-color: #4caf50;
+  --card-color-secondary: #8bc34a;
+}
+.grid-card.data-v-9cb5c55a:nth-child(4) {
+  --card-color: #9c27b0;
+  --card-color-secondary: #e91e63;
+}
+.grid-card.data-v-9cb5c55a:nth-child(5) {
+  --card-color: #ff9800;
+  --card-color-secondary: #ff5722;
+}
+.grid-card.data-v-9cb5c55a:nth-child(6) {
+  --card-color: #795548;
+  --card-color-secondary: #8d6e63;
+}
+.grid-card.data-v-9cb5c55a:nth-child(7) {
+  --card-color: #00bcd4;
+  --card-color-secondary: #03a9f4;
+}
+.custom-dialog.data-v-9cb5c55a {
+  background: #fff;
+  width: 600rpx;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+.custom-dialog .dialog-header.data-v-9cb5c55a {
+  padding: 30rpx;
+  text-align: center;
+  border-bottom: 1rpx solid #eee;
+}
+.custom-dialog .dialog-header .dialog-title.data-v-9cb5c55a {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+}
+.custom-dialog .dialog-content.data-v-9cb5c55a {
+  padding: 30rpx;
+}
+.custom-dialog .dialog-content .input-group.data-v-9cb5c55a {
+  margin-bottom: 20rpx;
+}
+.custom-dialog .dialog-content .input-group .label.data-v-9cb5c55a {
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+  display: block;
+}
+.custom-dialog .dialog-content .input-group .input.data-v-9cb5c55a {
+  width: 100%;
+  height: 80rpx;
+  border: 1rpx solid #eee;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+}
+.custom-dialog .dialog-footer.data-v-9cb5c55a {
+  display: flex;
+  border-top: 1rpx solid #eee;
+}
+.custom-dialog .dialog-footer .btn.data-v-9cb5c55a {
+  flex: 1;
+  height: 90rpx;
+  line-height: 90rpx;
+  text-align: center;
+  font-size: 32rpx;
+  border: none;
+  background: none;
+}
+.custom-dialog .dialog-footer .btn.cancel.data-v-9cb5c55a {
+  color: #666;
+  border-right: 1rpx solid #eee;
+}
+.custom-dialog .dialog-footer .btn.confirm.data-v-9cb5c55a {
+  color: #007aff;
+}
+.custom-dialog .dialog-footer .btn.data-v-9cb5c55a:active {
+  background-color: #f5f5f5;
+}
+.weekday-selector.data-v-9cb5c55a {
+  display: flex;
+  gap: 10rpx;
+  margin-top: 10rpx;
+}
+.weekday-item.data-v-9cb5c55a {
+  flex: 1;
+  height: 60rpx;
+  line-height: 60rpx;
+  text-align: center;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  background-color: #f5f5f5;
+  color: #666;
+  transition: all 0.3s ease;
+}
+.weekday-item.active.data-v-9cb5c55a {
+  background-color: #007aff;
+  color: #fff;
+}
+.picker-value.data-v-9cb5c55a {
+  height: 80rpx;
+  line-height: 80rpx;
+  padding: 0 20rpx;
+}
+
+/* 确保输入框和选择器样式统一 */
+.input.data-v-9cb5c55a,
+picker.data-v-9cb5c55a {
+  width: 100%;
+  height: 80rpx;
+  border: 1rpx solid #eee;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+}
+.picker-value.data-v-9cb5c55a {
+  height: 100%;
+  line-height: 80rpx;
+  padding: 0 20rpx;
+}

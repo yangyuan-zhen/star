@@ -18,12 +18,18 @@
       <text class="status-result">工作已结束!</text>
     </view>
     <!-- 待办事项 -->
-    <TodoList />
+    <view
+      class="todo-list-container"
+      :class="{ show: showTodoList, init: !hasShown }"
+    >
+      <TodoList />
+    </view>
   </view>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { onShow, onTabItemTap } from "@dcloudio/uni-app";
 import { getQWeather, getLocationId } from "@/api/search.js";
 import TodoList from "@/components/home/TodoList.vue";
 
@@ -31,6 +37,8 @@ const currentDate = ref(new Date());
 const temperature = ref("--");
 const weatherText = ref("未知");
 const city = ref("定位中...");
+const showTodoList = ref(false);
+const hasShown = ref(false);
 
 // 格式化日期
 const formatDate = computed(() => {
@@ -141,7 +149,31 @@ const init = async () => {
   }
 };
 
-// 在组件挂载时初始化
+// 重置动画的函数
+const resetAnimation = () => {
+  // 完全重置状态
+  hasShown.value = false;
+  showTodoList.value = false;
+
+  // 使用两个 setTimeout 来确保动画重置和触发
+  setTimeout(() => {
+    hasShown.value = true;
+    setTimeout(() => {
+      showTodoList.value = true;
+    }, 50);
+  }, 50);
+};
+
+// 当页面显示时
+onShow(() => {
+  resetAnimation();
+});
+
+// 当点击 tabbar 时
+onTabItemTap(() => {
+  resetAnimation();
+});
+
 onMounted(() => {
   // 初始化时间
   updateDateTime();
@@ -224,5 +256,27 @@ onMounted(() => {
   font-weight: bold;
   display: block;
   color: $brand-color;
+}
+
+.todo-list-container {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 70vh;
+  transform: translateY(100%);
+  transition: transform 0.3s ease-out;
+  background-color: $theme-color;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 20px;
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.1);
+
+  &.init {
+    transition: none; // 初始状态不需要过渡动画
+  }
+
+  &.show {
+    transform: translateY(10%);
+  }
 }
 </style>
