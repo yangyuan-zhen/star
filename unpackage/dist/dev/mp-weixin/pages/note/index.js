@@ -22,7 +22,16 @@ const _sfc_main = common_vendor.defineComponent({
   methods: {
     loadNotes() {
       const savedNotes = common_vendor.index.getStorageSync("notes") || [];
-      this.notes = savedNotes;
+      const completedTodos = common_vendor.index.getStorageSync("completedTodos") || [];
+      this.notes = savedNotes.map((note) => {
+        const isCompleted = completedTodos.some(
+          (todo) => todo === note.content
+        );
+        return {
+          ...note,
+          completed: isCompleted || note.completed || false
+        };
+      });
     },
     showAddModal() {
       if (this.notes.length >= 5) {
@@ -63,12 +72,17 @@ const _sfc_main = common_vendor.defineComponent({
       }
       const noteObj = {
         content: this.currentNote,
-        date: (/* @__PURE__ */ new Date()).toLocaleDateString()
+        date: (/* @__PURE__ */ new Date()).toLocaleDateString(),
+        completed: false
       };
       if (this.editIndex === -1) {
         this.notes.push(noteObj);
       } else {
-        this.notes[this.editIndex] = noteObj;
+        const oldNote = this.notes[this.editIndex];
+        this.notes[this.editIndex] = {
+          ...noteObj,
+          completed: oldNote.completed
+        };
       }
       this.saveToStorage();
       this.showModal = false;
@@ -78,6 +92,8 @@ const _sfc_main = common_vendor.defineComponent({
     },
     saveToStorage() {
       common_vendor.index.setStorageSync("notes", this.notes);
+      const completedTodos = this.notes.filter((note) => note.completed).map((note) => note.content);
+      common_vendor.index.setStorageSync("completedTodos", completedTodos);
     },
     checkWeekday() {
       const today = /* @__PURE__ */ new Date();
@@ -93,6 +109,10 @@ const _sfc_main = common_vendor.defineComponent({
         this.saveToStorage();
         common_vendor.index.setStorageSync("lastClearDate", today);
       }
+    },
+    toggleComplete(index) {
+      this.notes[index].completed = !this.notes[index].completed;
+      this.saveToStorage();
     }
   }
 });
@@ -106,13 +126,16 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     d: _ctx.isSunday
   }, _ctx.isSunday ? {} : {}, {
     e: common_vendor.f(_ctx.notes, (note, index, i0) => {
-      return {
+      return common_vendor.e({
         a: common_vendor.t(note.content),
         b: common_vendor.t(note.date),
-        c: common_vendor.o(($event) => _ctx.editNote(index), index),
-        d: common_vendor.o(($event) => _ctx.deleteNote(index), index),
-        e: index
-      };
+        c: note.completed
+      }, note.completed ? {} : {
+        d: common_vendor.o(($event) => _ctx.editNote(index), index)
+      }, {
+        e: common_vendor.o(($event) => _ctx.deleteNote(index), index),
+        f: index
+      });
     }),
     f: common_vendor.o((...args) => _ctx.showAddModal && _ctx.showAddModal(...args)),
     g: _ctx.notes.length >= 5,

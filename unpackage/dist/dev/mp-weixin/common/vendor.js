@@ -7862,6 +7862,7 @@ const createHook = (lifecycle) => (hook, target = getCurrentInstance()) => {
   !isInSSRComponentSetup && injectHook(lifecycle, hook, target);
 };
 const onShow = /* @__PURE__ */ createHook(ON_SHOW);
+const onHide = /* @__PURE__ */ createHook(ON_HIDE);
 const onLaunch = /* @__PURE__ */ createHook(ON_LAUNCH);
 const onTabItemTap = /* @__PURE__ */ createHook(ON_TAB_ITEM_TAP);
 const onShareTimeline = /* @__PURE__ */ createHook(ON_SHARE_TIMELINE);
@@ -13317,6 +13318,7 @@ exports.index = index;
 exports.n = n$1;
 exports.nextTick$1 = nextTick$1;
 exports.o = o$1;
+exports.onHide = onHide;
 exports.onLaunch = onLaunch;
 exports.onMounted = onMounted;
 exports.onShareAppMessage = onShareAppMessage;

@@ -19,44 +19,79 @@
         :key="index"
         class="todo-item"
       >
-        <checkbox :checked="todo.completed" @tap="toggleTodo(index)"></checkbox>
-        <text :class="{ 'todo-text': true, completed: todo.completed }">{{
-          todo.text
-        }}</text>
+        <checkbox
+          :checked="todo.completed"
+          @tap="toggleTodo(index)"
+          :disabled="todo.completed"
+        ></checkbox>
+        <text :class="{ 'todo-text': true, completed: todo.completed }">
+          {{ todo.text }}
+        </text>
       </view>
     </view>
   </view>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
-import { onShow } from "@dcloudio/uni-app";
+import { ref, onMounted, watch } from "vue";
+import { onShow, onHide } from "@dcloudio/uni-app";
 import { analyzeTodoList } from "@/api/search.js";
 
 const todos = ref([]);
 const loading = ref(false);
 
+// 添加路由监听，当从备忘录页面返回时触发分析
+let isVisible = ref(false);
+
 const loadTodos = async () => {
   const notes = uni.getStorageSync("notes") || [];
+  const completedTodos = uni.getStorageSync("completedTodos") || [];
+  const analyzedTodosCache = uni.getStorageSync("analyzedTodos") || {};
 
   loading.value = true;
   try {
     const analyzedNotes = await Promise.all(
       notes.map(async (note) => {
+        const originalContent = note.content;
+        const isCompleted =
+          completedTodos.includes(originalContent) || note.completed;
+
+        if (isCompleted) {
+          return {
+            text: analyzedTodosCache[originalContent] || originalContent,
+            completed: true,
+            originalContent,
+          };
+        }
+
+        if (analyzedTodosCache[originalContent]) {
+          return {
+            text: analyzedTodosCache[originalContent],
+            completed: false,
+            originalContent,
+          };
+        }
+
         try {
-          const analysis = await analyzeTodoList(note.content);
+          const analysis = await analyzeTodoList(originalContent);
           const parsedAnalysis =
             typeof analysis === "string" ? JSON.parse(analysis) : analysis;
+          const outputText = parsedAnalysis.output || originalContent;
+
+          analyzedTodosCache[originalContent] = outputText;
+          uni.setStorageSync("analyzedTodos", analyzedTodosCache);
 
           return {
-            text: parsedAnalysis.output || note.content,
+            text: outputText,
             completed: false,
+            originalContent,
           };
         } catch (error) {
           console.error("待办事项分析失败:", error);
           return {
-            text: note.content,
+            text: originalContent,
             completed: false,
+            originalContent,
           };
         }
       })
@@ -67,6 +102,7 @@ const loadTodos = async () => {
     todos.value = notes.map((note) => ({
       text: note.content,
       completed: false,
+      originalContent: note.content,
     }));
   } finally {
     loading.value = false;
@@ -74,11 +110,14 @@ const loadTodos = async () => {
 };
 
 onShow(() => {
-  loadTodos();
+  if (!isVisible.value) {
+    isVisible.value = true;
+    loadTodos();
+  }
 });
 
-onMounted(() => {
-  loadTodos();
+onHide(() => {
+  isVisible.value = false;
 });
 
 const addTodo = () => {
@@ -88,7 +127,27 @@ const addTodo = () => {
 };
 
 const toggleTodo = (index) => {
-  todos.value[index].completed = !todos.value[index].completed;
+  if (!todos.value[index].completed) {
+    todos.value[index].completed = true;
+
+    const originalContent = todos.value[index].originalContent;
+
+    const completedTodos = uni.getStorageSync("completedTodos") || [];
+    console.log(completedTodos, "completedTodos");
+    if (!completedTodos.includes(originalContent)) {
+      completedTodos.push(originalContent);
+      uni.setStorageSync("completedTodos", completedTodos);
+    }
+
+    const notes = uni.getStorageSync("notes") || [];
+    const noteIndex = notes.findIndex(
+      (note) => note.content === originalContent
+    );
+    if (noteIndex !== -1) {
+      notes[noteIndex].completed = true;
+      uni.setStorageSync("notes", notes);
+    }
+  }
 };
 </script>
 
@@ -150,6 +209,14 @@ const toggleTodo = (index) => {
     padding: 40rpx;
     color: $text-color-secondary;
     font-size: $uni-font-size-base;
+  }
+
+  .todo-item {
+    checkbox {
+      &[disabled] {
+        opacity: 0.5;
+      }
+    }
   }
 }
 </style>

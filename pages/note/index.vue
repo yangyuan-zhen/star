@@ -23,7 +23,10 @@
           <text class="note-date">{{ note.date }}</text>
         </view>
         <view class="note-actions">
-          <button @tap="editNote(index)" class="btn edit">编辑</button>
+          <button v-if="note.completed" class="btn completed" disabled>
+            已完成
+          </button>
+          <button v-else @tap="editNote(index)" class="btn edit">编辑</button>
           <button @tap="deleteNote(index)" class="btn delete">删除</button>
         </view>
       </view>
@@ -60,6 +63,7 @@ import { defineComponent } from "vue";
 interface Note {
   content: string;
   date: string;
+  completed?: boolean;
 }
 
 export default defineComponent({
@@ -84,7 +88,18 @@ export default defineComponent({
   methods: {
     loadNotes(): void {
       const savedNotes = uni.getStorageSync("notes") || [];
-      this.notes = savedNotes;
+      const completedTodos = uni.getStorageSync("completedTodos") || [];
+
+      // 修改同步逻辑
+      this.notes = savedNotes.map((note) => {
+        const isCompleted = completedTodos.some(
+          (todo) => todo === note.content
+        );
+        return {
+          ...note,
+          completed: isCompleted || note.completed || false,
+        };
+      });
     },
     showAddModal(): void {
       if (this.notes.length >= 5) {
@@ -127,12 +142,17 @@ export default defineComponent({
       const noteObj: Note = {
         content: this.currentNote,
         date: new Date().toLocaleDateString(),
+        completed: false,
       };
 
       if (this.editIndex === -1) {
         this.notes.push(noteObj);
       } else {
-        this.notes[this.editIndex] = noteObj;
+        const oldNote = this.notes[this.editIndex];
+        this.notes[this.editIndex] = {
+          ...noteObj,
+          completed: oldNote.completed,
+        };
       }
 
       this.saveToStorage();
@@ -143,6 +163,12 @@ export default defineComponent({
     },
     saveToStorage(): void {
       uni.setStorageSync("notes", this.notes);
+
+      // 同步更新completedTodos
+      const completedTodos = this.notes
+        .filter((note) => note.completed)
+        .map((note) => note.content);
+      uni.setStorageSync("completedTodos", completedTodos);
     },
     checkWeekday(): void {
       const today = new Date();
@@ -159,6 +185,10 @@ export default defineComponent({
         this.saveToStorage();
         uni.setStorageSync("lastClearDate", today);
       }
+    },
+    toggleComplete(index: number): void {
+      this.notes[index].completed = !this.notes[index].completed;
+      this.saveToStorage();
     },
   },
 });
@@ -288,6 +318,12 @@ export default defineComponent({
   &.save {
     background: $uni-color-primary;
     color: $uni-color-white;
+  }
+
+  &.completed {
+    background: $uni-color-disabled;
+    color: $uni-color-white;
+    cursor: not-allowed;
   }
 }
 

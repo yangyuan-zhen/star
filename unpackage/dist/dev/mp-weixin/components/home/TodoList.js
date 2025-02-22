@@ -6,44 +6,72 @@ const _sfc_main = {
   setup(__props) {
     const todos = common_vendor.ref([]);
     const loading = common_vendor.ref(false);
+    let isVisible = common_vendor.ref(false);
     const loadTodos = async () => {
       const notes = common_vendor.index.getStorageSync("notes") || [];
+      const completedTodos = common_vendor.index.getStorageSync("completedTodos") || [];
+      const analyzedTodosCache = common_vendor.index.getStorageSync("analyzedTodos") || {};
       loading.value = true;
       try {
         const analyzedNotes = await Promise.all(
           notes.map(async (note) => {
-            try {
-              const analysis = await api_search.analyzeTodoList(note.content);
-              const parsedAnalysis = typeof analysis === "string" ? JSON.parse(analysis) : analysis;
+            const originalContent = note.content;
+            const isCompleted = completedTodos.includes(originalContent) || note.completed;
+            if (isCompleted) {
               return {
-                text: parsedAnalysis.output || note.content,
-                completed: false
+                text: analyzedTodosCache[originalContent] || originalContent,
+                completed: true,
+                originalContent
+              };
+            }
+            if (analyzedTodosCache[originalContent]) {
+              return {
+                text: analyzedTodosCache[originalContent],
+                completed: false,
+                originalContent
+              };
+            }
+            try {
+              const analysis = await api_search.analyzeTodoList(originalContent);
+              const parsedAnalysis = typeof analysis === "string" ? JSON.parse(analysis) : analysis;
+              const outputText = parsedAnalysis.output || originalContent;
+              analyzedTodosCache[originalContent] = outputText;
+              common_vendor.index.setStorageSync("analyzedTodos", analyzedTodosCache);
+              return {
+                text: outputText,
+                completed: false,
+                originalContent
               };
             } catch (error) {
-              common_vendor.index.__f__("error", "at components/home/TodoList.vue:56", "待办事项分析失败:", error);
+              common_vendor.index.__f__("error", "at components/home/TodoList.vue:90", "待办事项分析失败:", error);
               return {
-                text: note.content,
-                completed: false
+                text: originalContent,
+                completed: false,
+                originalContent
               };
             }
           })
         );
         todos.value = analyzedNotes;
       } catch (error) {
-        common_vendor.index.__f__("error", "at components/home/TodoList.vue:66", "加载待办事项失败:", error);
+        common_vendor.index.__f__("error", "at components/home/TodoList.vue:101", "加载待办事项失败:", error);
         todos.value = notes.map((note) => ({
           text: note.content,
-          completed: false
+          completed: false,
+          originalContent: note.content
         }));
       } finally {
         loading.value = false;
       }
     };
     common_vendor.onShow(() => {
-      loadTodos();
+      if (!isVisible.value) {
+        isVisible.value = true;
+        loadTodos();
+      }
     });
-    common_vendor.onMounted(() => {
-      loadTodos();
+    common_vendor.onHide(() => {
+      isVisible.value = false;
     });
     const addTodo = () => {
       common_vendor.index.navigateTo({
@@ -51,7 +79,24 @@ const _sfc_main = {
       });
     };
     const toggleTodo = (index) => {
-      todos.value[index].completed = !todos.value[index].completed;
+      if (!todos.value[index].completed) {
+        todos.value[index].completed = true;
+        const originalContent = todos.value[index].originalContent;
+        const completedTodos = common_vendor.index.getStorageSync("completedTodos") || [];
+        common_vendor.index.__f__("log", "at components/home/TodoList.vue:136", completedTodos, "completedTodos");
+        if (!completedTodos.includes(originalContent)) {
+          completedTodos.push(originalContent);
+          common_vendor.index.setStorageSync("completedTodos", completedTodos);
+        }
+        const notes = common_vendor.index.getStorageSync("notes") || [];
+        const noteIndex = notes.findIndex(
+          (note) => note.content === originalContent
+        );
+        if (noteIndex !== -1) {
+          notes[noteIndex].completed = true;
+          common_vendor.index.setStorageSync("notes", notes);
+        }
+      }
     };
     return (_ctx, _cache) => {
       return common_vendor.e({
@@ -64,9 +109,10 @@ const _sfc_main = {
           return {
             a: todo.completed,
             b: common_vendor.o(($event) => toggleTodo(index), index),
-            c: common_vendor.t(todo.text),
-            d: todo.completed ? 1 : "",
-            e: index
+            c: todo.completed,
+            d: common_vendor.t(todo.text),
+            e: todo.completed ? 1 : "",
+            f: index
           };
         })
       }));

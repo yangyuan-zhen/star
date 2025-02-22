@@ -162,6 +162,11 @@
   background: #007aff;
   color: #ffffff;
 }
+.btn.completed.data-v-fbfe11c7 {
+  background: #c7c7cc;
+  color: #ffffff;
+  cursor: not-allowed;
+}
 .add-btn.data-v-fbfe11c7 {
   margin: 24rpx auto;
   width: 140px;
