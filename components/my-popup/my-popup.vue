@@ -1,57 +1,48 @@
 <template>
   <view
-    v-if="showPopup"
+    v-if="show"
     class="uni-popup"
-    :class="['uni-popup--' + type, showPopup ? 'active' : '']"
+    :class="['uni-popup--' + type, show ? 'active' : '']"
     @touchmove.stop.prevent
   >
     <view
       class="uni-popup__mask"
       @click="onMaskClick"
-      :style="{ opacity: showPopup ? 1 : 0 }"
+      :style="{ opacity: show ? 1 : 0 }"
     />
     <view
       class="uni-popup__wrapper"
-      :class="['uni-popup--' + type, showPopup ? 'active' : '']"
+      :class="['uni-popup--' + type, show ? 'active' : '']"
     >
       <slot />
     </view>
   </view>
 </template>
 
-<script>
-export default {
-  name: "MyPopup",
-  props: {
-    type: {
-      type: String,
-      default: "center",
-    },
-    maskClick: {
-      type: Boolean,
-      default: true,
-    },
+<script setup>
+import { ref } from "vue";
+
+const props = defineProps({
+  show: {
+    type: Boolean,
+    default: false,
   },
-  data() {
-    return {
-      showPopup: false,
-    };
+  type: {
+    type: String,
+    default: "center",
   },
-  methods: {
-    open() {
-      console.log("Opening popup");
-      this.showPopup = true;
-    },
-    close() {
-      console.log("Closing popup");
-      this.showPopup = false;
-    },
-    onMaskClick() {
-      if (this.maskClick) {
-        this.close();
-      }
-    },
+  maskClick: {
+    type: Boolean,
+    default: true,
   },
+});
+
+const emit = defineEmits(["update:show"]);
+
+const onMaskClick = () => {
+  if (props.maskClick) {
+    emit("update:show", false);
+  }
 };
 </script>
 

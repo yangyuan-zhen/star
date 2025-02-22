@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "首页",
   "usingComponents": {
-    "todo-list": "../../components/home/TodoList"
+    "todo-list": "../../components/home/TodoList",
+    "my-popup": "../../components/my-popup/my-popup"
   }
 }
