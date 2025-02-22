@@ -16,7 +16,7 @@ defineProps({
   },
   title: {
     type: String,
-    default: "热搜榜",
+    default: "加载中...",
   },
 });
 </script>

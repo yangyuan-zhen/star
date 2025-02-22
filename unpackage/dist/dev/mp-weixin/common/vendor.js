@@ -13316,7 +13316,6 @@ exports.f = f$1;
 exports.fontData = fontData;
 exports.index = index;
 exports.n = n$1;
-exports.nextTick$1 = nextTick$1;
 exports.o = o$1;
 exports.onHide = onHide;
 exports.onLaunch = onLaunch;

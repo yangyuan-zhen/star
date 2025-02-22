@@ -1,16 +1,14 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-const api_search = require("../../api/search.js");
 if (!Array) {
   const _easycom_uni_icons2 = common_vendor.resolveComponent("uni-icons");
   _easycom_uni_icons2();
 }
 const _easycom_uni_icons = () => "../../node-modules/@dcloudio/uni-ui/lib/uni-icons/uni-icons.js";
 if (!Math) {
-  (RestCard + _easycom_uni_icons + MyPopup)();
+  (_easycom_uni_icons + MyPopup)();
 }
 const MyPopup = () => "../../components/my-popup/my-popup.js";
-const RestCard = () => "../../components/rest-card/rest-card.js";
 const _sfc_main = {
   __name: "index",
   setup(__props, { expose: __expose }) {
@@ -31,7 +29,7 @@ const _sfc_main = {
           animationType: "slide-in-right",
           animationDuration: 300,
           fail: (err) => {
-            common_vendor.index.__f__("error", "at pages/more/index.vue:203", "页面跳转失败:", err);
+            common_vendor.index.__f__("error", "at pages/more/index.vue:194", "页面跳转失败:", err);
             common_vendor.index.showToast({
               title: "页面跳转失败",
               icon: "none"
@@ -66,14 +64,6 @@ const _sfc_main = {
       workEndTime: "18:00",
       workDays: [1, 2, 3, 4, 5]
     });
-    const showCustomDialog = async () => {
-      await common_vendor.nextTick$1();
-      if (popup.value) {
-        popup.value.open();
-      } else {
-        common_vendor.index.__f__("error", "at pages/more/index.vue:247", "popup ref is not initialized");
-      }
-    };
     const hideCustomDialog = () => {
       popup.value.close();
     };
@@ -130,75 +120,6 @@ const _sfc_main = {
         value = parts[0] + "." + parts[1].slice(0, 2);
       }
       customSettings.value.dailyIncome = value;
-    };
-    const daysUntilFriday = common_vendor.computed(() => {
-      const today = /* @__PURE__ */ new Date();
-      const currentDay = today.getDay();
-      if (currentDay === 5) {
-        return 0;
-      }
-      if (currentDay < 5) {
-        return 5 - currentDay;
-      } else {
-        return 5 + (7 - currentDay);
-      }
-    });
-    const holidayData = common_vendor.ref(null);
-    const fetchHolidayData = async () => {
-      try {
-        const response = await api_search.getHolidayData();
-        if (response.code === 0) {
-          holidayData.value = response.holiday;
-        }
-      } catch (error) {
-        common_vendor.index.__f__("error", "at pages/more/index.vue:358", "获取节假日数据失败:", error);
-      }
-    };
-    const nextHoliday = common_vendor.computed(() => {
-      if (!holidayData.value) {
-        return {
-          days: "-",
-          name: "加载中"
-        };
-      }
-      const today = /* @__PURE__ */ new Date();
-      const todayStr = formatDate(today);
-      const holidays = Object.entries(holidayData.value).filter(([_, info]) => {
-        return info.holiday && !info.name.includes("补班") && info.date >= todayStr;
-      }).map(([_, info]) => ({
-        date: info.date,
-        name: info.name,
-        rest: info.rest || 0,
-        timestamp: new Date(info.date).getTime()
-      })).sort((a, b) => a.timestamp - b.timestamp);
-      if (holidays.length === 0) {
-        const nextNewYear = new Date(today.getFullYear() + 1, 0, 1);
-        const daysUntilNewYear = Math.ceil(
-          (nextNewYear - today) / (1e3 * 60 * 60 * 24)
-        );
-        return {
-          days: String(daysUntilNewYear),
-          name: "元旦"
-        };
-      }
-      const nextHoliday2 = holidays[0];
-      const days = Math.ceil(
-        (nextHoliday2.timestamp - today.getTime()) / (1e3 * 60 * 60 * 24)
-      );
-      let holidayName = nextHoliday2.name;
-      if (holidayName === "初一") {
-        holidayName = "春节";
-      }
-      return {
-        days: String(Math.max(0, days)),
-        name: holidayName
-      };
-    });
-    const formatDate = (date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
     };
     const shareInfo = {
       title: "工具小助手",
@@ -270,58 +191,51 @@ const _sfc_main = {
           workEndTime: "18:00"
         };
       }
-      common_vendor.index.__f__("log", "at pages/more/index.vue:508", "popup ref:", popup.value);
-      fetchHolidayData();
+      common_vendor.index.__f__("log", "at pages/more/index.vue:400", "popup ref:", popup.value);
     });
     return (_ctx, _cache) => {
       return {
-        a: common_vendor.o(showCustomDialog),
-        b: common_vendor.p({
-          ["display-settings"]: displaySettings.value,
-          ["days-until-friday"]: daysUntilFriday.value,
-          ["next-holiday"]: nextHoliday.value
-        }),
-        c: common_vendor.p({
+        a: common_vendor.p({
           type: "compose",
           size: "30",
           color: getIconColor(1)
         }),
-        d: common_vendor.o(($event) => handleNavigate("textSnap")),
-        e: common_vendor.p({
+        b: common_vendor.o(($event) => handleNavigate("textSnap")),
+        c: common_vendor.p({
           type: "image",
           size: "30",
           color: getIconColor(2)
         }),
-        f: common_vendor.o(($event) => handleNavigate("weather")),
-        g: common_vendor.p({
+        d: common_vendor.o(($event) => handleNavigate("weather")),
+        e: common_vendor.p({
           type: "bars",
           size: "30",
           color: getIconColor(3)
         }),
-        h: common_vendor.o(($event) => handleNavigate("book")),
-        i: common_vendor.p({
+        f: common_vendor.o(($event) => handleNavigate("book")),
+        g: common_vendor.p({
           type: "chat",
           size: "30",
           color: getIconColor(4)
         }),
-        j: common_vendor.o(($event) => handleNavigate("translation")),
-        k: common_vendor.p({
+        h: common_vendor.o(($event) => handleNavigate("translation")),
+        i: common_vendor.p({
           type: "videocam",
           size: "30",
           color: getIconColor(6)
         }),
-        l: common_vendor.o(($event) => handleNavigate("movie")),
-        m: common_vendor.p({
+        j: common_vendor.o(($event) => handleNavigate("movie")),
+        k: common_vendor.p({
           type: "shop",
           size: "30",
           color: getIconColor(7)
         }),
-        n: common_vendor.o(($event) => handleNavigate("shopping")),
-        o: common_vendor.o([($event) => customSettings.value.payday = $event.detail.value, validatePayday]),
-        p: customSettings.value.payday,
-        q: common_vendor.o([($event) => customSettings.value.dailyIncome = $event.detail.value, validateDailyIncome]),
-        r: customSettings.value.dailyIncome,
-        s: common_vendor.f(["周日", "周一", "周二", "周三", "周四", "周五", "周六"], (day, index, i0) => {
+        l: common_vendor.o(($event) => handleNavigate("shopping")),
+        m: common_vendor.o([($event) => customSettings.value.payday = $event.detail.value, validatePayday]),
+        n: customSettings.value.payday,
+        o: common_vendor.o([($event) => customSettings.value.dailyIncome = $event.detail.value, validateDailyIncome]),
+        p: customSettings.value.dailyIncome,
+        q: common_vendor.f(["周日", "周一", "周二", "周三", "周四", "周五", "周六"], (day, index, i0) => {
           return {
             a: common_vendor.t(day),
             b: index,
@@ -329,18 +243,18 @@ const _sfc_main = {
             d: common_vendor.o(($event) => toggleWorkDay(index), index)
           };
         }),
-        t: common_vendor.t(customSettings.value.workStartTime),
-        v: customSettings.value.workStartTime,
-        w: common_vendor.o(onWorkStartTimeChange),
-        x: common_vendor.t(customSettings.value.workEndTime),
-        y: customSettings.value.workEndTime,
-        z: common_vendor.o(onWorkEndTimeChange),
-        A: common_vendor.o(hideCustomDialog),
-        B: common_vendor.o(saveCustomSettings),
-        C: common_vendor.sr(popup, "9cb5c55a-7", {
+        r: common_vendor.t(customSettings.value.workStartTime),
+        s: customSettings.value.workStartTime,
+        t: common_vendor.o(onWorkStartTimeChange),
+        v: common_vendor.t(customSettings.value.workEndTime),
+        w: customSettings.value.workEndTime,
+        x: common_vendor.o(onWorkEndTimeChange),
+        y: common_vendor.o(hideCustomDialog),
+        z: common_vendor.o(saveCustomSettings),
+        A: common_vendor.sr(popup, "9cb5c55a-6", {
           "k": "popup"
         }),
-        D: common_vendor.p({
+        B: common_vendor.p({
           type: "center"
         })
       };

@@ -1,12 +1,5 @@
 <template>
   <view class="more-container">
-    <rest-card
-      :display-settings="displaySettings"
-      :days-until-friday="daysUntilFriday"
-      :next-holiday="nextHoliday"
-      @tap="showCustomDialog"
-    />
-
     <view class="grid-container">
       <view class="grid-card" @tap="handleNavigate('textSnap')">
         <view class="card-content">
@@ -179,8 +172,6 @@
 <script setup>
 import { ref, onMounted, nextTick, computed } from "vue";
 import MyPopup from "../../components/my-popup/my-popup.vue";
-import RestCard from "../../components/rest-card/rest-card.vue";
-import { getHolidayData } from "../../api/search.js";
 
 const handleNavigate = (type) => {
   const routes = {
@@ -325,105 +316,6 @@ const validateDailyIncome = (e) => {
   customSettings.value.dailyIncome = value;
 };
 
-// 计算距离下个周五的天数
-const daysUntilFriday = computed(() => {
-  const today = new Date();
-  const currentDay = today.getDay(); // 0 是周日，5 是周五
-
-  // 如果今天是周五，显示0
-  if (currentDay === 5) {
-    return 0;
-  }
-
-  // 计算到下个周五的天数
-  if (currentDay < 5) {
-    // 如果当前是周五之前
-    return 5 - currentDay;
-  } else {
-    // 如果当前是周六或周日
-    return 5 + (7 - currentDay);
-  }
-});
-
-const holidayData = ref(null);
-
-// 获取节假日数据
-const fetchHolidayData = async () => {
-  try {
-    const response = await getHolidayData();
-    if (response.code === 0) {
-      holidayData.value = response.holiday;
-    }
-  } catch (error) {
-    console.error("获取节假日数据失败:", error);
-  }
-};
-
-// 计算下一个节日
-const nextHoliday = computed(() => {
-  if (!holidayData.value) {
-    return {
-      days: "-",
-      name: "加载中",
-    };
-  }
-
-  const today = new Date();
-  const todayStr = formatDate(today);
-
-  // 找出所有未来的节假日
-  const holidays = Object.entries(holidayData.value)
-    .filter(([_, info]) => {
-      return (
-        info.holiday && !info.name.includes("补班") && info.date >= todayStr
-      );
-    })
-    .map(([_, info]) => ({
-      date: info.date,
-      name: info.name,
-      rest: info.rest || 0,
-      timestamp: new Date(info.date).getTime(),
-    }))
-    .sort((a, b) => a.timestamp - b.timestamp);
-
-  // 如果没有找到节假日，返回到下一年元旦的天数
-  if (holidays.length === 0) {
-    const nextNewYear = new Date(today.getFullYear() + 1, 0, 1);
-    const daysUntilNewYear = Math.ceil(
-      (nextNewYear - today) / (1000 * 60 * 60 * 24)
-    );
-    return {
-      days: String(daysUntilNewYear),
-      name: "元旦",
-    };
-  }
-
-  // 获取最近的节假日
-  const nextHoliday = holidays[0];
-  const days = Math.ceil(
-    (nextHoliday.timestamp - today.getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  // 处理节日名称
-  let holidayName = nextHoliday.name;
-  if (holidayName === "初一") {
-    holidayName = "春节";
-  }
-
-  return {
-    days: String(Math.max(0, days)),
-    name: holidayName,
-  };
-});
-
-// 修改日期格式化函数以匹配接口格式
-const formatDate = (date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-};
-
 const shareInfo = {
   title: "工具小助手",
   path: "/pages/more/index",
@@ -506,7 +398,6 @@ onMounted(() => {
   }
 
   console.log("popup ref:", popup.value);
-  fetchHolidayData();
 });
 </script>
 
