@@ -222,7 +222,7 @@ const processedTranslation = computed(() => {
     align-items: center;
     justify-content: center;
     gap: $uni-spacing-xs;
-    padding: $uni-spacing-sm $uni-spacing-lg;
+    padding: 8rpx 24rpx;
     border-radius: $uni-border-radius;
     font-size: $uni-font-size-base;
     font-weight: 500;
