@@ -29,34 +29,6 @@
         </view>
       </view>
 
-      <view class="grid-card" @tap="handleNavigate('book')">
-        <view class="card-content">
-          <view class="icon-wrapper">
-            <uni-icons
-              type="bars"
-              size="30"
-              :color="getIconColor(3)"
-            ></uni-icons>
-          </view>
-          <text class="card-title">AI荐书</text>
-          <text class="card-desc">智能图书推荐</text>
-        </view>
-      </view>
-
-      <view class="grid-card" @tap="handleNavigate('translation')">
-        <view class="card-content">
-          <view class="icon-wrapper">
-            <uni-icons
-              type="chat"
-              size="30"
-              :color="getIconColor(4)"
-            ></uni-icons>
-          </view>
-          <text class="card-title">AI智能翻译</text>
-          <text class="card-desc">智能翻译助手</text>
-        </view>
-      </view>
-
       <view class="grid-card" @tap="handleNavigate('movie')">
         <view class="card-content">
           <view class="icon-wrapper">
@@ -178,8 +150,6 @@ const handleNavigate = (type) => {
     history: "/pages/history/index",
     textSnap: "/pages/textSnap/index",
     weather: "/pages/weather/index",
-    book: "/pages/book/index",
-    translation: "/pages/translation/index",
     codeHelper: "/pages/codeHelper/index",
     movie: "/pages/movie/index",
     shopping: "/pages/shopping/index",

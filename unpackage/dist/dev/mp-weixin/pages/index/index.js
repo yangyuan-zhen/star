@@ -25,6 +25,7 @@ const _sfc_main = {
     const selectedWorkDays = common_vendor.ref([1, 2, 3, 4, 5]);
     const currentTime = common_vendor.ref(/* @__PURE__ */ new Date());
     common_vendor.ref(null);
+    const showHeader = common_vendor.ref(false);
     const formatDate = common_vendor.computed(() => {
       const date = currentDate.value;
       return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
@@ -44,7 +45,7 @@ const _sfc_main = {
           weatherText.value = res.now.text;
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:143", "获取天气数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:150", "获取天气数据失败:", error);
         common_vendor.index.showToast({
           title: "获取天气信息失败",
           icon: "none",
@@ -76,13 +77,13 @@ const _sfc_main = {
                 throw new Error("获取城市信息失败");
               }
             } catch (error) {
-              common_vendor.index.__f__("error", "at pages/index/index.vue:181", "位置信息处理失败:", error);
+              common_vendor.index.__f__("error", "at pages/index/index.vue:188", "位置信息处理失败:", error);
               city.value = "未知位置";
               reject(error);
             }
           },
           fail: (err) => {
-            common_vendor.index.__f__("error", "at pages/index/index.vue:187", "获取位置失败:", err);
+            common_vendor.index.__f__("error", "at pages/index/index.vue:194", "获取位置失败:", err);
             city.value = "未知位置";
             reject(err);
           }
@@ -93,7 +94,7 @@ const _sfc_main = {
       try {
         await getLocation();
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:200", "初始化位置或天气失败:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:207", "初始化位置或天气失败:", error);
         city.value = "未知位置";
         temperature.value = "--";
         weatherText.value = "未知";
@@ -102,10 +103,12 @@ const _sfc_main = {
     const resetAnimation = () => {
       hasShown.value = false;
       showTodoList.value = false;
+      showHeader.value = false;
       setTimeout(() => {
         hasShown.value = true;
         setTimeout(() => {
           showTodoList.value = true;
+          showHeader.value = true;
         }, 50);
       }, 50);
     };
@@ -116,7 +119,7 @@ const _sfc_main = {
       resetAnimation();
     });
     const showPopup = () => {
-      common_vendor.index.__f__("log", "at pages/index/index.vue:235", "showPopup clicked");
+      common_vendor.index.__f__("log", "at pages/index/index.vue:244", "showPopup clicked");
       popupVisible.value = true;
     };
     const hideCustomDialog = () => {
@@ -151,15 +154,6 @@ const _sfc_main = {
       });
       hideCustomDialog();
     };
-    const getStatusText = common_vendor.computed(() => {
-      if (!isWorkday.value)
-        return "今天休息";
-      if (isBeforeWork.value)
-        return "距离上班还有";
-      if (isAfterWork.value)
-        return "工作已结束";
-      return "距离下班还有";
-    });
     const isWorkday = common_vendor.computed(() => {
       const today = currentTime.value.getDay();
       return selectedWorkDays.value.includes(today);
@@ -196,7 +190,7 @@ const _sfc_main = {
       const { workStartTime, workEndTime } = getTodayWorkTime();
       const now = currentTime.value.getTime();
       if (isBeforeWork.value) {
-        return formatCountdown(workStartTime.getTime() - now);
+        return "工作未开始";
       } else if (isAfterWork.value) {
         return "工作已结束!";
       } else {
@@ -243,11 +237,12 @@ const _sfc_main = {
         e: common_vendor.t(temperature.value),
         f: common_vendor.t(weatherText.value),
         g: common_vendor.o(showPopup),
-        h: common_vendor.t(getStatusText.value),
-        i: common_vendor.t(countdownText.value),
-        j: showTodoList.value ? 1 : "",
-        k: !hasShown.value ? 1 : "",
-        l: common_vendor.f(["周日", "周一", "周二", "周三", "周四", "周五", "周六"], (day, index, i0) => {
+        h: !hasShown.value ? 1 : "",
+        i: showHeader.value ? 1 : "",
+        j: common_vendor.t(countdownText.value),
+        k: showTodoList.value ? 1 : "",
+        l: !hasShown.value ? 1 : "",
+        m: common_vendor.f(["周日", "周一", "周二", "周三", "周四", "周五", "周六"], (day, index, i0) => {
           return {
             a: common_vendor.t(day),
             b: index,
@@ -255,16 +250,16 @@ const _sfc_main = {
             d: common_vendor.o(($event) => toggleWorkDay(index), index)
           };
         }),
-        m: common_vendor.t(customSettings.value.workStartTime),
-        n: customSettings.value.workStartTime,
-        o: common_vendor.o(onWorkStartTimeChange),
-        p: common_vendor.t(customSettings.value.workEndTime),
-        q: customSettings.value.workEndTime,
-        r: common_vendor.o(onWorkEndTimeChange),
-        s: common_vendor.o(hideCustomDialog),
-        t: common_vendor.o(saveCustomSettings),
-        v: common_vendor.o(($event) => popupVisible.value = $event),
-        w: common_vendor.p({
+        n: common_vendor.t(customSettings.value.workStartTime),
+        o: customSettings.value.workStartTime,
+        p: common_vendor.o(onWorkStartTimeChange),
+        q: common_vendor.t(customSettings.value.workEndTime),
+        r: customSettings.value.workEndTime,
+        s: common_vendor.o(onWorkEndTimeChange),
+        t: common_vendor.o(hideCustomDialog),
+        v: common_vendor.o(saveCustomSettings),
+        w: common_vendor.o(($event) => popupVisible.value = $event),
+        x: common_vendor.p({
           show: popupVisible.value
         })
       };

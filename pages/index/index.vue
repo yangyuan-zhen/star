@@ -1,7 +1,11 @@
 <template>
   <view class="container">
     <!-- 顶部信息栏 -->
-    <view class="header" @tap="showPopup">
+    <view
+      class="header"
+      @tap="showPopup"
+      :class="{ init: !hasShown, show: showHeader }"
+    >
       <view class="date-time">
         <text class="date">{{ formatDate }}</text>
         <text class="time">{{ formatTime }}</text>
@@ -14,7 +18,7 @@
     </view>
     <!-- 中间状态显示 -->
     <view class="status-container">
-      <text class="status-text">{{ getStatusText }}</text>
+      <!-- <text class="status-text">距离下班还有</text> -->
       <text class="status-result">{{ countdownText }}</text>
     </view>
     <!-- 待办事项 -->
@@ -116,6 +120,9 @@ const selectedWorkDays = ref([1, 2, 3, 4, 5]); // 默认周一到周五
 const currentTime = ref(new Date());
 const countdownTimer = ref(null);
 
+// 添加 header 动画控制变量
+const showHeader = ref(false);
+
 // 格式化日期
 const formatDate = computed(() => {
   const date = currentDate.value;
@@ -205,17 +212,19 @@ const init = async () => {
   }
 };
 
-// 重置动画的函数
+// 修改重置动画的函数
 const resetAnimation = () => {
   // 完全重置状态
   hasShown.value = false;
   showTodoList.value = false;
+  showHeader.value = false;
 
   // 使用两个 setTimeout 来确保动画重置和触发
   setTimeout(() => {
     hasShown.value = true;
     setTimeout(() => {
       showTodoList.value = true;
+      showHeader.value = true;
     }, 50);
   }, 50);
 };
@@ -277,14 +286,6 @@ const saveCustomSettings = () => {
   hideCustomDialog();
 };
 
-// 获取状态文本
-const getStatusText = computed(() => {
-  if (!isWorkday.value) return "今天休息";
-  if (isBeforeWork.value) return "距离上班还有";
-  if (isAfterWork.value) return "工作已结束";
-  return "距离下班还有";
-});
-
 // 计算是否是工作日
 const isWorkday = computed(() => {
   const today = currentTime.value.getDay();
@@ -339,7 +340,7 @@ const countdownText = computed(() => {
   const now = currentTime.value.getTime();
 
   if (isBeforeWork.value) {
-    return formatCountdown(workStartTime.getTime() - now);
+    return "工作未开始";
   } else if (isAfterWork.value) {
     return "工作已结束!";
   } else {
@@ -408,6 +409,20 @@ onUnmounted(() => {
   align-items: flex-start;
   padding: 20px;
   box-sizing: border-box;
+  transform: translateX(-100%); // 初始位置在屏幕左侧
+  transition: transform 0.3s ease-out;
+  background-color: $theme-color;
+  border-radius: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  margin: 20rpx;
+
+  &.init {
+    transition: none; // 初始状态不需要过渡动画
+  }
+
+  &.show {
+    transform: translateX(0); // 滑动到原位
+  }
 }
 
 .date-time {

@@ -17,8 +17,6 @@ const _sfc_main = {
         history: "/pages/history/index",
         textSnap: "/pages/textSnap/index",
         weather: "/pages/weather/index",
-        book: "/pages/book/index",
-        translation: "/pages/translation/index",
         codeHelper: "/pages/codeHelper/index",
         movie: "/pages/movie/index",
         shopping: "/pages/shopping/index"
@@ -29,7 +27,7 @@ const _sfc_main = {
           animationType: "slide-in-right",
           animationDuration: 300,
           fail: (err) => {
-            common_vendor.index.__f__("error", "at pages/more/index.vue:194", "页面跳转失败:", err);
+            common_vendor.index.__f__("error", "at pages/more/index.vue:164", "页面跳转失败:", err);
             common_vendor.index.showToast({
               title: "页面跳转失败",
               icon: "none"
@@ -191,7 +189,7 @@ const _sfc_main = {
           workEndTime: "18:00"
         };
       }
-      common_vendor.index.__f__("log", "at pages/more/index.vue:400", "popup ref:", popup.value);
+      common_vendor.index.__f__("log", "at pages/more/index.vue:370", "popup ref:", popup.value);
     });
     return (_ctx, _cache) => {
       return {
@@ -208,34 +206,22 @@ const _sfc_main = {
         }),
         d: common_vendor.o(($event) => handleNavigate("weather")),
         e: common_vendor.p({
-          type: "bars",
-          size: "30",
-          color: getIconColor(3)
-        }),
-        f: common_vendor.o(($event) => handleNavigate("book")),
-        g: common_vendor.p({
-          type: "chat",
-          size: "30",
-          color: getIconColor(4)
-        }),
-        h: common_vendor.o(($event) => handleNavigate("translation")),
-        i: common_vendor.p({
           type: "videocam",
           size: "30",
           color: getIconColor(6)
         }),
-        j: common_vendor.o(($event) => handleNavigate("movie")),
-        k: common_vendor.p({
+        f: common_vendor.o(($event) => handleNavigate("movie")),
+        g: common_vendor.p({
           type: "shop",
           size: "30",
           color: getIconColor(7)
         }),
-        l: common_vendor.o(($event) => handleNavigate("shopping")),
-        m: common_vendor.o([($event) => customSettings.value.payday = $event.detail.value, validatePayday]),
-        n: customSettings.value.payday,
-        o: common_vendor.o([($event) => customSettings.value.dailyIncome = $event.detail.value, validateDailyIncome]),
-        p: customSettings.value.dailyIncome,
-        q: common_vendor.f(["周日", "周一", "周二", "周三", "周四", "周五", "周六"], (day, index, i0) => {
+        h: common_vendor.o(($event) => handleNavigate("shopping")),
+        i: common_vendor.o([($event) => customSettings.value.payday = $event.detail.value, validatePayday]),
+        j: customSettings.value.payday,
+        k: common_vendor.o([($event) => customSettings.value.dailyIncome = $event.detail.value, validateDailyIncome]),
+        l: customSettings.value.dailyIncome,
+        m: common_vendor.f(["周日", "周一", "周二", "周三", "周四", "周五", "周六"], (day, index, i0) => {
           return {
             a: common_vendor.t(day),
             b: index,
@@ -243,18 +229,18 @@ const _sfc_main = {
             d: common_vendor.o(($event) => toggleWorkDay(index), index)
           };
         }),
-        r: common_vendor.t(customSettings.value.workStartTime),
-        s: customSettings.value.workStartTime,
-        t: common_vendor.o(onWorkStartTimeChange),
-        v: common_vendor.t(customSettings.value.workEndTime),
-        w: customSettings.value.workEndTime,
-        x: common_vendor.o(onWorkEndTimeChange),
-        y: common_vendor.o(hideCustomDialog),
-        z: common_vendor.o(saveCustomSettings),
-        A: common_vendor.sr(popup, "9cb5c55a-6", {
+        n: common_vendor.t(customSettings.value.workStartTime),
+        o: customSettings.value.workStartTime,
+        p: common_vendor.o(onWorkStartTimeChange),
+        q: common_vendor.t(customSettings.value.workEndTime),
+        r: customSettings.value.workEndTime,
+        s: common_vendor.o(onWorkEndTimeChange),
+        t: common_vendor.o(hideCustomDialog),
+        v: common_vendor.o(saveCustomSettings),
+        w: common_vendor.sr(popup, "9cb5c55a-4", {
           "k": "popup"
         }),
-        B: common_vendor.p({
+        x: common_vendor.p({
           type: "center"
         })
       };
