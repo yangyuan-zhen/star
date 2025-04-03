@@ -156,7 +156,9 @@
                   v-for="(item, index) in fortuneData.goodFor.split(',')"
                   :key="'good-' + index"
                 >
-                  <text class="tip-icon">{{ getRandomIcon("good") }}</text>
+                  <text class="tip-icon">{{
+                    getRandomIcon("good", index)
+                  }}</text>
                   <text class="tip-text">{{ item.trim() }}</text>
                 </view>
               </template>
@@ -188,7 +190,9 @@
                   v-for="(item, index) in fortuneData.badFor.split(',')"
                   :key="'bad-' + index"
                 >
-                  <text class="tip-icon">{{ getRandomIcon("bad") }}</text>
+                  <text class="tip-icon">{{
+                    getRandomIcon("bad", index)
+                  }}</text>
                   <text class="tip-text">{{ item.trim() }}</text>
                 </view>
               </template>
@@ -224,7 +228,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
-import { onShow } from "@dcloudio/uni-app";
+import { onShow, onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 import ZodiacSettings from "../../components/zodiac-settings/zodiac-settings.vue";
 
 // 星座相关数据
@@ -465,8 +469,8 @@ watch(currentZodiac, (newVal) => {
   fetchZodiacData(newVal);
 });
 
-// 获取随机图标
-const getRandomIcon = (type) => {
+// 替换当前的随机图标函数，添加防重复逻辑
+const getRandomIcon = (type, index = 0) => {
   const goodIcons = [
     "📚",
     "👥",
@@ -484,7 +488,7 @@ const getRandomIcon = (type) => {
   const badIcons = [
     "💳",
     "💬",
-    "🏃",
+    "⚠️",
     "🍺",
     "🎰",
     "😡",
@@ -493,11 +497,13 @@ const getRandomIcon = (type) => {
     "🍔",
     "🎭",
     "📺",
-    "📱",
+    "⏰",
   ];
 
   const icons = type === "good" ? goodIcons : badIcons;
-  return icons[Math.floor(Math.random() * icons.length)];
+
+  // 直接使用索引来确保不重复，超出范围时循环使用
+  return icons[index % icons.length];
 };
 
 // 添加一个生成星级评分的方法
@@ -507,6 +513,26 @@ const getStarRating = (rating = 0, maxRating = 5) => {
   const emptyStars = "☆".repeat(maxRating - validRating);
   return fullStars + emptyStars;
 };
+
+// 定义页面分享行为
+onShareAppMessage(() => {
+  return {
+    title: `${currentZodiac.value}今日运势 - ${
+      fortuneData.value?.overall?.level || "查看你的星座运势"
+    }`,
+    path: "/pages/index/index",
+    imageUrl: `/static/share/${currentZodiac.value}.jpg`, // 可选分享图片
+  };
+});
+
+// 添加分享朋友圈功能
+onShareTimeline(() => {
+  return {
+    title: `${currentZodiac.value}今日运势分析 - 星座运势`,
+    query: `zodiac=${encodeURIComponent(currentZodiac.value)}`,
+    imageUrl: `/static/share/${currentZodiac.value}.jpg`,
+  };
+});
 </script>
 
 <style lang="scss">

@@ -3,43 +3,9 @@
     {
       "path": "pages/index/index",
       "style": {
-        "navigationBarTitleText": ""
-      }
-    },
-    {
-      "path": "pages/note/index",
-      "style": {
-        "navigationBarTitleText": "备忘录"
-      }
-    },
-    {
-      "path": "pages/more/index",
-      "style": {
-        "navigationBarTitleText": "更多"
-      }
-    },
-    {
-      "path": "pages/textSnap/index",
-      "style": {
-        "navigationBarTitleText": "文字图片"
-      }
-    },
-    {
-      "path": "pages/book/index",
-      "style": {
-        "navigationBarTitleText": "AI荐书"
-      }
-    },
-    {
-      "path": "pages/movie/index",
-      "style": {
-        "navigationBarTitleText": "电影日历"
-      }
-    },
-    {
-      "path": "pages/shopping/index",
-      "style": {
-        "navigationBarTitleText": "买什么"
+        "navigationBarTitleText": "",
+        "enableShareAppMessage": true,
+        "enableShareTimeline": true
       }
     }
   ],

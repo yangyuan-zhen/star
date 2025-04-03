@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "",
+  "enableShareAppMessage": true,
+  "enableShareTimeline": true,
   "usingComponents": {
     "zodiac-settings": "../../components/zodiac-settings/zodiac-settings"
   }

@@ -2,7 +2,7 @@
   <my-popup v-model:show="visible" @update:show="onVisibleChange">
     <view class="custom-dialog">
       <view class="dialog-header">
-        <text class="dialog-title">自定义设置</text>
+        <text class="dialog-title">设置你的星座</text>
       </view>
       <view class="dialog-content">
         <view class="input-group">

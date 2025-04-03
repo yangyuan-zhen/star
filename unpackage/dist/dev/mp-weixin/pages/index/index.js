@@ -162,16 +162,16 @@ const _sfc_main = {
             goodFor: fortune.goodFor || "",
             badFor: fortune.badFor || ""
           };
-          common_vendor.index.__f__("log", "at pages/index/index.vue:414", "获取星座运势成功:", fortuneData.value);
+          common_vendor.index.__f__("log", "at pages/index/index.vue:418", "获取星座运势成功:", fortuneData.value);
         } else {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:416", "获取星座运势失败:", result.message);
+          common_vendor.index.__f__("error", "at pages/index/index.vue:420", "获取星座运势失败:", result.message);
           common_vendor.index.showToast({
             title: "获取星座运势失败: " + result.message,
             icon: "none"
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:423", "获取星座运势出错:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:427", "获取星座运势出错:", error);
         common_vendor.index.showToast({
           title: "网络异常，请稍后再试",
           icon: "none"
@@ -200,7 +200,7 @@ const _sfc_main = {
     common_vendor.watch(currentZodiac, (newVal) => {
       fetchZodiacData(newVal);
     });
-    const getRandomIcon = (type) => {
+    const getRandomIcon = (type, index = 0) => {
       const goodIcons = [
         "📚",
         "👥",
@@ -218,7 +218,7 @@ const _sfc_main = {
       const badIcons = [
         "💳",
         "💬",
-        "🏃",
+        "⚠️",
         "🍺",
         "🎰",
         "😡",
@@ -227,10 +227,10 @@ const _sfc_main = {
         "🍔",
         "🎭",
         "📺",
-        "📱"
+        "⏰"
       ];
       const icons = type === "good" ? goodIcons : badIcons;
-      return icons[Math.floor(Math.random() * icons.length)];
+      return icons[index % icons.length];
     };
     const getStarRating = (rating = 0, maxRating = 5) => {
       const validRating = Math.min(Math.max(Math.round(rating || 0), 0), maxRating);
@@ -238,6 +238,22 @@ const _sfc_main = {
       const emptyStars = "☆".repeat(maxRating - validRating);
       return fullStars + emptyStars;
     };
+    common_vendor.onShareAppMessage(() => {
+      var _a, _b;
+      return {
+        title: `${currentZodiac.value}今日运势 - ${((_b = (_a = fortuneData.value) == null ? void 0 : _a.overall) == null ? void 0 : _b.level) || "查看你的星座运势"}`,
+        path: "/pages/index/index",
+        imageUrl: `/static/share/${currentZodiac.value}.jpg`
+        // 可选分享图片
+      };
+    });
+    common_vendor.onShareTimeline(() => {
+      return {
+        title: `${currentZodiac.value}今日运势分析 - 星座运势`,
+        query: `zodiac=${encodeURIComponent(currentZodiac.value)}`,
+        imageUrl: `/static/share/${currentZodiac.value}.jpg`
+      };
+    });
     return (_ctx, _cache) => {
       var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
       return common_vendor.e({
@@ -266,25 +282,25 @@ const _sfc_main = {
       }, ((_x = fortuneData.value) == null ? void 0 : _x.goodFor) ? {
         v: common_vendor.f(fortuneData.value.goodFor.split(","), (item, index, i0) => {
           return {
-            a: common_vendor.t(item.trim()),
-            b: "good-" + index
+            a: common_vendor.t(getRandomIcon("good", index)),
+            b: common_vendor.t(item.trim()),
+            c: "good-" + index
           };
-        }),
-        w: common_vendor.t(getRandomIcon("good"))
+        })
       } : {}, {
-        x: (_y = fortuneData.value) == null ? void 0 : _y.badFor
+        w: (_y = fortuneData.value) == null ? void 0 : _y.badFor
       }, ((_z = fortuneData.value) == null ? void 0 : _z.badFor) ? {
-        y: common_vendor.f(fortuneData.value.badFor.split(","), (item, index, i0) => {
+        x: common_vendor.f(fortuneData.value.badFor.split(","), (item, index, i0) => {
           return {
-            a: common_vendor.t(item.trim()),
-            b: "bad-" + index
+            a: common_vendor.t(getRandomIcon("bad", index)),
+            b: common_vendor.t(item.trim()),
+            c: "bad-" + index
           };
-        }),
-        z: common_vendor.t(getRandomIcon("bad"))
+        })
       } : {}, {
-        A: common_vendor.o(saveUserSettings),
-        B: common_vendor.o(($event) => settingsVisible.value = $event),
-        C: common_vendor.p({
+        y: common_vendor.o(saveUserSettings),
+        z: common_vendor.o(($event) => settingsVisible.value = $event),
+        A: common_vendor.p({
           ["current-zodiac"]: currentZodiac.value,
           ["birth-date"]: birthDate.value,
           show: settingsVisible.value
@@ -293,5 +309,6 @@ const _sfc_main = {
     };
   }
 };
+_sfc_main.__runtimeHooks = 6;
 wx.createPage(_sfc_main);
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/index/index.js.map
