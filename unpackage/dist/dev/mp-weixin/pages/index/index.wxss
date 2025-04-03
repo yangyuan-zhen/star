@@ -57,202 +57,311 @@
 /* 扩展文字尺寸 */
 /* 扩展圆角 */
 .container {
-  padding: 20px;
-  background-color: #f0f8ff;
-  min-height: 100vh;
-  height: 100vh;
-  color: #333333;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  max-width: 100%;
+  overflow-x: hidden;
 }
-.header {
+.nav-bar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding: 20px;
-  box-sizing: border-box;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease-out;
-  background-color: #f0f8ff;
-  border-radius: 32rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  margin: 20rpx;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background-color: #fff;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
 }
-.header.init {
-  transition: none;
-}
-.header.show {
-  transform: translateX(0);
-}
-.date-time {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.date,
-.time {
-  font-size: 16px;
-  color: #1890ff;
-}
-.weather {
-  font-size: 16px;
+.nav-bar .title-section {
   display: flex;
   align-items: center;
-  color: #1890ff;
-  gap: 4rpx;
 }
-.weather .location-icon {
-  width: 36rpx;
-  height: 36rpx;
-  display: inline-block;
-  fill: #1890ff;
-  transition: fill 0.3s ease;
+.nav-bar .title-section .icon-star {
+  color: #6366f1;
+  font-size: 40rpx;
+  margin-right: 10rpx;
 }
-.weather .location-icon:hover {
-  fill: #0076e4;
-}
-.weather text {
-  line-height: 36rpx;
-}
-.status-container {
-  text-align: center;
-  margin: 30rpx 0;
-}
-.status-container .status-text {
-  font-size: 32rpx;
-  color: #666666;
-  margin-bottom: 20rpx;
-}
-.status-container .status-result {
-  font-size: 48rpx;
+.nav-bar .title-section .title {
+  font-size: 36rpx;
   font-weight: bold;
-  color: #1890ff;
-  font-family: "Courier New", Courier, monospace;
-  letter-spacing: 1px;
+  color: #6366f1;
 }
-.todo-list-container {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 70vh;
-  transform: translateY(100%);
-  transition: transform 0.3s ease-out;
-  background-color: #f0f8ff;
-  border-radius: 32rpx 32rpx 0 0;
-  padding: 20px;
-  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.1);
+.nav-bar .action-section {
+  display: flex;
+  gap: 30rpx;
 }
-.todo-list-container.init {
-  transition: none;
+.nav-bar .action-section .icon-user,
+.nav-bar .action-section .icon-settings {
+  font-size: 40rpx;
+  color: #666;
 }
-.todo-list-container.show {
-  transform: translateY(10%);
+.content-area {
+  flex: 1;
+  padding: 30rpx 40rpx;
+  box-sizing: border-box;
+  width: 100%;
 }
-.custom-dialog {
-  background: #fff;
-  width: 600rpx;
+.zodiac-card {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   border-radius: 24rpx;
   overflow: hidden;
+  margin: 0 4rpx 40rpx 4rpx;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  width: calc(100% - 8rpx);
+  box-sizing: border-box;
 }
-.custom-dialog .dialog-header {
-  padding: 30rpx;
-  text-align: center;
-  border-bottom: 1rpx solid #eee;
-}
-.custom-dialog .dialog-header .dialog-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333;
-}
-.custom-dialog .dialog-content {
+.zodiac-card .zodiac-header {
   padding: 30rpx;
 }
-.custom-dialog .dialog-content .input-group {
+.zodiac-card .zodiac-header .zodiac-name-date {
+  display: flex;
+  align-items: center;
   margin-bottom: 20rpx;
 }
-.custom-dialog .dialog-content .input-group .label {
+.zodiac-card .zodiac-header .zodiac-name-date .zodiac-name {
+  font-size: 40rpx;
+  font-weight: bold;
+  margin-right: 20rpx;
+}
+.zodiac-card .zodiac-header .zodiac-name-date .zodiac-date {
+  font-size: 24rpx;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4rpx 16rpx;
+  border-radius: 100rpx;
+}
+.zodiac-card .zodiac-header .zodiac-fortune {
+  margin-bottom: 20rpx;
+}
+.zodiac-card .zodiac-header .zodiac-fortune .fortune-label {
   font-size: 28rpx;
-  color: #666;
-  margin-bottom: 10rpx;
+  display: block;
+  margin-bottom: 8rpx;
+}
+.zodiac-card .zodiac-header .zodiac-description {
+  font-size: 28rpx;
+  line-height: 1.6;
+  margin-bottom: 20rpx;
+}
+.zodiac-card .zodiac-header .tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+.zodiac-card .zodiac-header .tag-container .tag {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8rpx 20rpx;
+  border-radius: 100rpx;
+  font-size: 24rpx;
+}
+.zodiac-card .zodiac-image-section {
+  width: 100%;
+  height: 300rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20rpx;
+  margin-bottom: 30rpx;
+  position: relative;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+.zodiac-card .zodiac-image-section::before {
+  content: "";
+  position: absolute;
+  width: 170rpx;
+  height: 170rpx;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+  z-index: 0;
+}
+.zodiac-card .zodiac-image-section .zodiac-image {
+  position: relative;
+  z-index: 1;
+  width: 100rpx;
+  height: 100rpx;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
+}
+.star-rating {
+  color: #f59e0b;
+  font-size: 36rpx;
+  line-height: 1;
+}
+.star-rating.small {
+  font-size: 30rpx;
+}
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
   display: block;
 }
-.custom-dialog .dialog-content .input-group .input {
-  width: 100%;
-  height: 80rpx;
-  border: 1rpx solid #eee;
-  border-radius: 12rpx;
-  padding: 0 20rpx;
+.fortune-detail-section {
+  margin-bottom: 40rpx;
+}
+.fortune-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+.fortune-card {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin: 0 4rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  width: calc(100% - 8rpx);
+  box-sizing: border-box;
+}
+.fortune-card:active {
+  transform: translateY(-5rpx);
+}
+.fortune-card .card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+.fortune-card .card-header .card-icon {
+  width: 50rpx;
+  height: 50rpx;
+  border-radius: 50%;
   font-size: 28rpx;
-}
-.custom-dialog .dialog-footer {
   display: flex;
-  border-top: 1rpx solid #eee;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12rpx;
 }
-.custom-dialog .dialog-footer .btn {
-  flex: 1;
-  height: 90rpx;
-  line-height: 90rpx;
-  text-align: center;
-  font-size: 32rpx;
-  border: none;
-  background: none;
+.fortune-card .card-header .card-icon.love-icon {
+  background-color: #fee2e2;
+  color: #ef4444;
 }
-.custom-dialog .dialog-footer .btn.cancel {
+.fortune-card .card-header .card-icon.career-icon {
+  background-color: #dbeafe;
+  color: #3b82f6;
+}
+.fortune-card .card-header .card-icon.wealth-icon {
+  background-color: #fef3c7;
+  color: #f59e0b;
+}
+.fortune-card .card-header .card-icon.health-icon {
+  background-color: #dcfce7;
+  color: #22c55e;
+}
+.fortune-card .card-header .card-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+.fortune-card .card-description {
+  font-size: 26rpx;
   color: #666;
-  border-right: 1rpx solid #eee;
+  line-height: 1.6;
+  margin-top: 12rpx;
+  padding-right: 10rpx;
 }
-.custom-dialog .dialog-footer .btn.confirm {
-  color: #007aff;
+.daily-tips-section {
+  margin-bottom: 40rpx;
 }
-.custom-dialog .dialog-footer .btn:active {
-  background-color: #f5f5f5;
+.tips-container {
+  background-color: #fff;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  margin: 0 4rpx;
+  width: calc(100% - 8rpx);
+  box-sizing: border-box;
 }
-.weekday-selector {
+.tips-group {
+  padding: 24rpx;
+}
+.tips-group:not(:last-child) {
+  border-bottom: 2rpx solid #f5f5f5;
+}
+.tips-group .tips-header {
   display: flex;
-  gap: 10rpx;
-  margin-top: 10rpx;
+  align-items: center;
+  margin-bottom: 20rpx;
 }
-.weekday-item {
-  flex: 1;
-  height: 60rpx;
-  line-height: 60rpx;
-  text-align: center;
-  border-radius: 8rpx;
+.tips-group .tips-header .tips-icon {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12rpx;
   font-size: 24rpx;
+}
+.tips-group .tips-header .tips-icon.good {
+  background-color: #dcfce7;
+  color: #22c55e;
+}
+.tips-group .tips-header .tips-icon.bad {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+.tips-group .tips-header .tips-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+.tips-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+}
+.tip-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+.tip-item .tip-icon {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
   background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+}
+.tip-item .tip-text {
+  font-size: 24rpx;
   color: #666;
-  transition: all 0.3s ease;
+  text-align: center;
 }
-.weekday-item.active {
-  background-color: #007aff;
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50rpx 0;
+}
+.loading-container .loading-icon {
+  width: 60rpx;
+  height: 60rpx;
+  border: 6rpx solid rgba(255, 255, 255, 0.3);
+  border-top: 6rpx solid #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+.loading-container .loading-text {
   color: #fff;
-}
-.picker-value {
-  height: 80rpx;
-  line-height: 80rpx;
-  padding: 0 20rpx;
-}
-.input,
-picker {
-  width: 100%;
-  height: 80rpx;
-  border: 1rpx solid #eee;
-  border-radius: 12rpx;
+  margin-top: 20rpx;
   font-size: 28rpx;
 }
-@keyframes numberPulse {
+@keyframes spin {
 0% {
-    transform: scale(1);
-}
-50% {
-    transform: scale(1.05);
+    transform: rotate(0deg);
 }
 100% {
-    transform: scale(1);
+    transform: rotate(360deg);
 }
-}
-.number-animate {
-  animation: numberPulse 0.5s ease-in-out;
 }

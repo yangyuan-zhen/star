@@ -10,7 +10,7 @@
             "mp-weixin" : {
                 "launchtype" : "remote"
             },
-            "provider" : "alipay",
+            "provider" : "aliyun",
             "type" : "uniCloud"
         }
     ]

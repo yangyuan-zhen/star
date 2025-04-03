@@ -1,7 +1,6 @@
 {
-  "navigationBarTitleText": "首页",
+  "navigationBarTitleText": "",
   "usingComponents": {
-    "todo-list": "../../components/home/TodoList",
-    "my-popup": "../../components/my-popup/my-popup"
+    "zodiac-settings": "../../components/zodiac-settings/zodiac-settings"
   }
 }

@@ -1,0 +1,11 @@
+{
+  "name": "update-daily-luck",
+  "version": "1.0.0",
+  "description": "更新星座每日运势",
+  "main": "index.js",
+  "dependencies": {},
+  "cloudfunction-config": {
+    "memorySize": 128,
+    "timeout": 5
+  }
+}

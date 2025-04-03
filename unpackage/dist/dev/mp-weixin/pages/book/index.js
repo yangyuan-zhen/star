@@ -55,27 +55,12 @@ const _sfc_main = {
           throw new Error("图片地址不能为空");
         }
         await common_vendor.index.showLoading({ title: "处理中..." });
-        const callFunctionResult = await common_vendor.er.callFunction({
-          name: "downloadImage",
-          data: {
-            imageUrl: imageUrl.value
-          }
-        });
-        common_vendor.index.__f__("log", "at pages/book/index.vue:113", "云函数调用结果:", callFunctionResult);
-        if (!callFunctionResult || !callFunctionResult.result) {
-          throw new Error("云函数返回结果为空");
-        }
-        const result = callFunctionResult.result;
-        common_vendor.index.__f__("log", "at pages/book/index.vue:120", "云函数返回数据:", result);
-        if (result.code !== 0) {
-          throw new Error(result.msg || "处理图片失败");
-        }
         const settingRes = await common_vendor.index.getSetting({});
         if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
           await common_vendor.index.authorize({ scope: "scope.writePhotosAlbum" });
         }
         const downloadRes = await common_vendor.index.downloadFile({
-          url: result.data.tempFileURL
+          url: imageUrl.value
         });
         if (downloadRes.statusCode !== 200) {
           throw new Error("下载图片失败");
@@ -88,7 +73,7 @@ const _sfc_main = {
           icon: "success"
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/book/index.vue:151", "保存失败:", error);
+        common_vendor.index.__f__("error", "at pages/book/index.vue:130", "保存失败:", error);
         common_vendor.index.showToast({
           title: error.message || "保存失败",
           icon: "none",
@@ -100,15 +85,15 @@ const _sfc_main = {
     };
     const handleImageLoad = () => {
       imageLoaded.value = true;
-      common_vendor.index.__f__("log", "at pages/book/index.vue:164", "图片加载成功");
+      common_vendor.index.__f__("log", "at pages/book/index.vue:143", "图片加载成功");
     };
     const handleImageError = async (retryCount = 0) => {
       if (retryCount < 3) {
-        common_vendor.index.__f__("log", "at pages/book/index.vue:169", `图片加载失败，第${retryCount + 1}次重试`);
+        common_vendor.index.__f__("log", "at pages/book/index.vue:148", `图片加载失败，第${retryCount + 1}次重试`);
         await new Promise((resolve) => setTimeout(resolve, 1e3));
         imageUrl.value = `${imageUrl.value}?retry=${retryCount}`;
       } else {
-        common_vendor.index.__f__("error", "at pages/book/index.vue:173", "图片加载失败");
+        common_vendor.index.__f__("error", "at pages/book/index.vue:152", "图片加载失败");
         common_vendor.index.showToast({
           title: "图片加载失败",
           icon: "none"

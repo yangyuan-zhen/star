@@ -102,27 +102,6 @@ const handleSaveImage = async () => {
 
     await uni.showLoading({ title: "处理中..." });
 
-    // 调用云函数下载图片
-    const callFunctionResult = await uniCloud.callFunction({
-      name: "downloadImage",
-      data: {
-        imageUrl: imageUrl.value,
-      },
-    });
-
-    console.log("云函数调用结果:", callFunctionResult);
-
-    if (!callFunctionResult || !callFunctionResult.result) {
-      throw new Error("云函数返回结果为空");
-    }
-
-    const result = callFunctionResult.result;
-    console.log("云函数返回数据:", result);
-
-    if (result.code !== 0) {
-      throw new Error(result.msg || "处理图片失败");
-    }
-
     // 检查权限
     const settingRes = await uni.getSetting({});
     if (!settingRes.authSetting["scope.writePhotosAlbum"]) {
@@ -131,7 +110,7 @@ const handleSaveImage = async () => {
 
     // 下载云存储的图片到本地
     const downloadRes = await uni.downloadFile({
-      url: result.data.tempFileURL,
+      url: imageUrl.value,
     });
 
     if (downloadRes.statusCode !== 200) {

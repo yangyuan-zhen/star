@@ -1,268 +1,295 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-const common_assets = require("../../common/assets.js");
-const api_search = require("../../api/search.js");
 if (!Math) {
-  (TodoList + MyPopup)();
+  ZodiacSettings();
 }
-const TodoList = () => "../../components/home/TodoList.js";
-const MyPopup = () => "../../components/my-popup/my-popup.js";
+const ZodiacSettings = () => "../../components/zodiac-settings/zodiac-settings.js";
 const _sfc_main = {
   __name: "index",
   setup(__props) {
-    const currentDate = common_vendor.ref(/* @__PURE__ */ new Date());
-    const temperature = common_vendor.ref("--");
-    const weatherText = common_vendor.ref("未知");
-    const city = common_vendor.ref("定位中...");
-    const showTodoList = common_vendor.ref(false);
-    const hasShown = common_vendor.ref(false);
-    const popupVisible = common_vendor.ref(false);
-    const isFirstVisit = common_vendor.ref(true);
-    const customSettings = common_vendor.ref({
-      workStartTime: "09:00",
-      workEndTime: "18:00"
-    });
-    const selectedWorkDays = common_vendor.ref([1, 2, 3, 4, 5]);
-    const currentTime = common_vendor.ref(/* @__PURE__ */ new Date());
-    common_vendor.ref(null);
-    const showHeader = common_vendor.ref(false);
-    const formatDate = common_vendor.computed(() => {
-      const date = currentDate.value;
-      return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-    });
-    const formatTime = common_vendor.computed(() => {
-      const date = currentDate.value;
-      const hours = String(date.getHours()).padStart(2, "0");
-      const minutes = String(date.getMinutes()).padStart(2, "0");
-      const seconds = String(date.getSeconds()).padStart(2, "0");
-      return `${hours}:${minutes}:${seconds}`;
-    });
-    const getWeatherData = async (locationId) => {
+    const zodiacSigns = [
+      "白羊座",
+      "金牛座",
+      "双子座",
+      "巨蟹座",
+      "狮子座",
+      "处女座",
+      "天秤座",
+      "天蝎座",
+      "射手座",
+      "摩羯座",
+      "水瓶座",
+      "双鱼座"
+    ];
+    const zodiacElements = {
+      白羊座: "fire",
+      狮子座: "fire",
+      射手座: "fire",
+      金牛座: "earth",
+      处女座: "earth",
+      摩羯座: "earth",
+      双子座: "air",
+      天秤座: "air",
+      水瓶座: "air",
+      巨蟹座: "water",
+      天蝎座: "water",
+      双鱼座: "water"
+    };
+    const zodiacDateRanges = {
+      白羊座: "3月21日-4月19日",
+      金牛座: "4月20日-5月20日",
+      双子座: "5月21日-6月21日",
+      巨蟹座: "6月22日-7月22日",
+      狮子座: "7月23日-8月22日",
+      处女座: "8月23日-9月22日",
+      天秤座: "9月23日-10月23日",
+      天蝎座: "10月24日-11月22日",
+      射手座: "11月23日-12月21日",
+      摩羯座: "12月22日-1月19日",
+      水瓶座: "1月20日-2月18日",
+      双鱼座: "2月19日-3月20日"
+    };
+    const currentZodiac = common_vendor.ref("天蝎座");
+    const birthDate = common_vendor.ref("2000-01-01");
+    const settingsVisible = common_vendor.ref(false);
+    const loading = common_vendor.ref(false);
+    const fortuneData = common_vendor.ref(null);
+    const getZodiacIconPath = (zodiac) => {
+      return `/static/stars/${zodiac}.svg`;
+    };
+    const getZodiacDateRange = (zodiac) => {
+      return zodiacDateRanges[zodiac] || "";
+    };
+    const getZodiacGradient = (zodiac) => {
+      const element = zodiacElements[zodiac];
+      switch (element) {
+        case "fire":
+          return "linear-gradient(135deg, #ff7700 0%, #ff3300 100%)";
+        case "earth":
+          return "linear-gradient(135deg, #77aa33 0%, #336633 100%)";
+        case "air":
+          return "linear-gradient(135deg, #33ccff 0%, #3366ff 100%)";
+        case "water":
+          return "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)";
+        default:
+          return "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)";
+      }
+    };
+    const getCurrentDateZodiac = () => {
+      const now = /* @__PURE__ */ new Date();
+      const month = now.getMonth() + 1;
+      const day = now.getDate();
+      return getZodiacByDate(month, day);
+    };
+    const getZodiacByDate = (month, day) => {
+      if (month === 1 && day >= 20 || month === 2 && day <= 18) {
+        return "水瓶座";
+      } else if (month === 2 && day >= 19 || month === 3 && day <= 20) {
+        return "双鱼座";
+      } else if (month === 3 && day >= 21 || month === 4 && day <= 19) {
+        return "白羊座";
+      } else if (month === 4 && day >= 20 || month === 5 && day <= 20) {
+        return "金牛座";
+      } else if (month === 5 && day >= 21 || month === 6 && day <= 21) {
+        return "双子座";
+      } else if (month === 6 && day >= 22 || month === 7 && day <= 22) {
+        return "巨蟹座";
+      } else if (month === 7 && day >= 23 || month === 8 && day <= 22) {
+        return "狮子座";
+      } else if (month === 8 && day >= 23 || month === 9 && day <= 22) {
+        return "处女座";
+      } else if (month === 9 && day >= 23 || month === 10 && day <= 23) {
+        return "天秤座";
+      } else if (month === 10 && day >= 24 || month === 11 && day <= 22) {
+        return "天蝎座";
+      } else if (month === 11 && day >= 23 || month === 12 && day <= 21) {
+        return "射手座";
+      } else {
+        return "摩羯座";
+      }
+    };
+    const showSettings = () => {
+      settingsVisible.value = true;
+    };
+    const saveUserSettings = (settings) => {
+      currentZodiac.value = settings.sign;
+      birthDate.value = settings.birthDate;
+      common_vendor.index.setStorageSync("userZodiac", {
+        sign: settings.sign,
+        birthDate: settings.birthDate
+      });
+      fetchZodiacData(settings.sign);
+    };
+    const fetchZodiacData = async (zodiacName = null) => {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+      loading.value = true;
       try {
-        const res = await api_search.getQWeather(locationId);
-        if (res && res.now) {
-          temperature.value = res.now.temp;
-          weatherText.value = res.now.text;
+        const zodiacToFetch = zodiacName || currentZodiac.value;
+        const { result } = await common_vendor.nr.callFunction({
+          name: "getZodiacFortune",
+          data: { zodiac: zodiacToFetch }
+        });
+        if (result.code === 0 && result.data) {
+          const { zodiacInfo, fortune } = result.data;
+          fortuneData.value = {
+            date: fortune.date,
+            summary: ((_a = fortune.overall) == null ? void 0 : _a.description) || "",
+            overall: {
+              level: ((_b = fortune.overall) == null ? void 0 : _b.level) || "一般",
+              rating: Math.round((((_c = fortune.overall) == null ? void 0 : _c.index) || 50) / 20)
+              // 转换为1-5星评级
+            },
+            love: {
+              rating: Math.round((((_d = fortune.love) == null ? void 0 : _d.index) || 50) / 20),
+              description: ((_e = fortune.love) == null ? void 0 : _e.description) || ""
+            },
+            career: {
+              rating: Math.round((((_f = fortune.career) == null ? void 0 : _f.index) || 50) / 20),
+              description: ((_g = fortune.career) == null ? void 0 : _g.description) || ""
+            },
+            wealth: {
+              rating: Math.round((((_h = fortune.wealth) == null ? void 0 : _h.index) || 50) / 20),
+              description: ((_i = fortune.wealth) == null ? void 0 : _i.description) || ""
+            },
+            health: {
+              rating: Math.round((((_j = fortune.health) == null ? void 0 : _j.index) || 50) / 20),
+              description: ((_k = fortune.health) == null ? void 0 : _k.description) || ""
+            },
+            luckyColor: fortune.luckyColor || "",
+            luckyNumber: fortune.luckyNumber || "",
+            luckyZodiac: getRandomZodiac(zodiacToFetch),
+            // 随机选择一个幸运星座
+            goodFor: fortune.goodFor || "",
+            badFor: fortune.badFor || ""
+          };
+          common_vendor.index.__f__("log", "at pages/index/index.vue:414", "获取星座运势成功:", fortuneData.value);
+        } else {
+          common_vendor.index.__f__("error", "at pages/index/index.vue:416", "获取星座运势失败:", result.message);
+          common_vendor.index.showToast({
+            title: "获取星座运势失败: " + result.message,
+            icon: "none"
+          });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:150", "获取天气数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:423", "获取星座运势出错:", error);
         common_vendor.index.showToast({
-          title: "获取天气信息失败",
-          icon: "none",
-          duration: 2e3
+          title: "网络异常，请稍后再试",
+          icon: "none"
         });
+      } finally {
+        loading.value = false;
       }
     };
-    const getLocation = () => {
-      const cachedLocation = common_vendor.index.getStorageSync("locationCache");
-      const cacheTime = common_vendor.index.getStorageSync("locationCache_time");
-      const CACHE_DURATION = 5 * 60 * 1e3;
-      if (cachedLocation && cacheTime && Date.now() - cacheTime < CACHE_DURATION) {
-        city.value = cachedLocation.name;
-        return getWeatherData(cachedLocation.id);
-      }
-      return new Promise((resolve, reject) => {
-        common_vendor.index.getLocation({
-          type: "wgs84",
-          success: async (res) => {
-            try {
-              const cityData = await api_search.getLocationId(res.longitude, res.latitude);
-              if (cityData && cityData.name) {
-                city.value = cityData.name;
-                common_vendor.index.setStorageSync("locationCache", cityData);
-                common_vendor.index.setStorageSync("locationCache_time", Date.now());
-                await getWeatherData(cityData.id);
-                resolve(cityData);
-              } else {
-                throw new Error("获取城市信息失败");
-              }
-            } catch (error) {
-              common_vendor.index.__f__("error", "at pages/index/index.vue:188", "位置信息处理失败:", error);
-              city.value = "未知位置";
-              reject(error);
-            }
-          },
-          fail: (err) => {
-            common_vendor.index.__f__("error", "at pages/index/index.vue:194", "获取位置失败:", err);
-            city.value = "未知位置";
-            reject(err);
-          }
-        });
-      });
-    };
-    const init = async () => {
-      try {
-        await getLocation();
-      } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:207", "初始化位置或天气失败:", error);
-        city.value = "未知位置";
-        temperature.value = "--";
-        weatherText.value = "未知";
-      }
-    };
-    const resetAnimation = () => {
-      hasShown.value = false;
-      showTodoList.value = false;
-      showHeader.value = false;
-      setTimeout(() => {
-        hasShown.value = true;
-        setTimeout(() => {
-          showTodoList.value = true;
-          showHeader.value = true;
-        }, 50);
-      }, 50);
-    };
-    common_vendor.onShow(() => {
-      resetAnimation();
-    });
-    common_vendor.onTabItemTap(() => {
-      resetAnimation();
-    });
-    const showPopup = () => {
-      common_vendor.index.__f__("log", "at pages/index/index.vue:244", "showPopup clicked");
-      popupVisible.value = true;
-    };
-    const hideCustomDialog = () => {
-      popupVisible.value = false;
-    };
-    const toggleWorkDay = (dayIndex) => {
-      const index = selectedWorkDays.value.indexOf(dayIndex);
-      if (index === -1) {
-        selectedWorkDays.value.push(dayIndex);
-      } else {
-        selectedWorkDays.value.splice(index, 1);
-      }
-      selectedWorkDays.value.sort((a, b) => a - b);
-    };
-    const onWorkStartTimeChange = (e) => {
-      customSettings.value.workStartTime = e.detail.value;
-    };
-    const onWorkEndTimeChange = (e) => {
-      customSettings.value.workEndTime = e.detail.value;
-    };
-    const saveCustomSettings = () => {
-      const settings = {
-        workStartTime: customSettings.value.workStartTime,
-        workEndTime: customSettings.value.workEndTime,
-        workDays: selectedWorkDays.value
-      };
-      common_vendor.index.setStorageSync("customSettings", settings);
-      isFirstVisit.value = false;
-      common_vendor.index.showToast({
-        title: "设置已保存",
-        icon: "success"
-      });
-      hideCustomDialog();
-    };
-    const isWorkday = common_vendor.computed(() => {
-      const today = currentTime.value.getDay();
-      return selectedWorkDays.value.includes(today);
-    });
-    const getTodayWorkTime = () => {
-      const today = new Date(currentTime.value);
-      const [startHour, startMinute] = customSettings.value.workStartTime.split(":");
-      const [endHour, endMinute] = customSettings.value.workEndTime.split(":");
-      const workStartTime = new Date(today.setHours(startHour, startMinute, 0));
-      const workEndTime = new Date(today.setHours(endHour, endMinute, 0));
-      return {
-        workStartTime,
-        workEndTime
-      };
-    };
-    const isBeforeWork = common_vendor.computed(() => {
-      const { workStartTime } = getTodayWorkTime();
-      return currentTime.value.getTime() < workStartTime.getTime();
-    });
-    const isAfterWork = common_vendor.computed(() => {
-      const { workEndTime } = getTodayWorkTime();
-      return currentTime.value.getTime() > workEndTime.getTime();
-    });
-    const updateCurrentTime = () => {
-      currentTime.value = /* @__PURE__ */ new Date();
-      if (isUpdating.value) {
-        setTimeout(updateCurrentTime, 1e3);
-      }
-    };
-    const isUpdating = common_vendor.ref(true);
-    const countdownText = common_vendor.computed(() => {
-      if (!isWorkday.value)
-        return "享受假期!";
-      const { workStartTime, workEndTime } = getTodayWorkTime();
-      const now = currentTime.value.getTime();
-      if (isBeforeWork.value) {
-        return "工作未开始";
-      } else if (isAfterWork.value) {
-        return "工作已结束!";
-      } else {
-        return formatCountdown(workEndTime.getTime() - now);
-      }
-    });
-    const formatCountdown = (ms) => {
-      if (ms < 0)
-        return "00:00:00";
-      const hours = Math.floor(ms / 36e5);
-      const minutes = Math.floor(ms % 36e5 / 6e4);
-      const seconds = Math.floor(ms % 6e4 / 1e3);
-      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-        2,
-        "0"
-      )}:${String(seconds).padStart(2, "0")}`;
+    const getRandomZodiac = (currentZodiac2) => {
+      const otherZodiacs = zodiacSigns.filter((z) => z !== currentZodiac2);
+      return otherZodiacs[Math.floor(Math.random() * otherZodiacs.length)];
     };
     common_vendor.onMounted(() => {
-      init();
-      if (isUpdating.value) {
-        updateCurrentTime();
-      }
-      const savedSettings = common_vendor.index.getStorageSync("customSettings");
-      if (savedSettings) {
-        customSettings.value = {
-          workStartTime: savedSettings.workStartTime || "09:00",
-          workEndTime: savedSettings.workEndTime || "18:00"
-        };
-        selectedWorkDays.value = savedSettings.workDays || [1, 2, 3, 4, 5];
-        isFirstVisit.value = false;
+      const savedZodiac = common_vendor.index.getStorageSync("userZodiac");
+      if (savedZodiac && savedZodiac.sign) {
+        currentZodiac.value = savedZodiac.sign;
+        birthDate.value = savedZodiac.birthDate || "2000-01-01";
       } else {
-        popupVisible.value = true;
+        currentZodiac.value = getCurrentDateZodiac();
       }
+      fetchZodiacData(currentZodiac.value);
     });
-    common_vendor.onUnmounted(() => {
-      isUpdating.value = false;
+    common_vendor.onShow(() => {
+      fetchZodiacData(currentZodiac.value);
     });
+    common_vendor.watch(currentZodiac, (newVal) => {
+      fetchZodiacData(newVal);
+    });
+    const getRandomIcon = (type) => {
+      const goodIcons = [
+        "📚",
+        "👥",
+        "📝",
+        "🧘",
+        "🏃",
+        "🛌",
+        "📱",
+        "🎮",
+        "☕",
+        "🎵",
+        "🧠",
+        "✍️"
+      ];
+      const badIcons = [
+        "💳",
+        "💬",
+        "🏃",
+        "🍺",
+        "🎰",
+        "😡",
+        "💤",
+        "🚬",
+        "🍔",
+        "🎭",
+        "📺",
+        "📱"
+      ];
+      const icons = type === "good" ? goodIcons : badIcons;
+      return icons[Math.floor(Math.random() * icons.length)];
+    };
+    const getStarRating = (rating = 0, maxRating = 5) => {
+      const validRating = Math.min(Math.max(Math.round(rating || 0), 0), maxRating);
+      const fullStars = "★".repeat(validRating);
+      const emptyStars = "☆".repeat(maxRating - validRating);
+      return fullStars + emptyStars;
+    };
     return (_ctx, _cache) => {
-      return {
-        a: common_vendor.t(formatDate.value),
-        b: common_vendor.t(formatTime.value),
-        c: common_assets._imports_0,
-        d: common_vendor.t(city.value),
-        e: common_vendor.t(temperature.value),
-        f: common_vendor.t(weatherText.value),
-        g: common_vendor.o(showPopup),
-        h: !hasShown.value ? 1 : "",
-        i: showHeader.value ? 1 : "",
-        j: common_vendor.t(countdownText.value),
-        k: showTodoList.value ? 1 : "",
-        l: !hasShown.value ? 1 : "",
-        m: common_vendor.f(["周日", "周一", "周二", "周三", "周四", "周五", "周六"], (day, index, i0) => {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z;
+      return common_vendor.e({
+        a: common_vendor.o(showSettings),
+        b: loading.value
+      }, loading.value ? {} : {
+        c: common_vendor.t(currentZodiac.value),
+        d: common_vendor.t(getZodiacDateRange(currentZodiac.value)),
+        e: common_vendor.t(getStarRating(((_b = (_a = fortuneData.value) == null ? void 0 : _a.overall) == null ? void 0 : _b.rating) || 4)),
+        f: common_vendor.t(((_c = fortuneData.value) == null ? void 0 : _c.summary) || "今天你的直觉特别敏锐，适合做重要决策。人际关系方面会有意外惊喜，工作上可能遇到挑战但能顺利解决。建议保持积极心态，适当放松心情。"),
+        g: common_vendor.t(((_d = fortuneData.value) == null ? void 0 : _d.luckyNumber) || "7"),
+        h: common_vendor.t(((_e = fortuneData.value) == null ? void 0 : _e.luckyColor) || "深蓝色"),
+        i: common_vendor.t(((_f = fortuneData.value) == null ? void 0 : _f.luckyZodiac) || "水瓶座")
+      }, {
+        j: getZodiacIconPath(currentZodiac.value),
+        k: getZodiacGradient(currentZodiac.value),
+        l: common_vendor.t(getStarRating(((_h = (_g = fortuneData.value) == null ? void 0 : _g.love) == null ? void 0 : _h.rating) || 4)),
+        m: common_vendor.t(((_j = (_i = fortuneData.value) == null ? void 0 : _i.love) == null ? void 0 : _j.description) || "今天是增进感情的好时机，单身者可能会遇到有趣的人，已有伴侣的人可以计划一次约会，加深彼此了解。"),
+        n: common_vendor.t(getStarRating(((_l = (_k = fortuneData.value) == null ? void 0 : _k.career) == null ? void 0 : _l.rating) || 3)),
+        o: common_vendor.t(((_n = (_m = fortuneData.value) == null ? void 0 : _m.career) == null ? void 0 : _n.description) || "工作中可能会面临挑战，但你的解决问题能力很强。建议多与同事沟通，团队合作将帮助你度过难关。"),
+        p: common_vendor.t(getStarRating(((_p = (_o = fortuneData.value) == null ? void 0 : _o.wealth) == null ? void 0 : _p.rating) || 4)),
+        q: common_vendor.t(((_r = (_q = fortuneData.value) == null ? void 0 : _q.wealth) == null ? void 0 : _r.description) || "财运不错，但要避免冲动消费。适合做长期理财计划，投资决策需谨慎，可向专业人士咨询。"),
+        r: common_vendor.t(getStarRating(((_t = (_s = fortuneData.value) == null ? void 0 : _s.health) == null ? void 0 : _t.rating) || 5)),
+        s: common_vendor.t(((_v = (_u = fortuneData.value) == null ? void 0 : _u.health) == null ? void 0 : _v.description) || "身体状况良好，但注意不要过度劳累。建议多喝水，适量运动，保持良好的作息习惯有助于提高免疫力。"),
+        t: (_w = fortuneData.value) == null ? void 0 : _w.goodFor
+      }, ((_x = fortuneData.value) == null ? void 0 : _x.goodFor) ? {
+        v: common_vendor.f(fortuneData.value.goodFor.split(","), (item, index, i0) => {
           return {
-            a: common_vendor.t(day),
-            b: index,
-            c: selectedWorkDays.value.includes(index) ? 1 : "",
-            d: common_vendor.o(($event) => toggleWorkDay(index), index)
+            a: common_vendor.t(item.trim()),
+            b: "good-" + index
           };
         }),
-        n: common_vendor.t(customSettings.value.workStartTime),
-        o: customSettings.value.workStartTime,
-        p: common_vendor.o(onWorkStartTimeChange),
-        q: common_vendor.t(customSettings.value.workEndTime),
-        r: customSettings.value.workEndTime,
-        s: common_vendor.o(onWorkEndTimeChange),
-        t: common_vendor.o(hideCustomDialog),
-        v: common_vendor.o(saveCustomSettings),
-        w: common_vendor.o(($event) => popupVisible.value = $event),
-        x: common_vendor.p({
-          show: popupVisible.value
+        w: common_vendor.t(getRandomIcon("good"))
+      } : {}, {
+        x: (_y = fortuneData.value) == null ? void 0 : _y.badFor
+      }, ((_z = fortuneData.value) == null ? void 0 : _z.badFor) ? {
+        y: common_vendor.f(fortuneData.value.badFor.split(","), (item, index, i0) => {
+          return {
+            a: common_vendor.t(item.trim()),
+            b: "bad-" + index
+          };
+        }),
+        z: common_vendor.t(getRandomIcon("bad"))
+      } : {}, {
+        A: common_vendor.o(saveUserSettings),
+        B: common_vendor.o(($event) => settingsVisible.value = $event),
+        C: common_vendor.p({
+          ["current-zodiac"]: currentZodiac.value,
+          ["birth-date"]: birthDate.value,
+          show: settingsVisible.value
         })
-      };
+      });
     };
   }
 };

@@ -1,630 +1,874 @@
 <template>
   <view class="container">
-    <!-- 顶部信息栏 -->
-    <view
-      class="header"
-      @tap="showPopup"
-      :class="{ init: !hasShown, show: showHeader }"
-    >
-      <view class="date-time">
-        <text class="date">{{ formatDate }}</text>
-        <text class="time">{{ formatTime }}</text>
+    <!-- 导航栏 -->
+    <view class="nav-bar">
+      <view class="title-section">
+        <text class="icon-star">★</text>
+        <text class="title">星座运势</text>
       </view>
-      <view class="weather">
-        <image src="/static/home/定位.svg" class="location-icon"></image>
-        <text>{{ city }}</text>
-        <text>{{ temperature }}°C {{ weatherText }}</text>
+      <view class="action-section">
+        <text class="icon-settings" @tap="showSettings">⚙️</text>
       </view>
-    </view>
-    <!-- 中间状态显示 -->
-    <view class="status-container">
-      <!-- <text class="status-text">距离下班还有</text> -->
-      <text class="status-result">{{ countdownText }}</text>
-    </view>
-    <!-- 待办事项 -->
-    <view
-      class="todo-list-container"
-      :class="{ show: showTodoList, init: !hasShown }"
-    >
-      <TodoList />
     </view>
 
-    <!-- 添加弹窗组件 -->
-    <my-popup v-model:show="popupVisible">
-      <view class="custom-dialog">
-        <view class="dialog-header">
-          <text class="dialog-title">自定义设置</text>
+    <!-- 主内容区 -->
+    <scroll-view scroll-y class="content-area">
+      <!-- 当前星座运势卡片 -->
+      <view
+        class="zodiac-card"
+        :style="{ background: getZodiacGradient(currentZodiac) }"
+      >
+        <view v-if="loading" class="loading-container">
+          <view class="loading-icon"></view>
+          <text class="loading-text">加载中...</text>
         </view>
-        <view class="dialog-content">
-          <view class="input-group">
-            <text class="label">工作日</text>
-            <view class="weekday-selector">
-              <view
-                v-for="(day, index) in [
-                  '周日',
-                  '周一',
-                  '周二',
-                  '周三',
-                  '周四',
-                  '周五',
-                  '周六',
-                ]"
-                :key="index"
-                class="weekday-item"
-                :class="{ active: selectedWorkDays.includes(index) }"
-                @tap="toggleWorkDay(index)"
-              >
-                {{ day }}
-              </view>
+
+        <view v-else class="zodiac-header">
+          <view class="zodiac-name-date">
+            <text class="zodiac-name">{{ currentZodiac }}</text>
+            <text class="zodiac-date">{{
+              getZodiacDateRange(currentZodiac)
+            }}</text>
+          </view>
+          <view class="zodiac-fortune">
+            <text class="fortune-label">今日综合运势</text>
+            <view class="star-rating">
+              {{ getStarRating(fortuneData?.overall?.rating || 4) }}
             </view>
           </view>
-          <view class="input-group">
-            <text class="label">上班时间</text>
-            <picker
-              mode="time"
-              :value="customSettings.workStartTime"
-              @change="onWorkStartTimeChange"
-              class="input"
+          <text class="zodiac-description">
+            {{
+              fortuneData?.summary ||
+              "今天你的直觉特别敏锐，适合做重要决策。人际关系方面会有意外惊喜，工作上可能遇到挑战但能顺利解决。建议保持积极心态，适当放松心情。"
+            }}
+          </text>
+          <view class="tag-container">
+            <text class="tag"
+              >🔢 幸运数字：{{ fortuneData?.luckyNumber || "7" }}</text
             >
-              <view class="picker-value">{{
-                customSettings.workStartTime
-              }}</view>
-            </picker>
-          </view>
-          <view class="input-group">
-            <text class="label">下班时间</text>
-            <picker
-              mode="time"
-              :value="customSettings.workEndTime"
-              @change="onWorkEndTimeChange"
-              class="input"
+            <text class="tag"
+              >🎨 幸运色：{{ fortuneData?.luckyColor || "深蓝色" }}</text
             >
-              <view class="picker-value">{{ customSettings.workEndTime }}</view>
-            </picker>
+            <text class="tag"
+              >👥 今日贵人：{{ fortuneData?.luckyZodiac || "水瓶座" }}</text
+            >
           </view>
         </view>
-        <view class="dialog-footer">
-          <button class="btn cancel" @tap="hideCustomDialog">取消</button>
-          <button class="btn confirm" @tap="saveCustomSettings">确定</button>
+        <!-- 星座图标 -->
+        <view class="zodiac-image-section">
+          <view class="zodiac-image-container">
+            <image
+              :src="getZodiacIconPath(currentZodiac)"
+              class="zodiac-image"
+              mode="aspectFit"
+            ></image>
+          </view>
         </view>
       </view>
-    </my-popup>
+
+      <!-- 详细运势 -->
+      <view class="fortune-detail-section">
+        <text class="section-title">详细运势</text>
+        <view class="fortune-cards">
+          <!-- 爱情运势 -->
+          <view class="fortune-card">
+            <view class="card-header">
+              <text class="card-icon love-icon">♥</text>
+              <text class="card-title">爱情运势</text>
+            </view>
+            <view class="star-rating small">
+              {{ getStarRating(fortuneData?.love?.rating || 4) }}
+            </view>
+            <text class="card-description">
+              {{
+                fortuneData?.love?.description ||
+                "今天是增进感情的好时机，单身者可能会遇到有趣的人，已有伴侣的人可以计划一次约会，加深彼此了解。"
+              }}
+            </text>
+          </view>
+
+          <!-- 事业运势 -->
+          <view class="fortune-card">
+            <view class="card-header">
+              <text class="card-icon career-icon">💼</text>
+              <text class="card-title">事业运势</text>
+            </view>
+            <view class="star-rating small">
+              {{ getStarRating(fortuneData?.career?.rating || 3) }}
+            </view>
+            <text class="card-description">
+              {{
+                fortuneData?.career?.description ||
+                "工作中可能会面临挑战，但你的解决问题能力很强。建议多与同事沟通，团队合作将帮助你度过难关。"
+              }}
+            </text>
+          </view>
+
+          <!-- 财运分析 -->
+          <view class="fortune-card">
+            <view class="card-header">
+              <text class="card-icon wealth-icon">💰</text>
+              <text class="card-title">财运分析</text>
+            </view>
+            <view class="star-rating small">
+              {{ getStarRating(fortuneData?.wealth?.rating || 4) }}
+            </view>
+            <text class="card-description">
+              {{
+                fortuneData?.wealth?.description ||
+                "财运不错，但要避免冲动消费。适合做长期理财计划，投资决策需谨慎，可向专业人士咨询。"
+              }}
+            </text>
+          </view>
+
+          <!-- 健康运势 -->
+          <view class="fortune-card">
+            <view class="card-header">
+              <text class="card-icon health-icon">❤️</text>
+              <text class="card-title">健康运势</text>
+            </view>
+            <view class="star-rating small">
+              {{ getStarRating(fortuneData?.health?.rating || 5) }}
+            </view>
+            <text class="card-description">
+              {{
+                fortuneData?.health?.description ||
+                "身体状况良好，但注意不要过度劳累。建议多喝水，适量运动，保持良好的作息习惯有助于提高免疫力。"
+              }}
+            </text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 今日提示 -->
+      <view class="daily-tips-section">
+        <text class="section-title">今日提示</text>
+        <view class="tips-container">
+          <view class="tips-group">
+            <view class="tips-header">
+              <text class="tips-icon good">✓</text>
+              <text class="tips-title">今日宜</text>
+            </view>
+            <view class="tips-list">
+              <template v-if="fortuneData?.goodFor">
+                <view
+                  class="tip-item"
+                  v-for="(item, index) in fortuneData.goodFor.split(',')"
+                  :key="'good-' + index"
+                >
+                  <text class="tip-icon">{{ getRandomIcon("good") }}</text>
+                  <text class="tip-text">{{ item.trim() }}</text>
+                </view>
+              </template>
+              <template v-else>
+                <view class="tip-item">
+                  <text class="tip-icon">📚</text>
+                  <text class="tip-text">学习新知识</text>
+                </view>
+                <view class="tip-item">
+                  <text class="tip-icon">👥</text>
+                  <text class="tip-text">社交活动</text>
+                </view>
+                <view class="tip-item">
+                  <text class="tip-icon">📝</text>
+                  <text class="tip-text">制定计划</text>
+                </view>
+              </template>
+            </view>
+          </view>
+          <view class="tips-group">
+            <view class="tips-header">
+              <text class="tips-icon bad">✗</text>
+              <text class="tips-title">今日忌</text>
+            </view>
+            <view class="tips-list">
+              <template v-if="fortuneData?.badFor">
+                <view
+                  class="tip-item"
+                  v-for="(item, index) in fortuneData.badFor.split(',')"
+                  :key="'bad-' + index"
+                >
+                  <text class="tip-icon">{{ getRandomIcon("bad") }}</text>
+                  <text class="tip-text">{{ item.trim() }}</text>
+                </view>
+              </template>
+              <template v-else>
+                <view class="tip-item">
+                  <text class="tip-icon">💳</text>
+                  <text class="tip-text">冲动消费</text>
+                </view>
+                <view class="tip-item">
+                  <text class="tip-icon">💬</text>
+                  <text class="tip-text">言语冲突</text>
+                </view>
+                <view class="tip-item">
+                  <text class="tip-icon">🏃</text>
+                  <text class="tip-text">过度劳累</text>
+                </view>
+              </template>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 使用星座设置组件 -->
+    <zodiac-settings
+      v-model:show="settingsVisible"
+      :current-zodiac="currentZodiac"
+      :birth-date="birthDate"
+      @save="saveUserSettings"
+    />
   </view>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { onShow, onTabItemTap } from "@dcloudio/uni-app";
-import { getQWeather, getLocationId } from "@/api/search.js";
-import TodoList from "@/components/home/TodoList.vue";
-import MyPopup from "@/components/my-popup/my-popup.vue";
+import { ref, onMounted, watch } from "vue";
+import { onShow } from "@dcloudio/uni-app";
+import ZodiacSettings from "../../components/zodiac-settings/zodiac-settings.vue";
 
-const currentDate = ref(new Date());
-const temperature = ref("--");
-const weatherText = ref("未知");
-const city = ref("定位中...");
-const showTodoList = ref(false);
-const hasShown = ref(false);
-const popupVisible = ref(false);
-const isFirstVisit = ref(true); // 添加标记是否首次访问
+// 星座相关数据
+const zodiacSigns = [
+  "白羊座",
+  "金牛座",
+  "双子座",
+  "巨蟹座",
+  "狮子座",
+  "处女座",
+  "天秤座",
+  "天蝎座",
+  "射手座",
+  "摩羯座",
+  "水瓶座",
+  "双鱼座",
+];
 
-// 添加新的响应式变量
-const customSettings = ref({
-  workStartTime: "09:00",
-  workEndTime: "18:00",
-});
+// 星座元素映射
+const zodiacElements = {
+  白羊座: "fire",
+  狮子座: "fire",
+  射手座: "fire",
+  金牛座: "earth",
+  处女座: "earth",
+  摩羯座: "earth",
+  双子座: "air",
+  天秤座: "air",
+  水瓶座: "air",
+  巨蟹座: "water",
+  天蝎座: "water",
+  双鱼座: "water",
+};
 
-const selectedWorkDays = ref([1, 2, 3, 4, 5]); // 默认周一到周五
+// 星座日期范围映射
+const zodiacDateRanges = {
+  白羊座: "3月21日-4月19日",
+  金牛座: "4月20日-5月20日",
+  双子座: "5月21日-6月21日",
+  巨蟹座: "6月22日-7月22日",
+  狮子座: "7月23日-8月22日",
+  处女座: "8月23日-9月22日",
+  天秤座: "9月23日-10月23日",
+  天蝎座: "10月24日-11月22日",
+  射手座: "11月23日-12月21日",
+  摩羯座: "12月22日-1月19日",
+  水瓶座: "1月20日-2月18日",
+  双鱼座: "2月19日-3月20日",
+};
 
-// 添加计算属性和响应式变量
-const currentTime = ref(new Date());
-const countdownTimer = ref(null);
+// 状态变量
+const currentZodiac = ref("天蝎座");
+const birthDate = ref("2000-01-01");
+const settingsVisible = ref(false);
+const loading = ref(false);
+const fortuneData = ref(null); // 星座运势数据
 
-// 添加 header 动画控制变量
-const showHeader = ref(false);
+// 获取星座图标路径
+const getZodiacIconPath = (zodiac) => {
+  return `/static/stars/${zodiac}.svg`;
+};
 
-// 格式化日期
-const formatDate = computed(() => {
-  const date = currentDate.value;
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-});
+// 获取星座日期范围
+const getZodiacDateRange = (zodiac) => {
+  return zodiacDateRanges[zodiac] || "";
+};
 
-// 格式化时间
-const formatTime = computed(() => {
-  const date = currentDate.value;
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-  return `${hours}:${minutes}:${seconds}`;
-});
+// 根据星座元素获取渐变色
+const getZodiacGradient = (zodiac) => {
+  const element = zodiacElements[zodiac];
+  switch (element) {
+    case "fire":
+      return "linear-gradient(135deg, #ff7700 0%, #ff3300 100%)";
+    case "earth":
+      return "linear-gradient(135deg, #77aa33 0%, #336633 100%)";
+    case "air":
+      return "linear-gradient(135deg, #33ccff 0%, #3366ff 100%)";
+    case "water":
+      return "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)"; // 默认紫色渐变
+    default:
+      return "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)";
+  }
+};
 
-// 获取天气数据
-const getWeatherData = async (locationId) => {
+// 根据当前日期获取对应的星座
+const getCurrentDateZodiac = () => {
+  const now = new Date();
+  const month = now.getMonth() + 1; // 月份从0开始，需要+1
+  const day = now.getDate();
+
+  return getZodiacByDate(month, day);
+};
+
+// 根据日期计算星座
+const getZodiacByDate = (month, day) => {
+  if ((month === 1 && day >= 20) || (month === 2 && day <= 18)) {
+    return "水瓶座";
+  } else if ((month === 2 && day >= 19) || (month === 3 && day <= 20)) {
+    return "双鱼座";
+  } else if ((month === 3 && day >= 21) || (month === 4 && day <= 19)) {
+    return "白羊座";
+  } else if ((month === 4 && day >= 20) || (month === 5 && day <= 20)) {
+    return "金牛座";
+  } else if ((month === 5 && day >= 21) || (month === 6 && day <= 21)) {
+    return "双子座";
+  } else if ((month === 6 && day >= 22) || (month === 7 && day <= 22)) {
+    return "巨蟹座";
+  } else if ((month === 7 && day >= 23) || (month === 8 && day <= 22)) {
+    return "狮子座";
+  } else if ((month === 8 && day >= 23) || (month === 9 && day <= 22)) {
+    return "处女座";
+  } else if ((month === 9 && day >= 23) || (month === 10 && day <= 23)) {
+    return "天秤座";
+  } else if ((month === 10 && day >= 24) || (month === 11 && day <= 22)) {
+    return "天蝎座";
+  } else if ((month === 11 && day >= 23) || (month === 12 && day <= 21)) {
+    return "射手座";
+  } else {
+    return "摩羯座";
+  }
+};
+
+// 设置相关
+const showSettings = () => {
+  settingsVisible.value = true;
+};
+
+// 保存用户设置
+const saveUserSettings = (settings) => {
+  currentZodiac.value = settings.sign;
+  birthDate.value = settings.birthDate;
+
+  uni.setStorageSync("userZodiac", {
+    sign: settings.sign,
+    birthDate: settings.birthDate,
+  });
+
+  fetchZodiacData(settings.sign);
+};
+
+// 从云函数获取星座运势数据
+const fetchZodiacData = async (zodiacName = null) => {
+  loading.value = true;
   try {
-    const res = await getQWeather(locationId);
-    if (res && res.now) {
-      temperature.value = res.now.temp;
-      weatherText.value = res.now.text;
+    const zodiacToFetch = zodiacName || currentZodiac.value;
+
+    const { result } = await uniCloud.callFunction({
+      name: "getZodiacFortune",
+      data: { zodiac: zodiacToFetch },
+    });
+
+    if (result.code === 0 && result.data) {
+      // 适配新的数据结构
+      const { zodiacInfo, fortune } = result.data;
+
+      // 将数据映射到页面所需格式
+      fortuneData.value = {
+        date: fortune.date,
+        summary: fortune.overall?.description || "",
+        overall: {
+          level: fortune.overall?.level || "一般",
+          rating: Math.round((fortune.overall?.index || 50) / 20), // 转换为1-5星评级
+        },
+        love: {
+          rating: Math.round((fortune.love?.index || 50) / 20),
+          description: fortune.love?.description || "",
+        },
+        career: {
+          rating: Math.round((fortune.career?.index || 50) / 20),
+          description: fortune.career?.description || "",
+        },
+        wealth: {
+          rating: Math.round((fortune.wealth?.index || 50) / 20),
+          description: fortune.wealth?.description || "",
+        },
+        health: {
+          rating: Math.round((fortune.health?.index || 50) / 20),
+          description: fortune.health?.description || "",
+        },
+        luckyColor: fortune.luckyColor || "",
+        luckyNumber: fortune.luckyNumber || "",
+        luckyZodiac: getRandomZodiac(zodiacToFetch), // 随机选择一个幸运星座
+        goodFor: fortune.goodFor || "",
+        badFor: fortune.badFor || "",
+      };
+
+      console.log("获取星座运势成功:", fortuneData.value);
+    } else {
+      console.error("获取星座运势失败:", result.message);
+      uni.showToast({
+        title: "获取星座运势失败: " + result.message,
+        icon: "none",
+      });
     }
   } catch (error) {
-    console.error("获取天气数据失败:", error);
+    console.error("获取星座运势出错:", error);
     uni.showToast({
-      title: "获取天气信息失败",
+      title: "网络异常，请稍后再试",
       icon: "none",
-      duration: 2000,
     });
+  } finally {
+    loading.value = false;
   }
 };
 
-// 获取位置信息
-const getLocation = () => {
-  // 先检查缓存
-  const cachedLocation = uni.getStorageSync("locationCache");
-  const cacheTime = uni.getStorageSync("locationCache_time");
-  const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
-
-  if (cachedLocation && cacheTime && Date.now() - cacheTime < CACHE_DURATION) {
-    city.value = cachedLocation.name;
-    return getWeatherData(cachedLocation.id);
-  }
-
-  return new Promise((resolve, reject) => {
-    uni.getLocation({
-      type: "wgs84",
-      success: async (res) => {
-        try {
-          const cityData = await getLocationId(res.longitude, res.latitude);
-          if (cityData && cityData.name) {
-            city.value = cityData.name;
-            // 保存到缓存
-            uni.setStorageSync("locationCache", cityData);
-            uni.setStorageSync("locationCache_time", Date.now());
-            await getWeatherData(cityData.id);
-            resolve(cityData);
-          } else {
-            throw new Error("获取城市信息失败");
-          }
-        } catch (error) {
-          console.error("位置信息处理失败:", error);
-          city.value = "未知位置";
-          reject(error);
-        }
-      },
-      fail: (err) => {
-        console.error("获取位置失败:", err);
-        city.value = "未知位置";
-        reject(err);
-      },
-    });
-  });
+// 获取随机的幸运星座（除了自己）
+const getRandomZodiac = (currentZodiac) => {
+  // 排除当前星座
+  const otherZodiacs = zodiacSigns.filter((z) => z !== currentZodiac);
+  // 随机选择一个
+  return otherZodiacs[Math.floor(Math.random() * otherZodiacs.length)];
 };
 
-// 初始化函数
-const init = async () => {
-  try {
-    await getLocation();
-  } catch (error) {
-    console.error("初始化位置或天气失败:", error);
-    // 设置默认值
-    city.value = "未知位置";
-    temperature.value = "--";
-    weatherText.value = "未知";
-  }
-};
-
-// 修改重置动画的函数
-const resetAnimation = () => {
-  // 完全重置状态
-  hasShown.value = false;
-  showTodoList.value = false;
-  showHeader.value = false;
-
-  // 使用两个 setTimeout 来确保动画重置和触发
-  setTimeout(() => {
-    hasShown.value = true;
-    setTimeout(() => {
-      showTodoList.value = true;
-      showHeader.value = true;
-    }, 50);
-  }, 50);
-};
-
-// 当页面显示时
-onShow(() => {
-  resetAnimation();
-});
-
-// 当点击 tabbar 时
-onTabItemTap(() => {
-  resetAnimation();
-});
-
-// 修改 showPopup 方法
-const showPopup = () => {
-  console.log("showPopup clicked"); // 添加调试日志
-  popupVisible.value = true;
-};
-
-// 添加新的方法
-const hideCustomDialog = () => {
-  popupVisible.value = false;
-};
-
-const toggleWorkDay = (dayIndex) => {
-  const index = selectedWorkDays.value.indexOf(dayIndex);
-  if (index === -1) {
-    selectedWorkDays.value.push(dayIndex);
-  } else {
-    selectedWorkDays.value.splice(index, 1);
-  }
-  selectedWorkDays.value.sort((a, b) => a - b);
-};
-
-const onWorkStartTimeChange = (e) => {
-  customSettings.value.workStartTime = e.detail.value;
-};
-
-const onWorkEndTimeChange = (e) => {
-  customSettings.value.workEndTime = e.detail.value;
-};
-
-const saveCustomSettings = () => {
-  const settings = {
-    workStartTime: customSettings.value.workStartTime,
-    workEndTime: customSettings.value.workEndTime,
-    workDays: selectedWorkDays.value,
-  };
-
-  uni.setStorageSync("customSettings", settings);
-  isFirstVisit.value = false; // 保存设置后更新首次访问状态
-
-  uni.showToast({
-    title: "设置已保存",
-    icon: "success",
-  });
-
-  hideCustomDialog();
-};
-
-// 计算是否是工作日
-const isWorkday = computed(() => {
-  const today = currentTime.value.getDay();
-  return selectedWorkDays.value.includes(today);
-});
-
-// 获取今天的上下班时间
-const getTodayWorkTime = () => {
-  const today = new Date(currentTime.value);
-  const [startHour, startMinute] =
-    customSettings.value.workStartTime.split(":");
-  const [endHour, endMinute] = customSettings.value.workEndTime.split(":");
-
-  const workStartTime = new Date(today.setHours(startHour, startMinute, 0));
-  const workEndTime = new Date(today.setHours(endHour, endMinute, 0));
-
-  return {
-    workStartTime,
-    workEndTime,
-  };
-};
-
-// 计算是否在上班前
-const isBeforeWork = computed(() => {
-  const { workStartTime } = getTodayWorkTime();
-  return currentTime.value.getTime() < workStartTime.getTime();
-});
-
-// 计算是否在下班后
-const isAfterWork = computed(() => {
-  const { workEndTime } = getTodayWorkTime();
-  return currentTime.value.getTime() > workEndTime.getTime();
-});
-
-// 修改更新频率为秒级
-const updateCurrentTime = () => {
-  currentTime.value = new Date();
-  // 使用 setTimeout 实现秒级更新
-  if (isUpdating.value) {
-    setTimeout(updateCurrentTime, 1000);
-  }
-};
-
-// 添加控制变量
-const isUpdating = ref(true);
-
-// 倒计时文本
-const countdownText = computed(() => {
-  if (!isWorkday.value) return "享受假期!";
-
-  const { workStartTime, workEndTime } = getTodayWorkTime();
-  const now = currentTime.value.getTime();
-
-  if (isBeforeWork.value) {
-    return "工作未开始";
-  } else if (isAfterWork.value) {
-    return "工作已结束!";
-  } else {
-    return formatCountdown(workEndTime.getTime() - now);
-  }
-});
-
-// 修改格式化倒计时函数，移除毫秒显示
-const formatCountdown = (ms) => {
-  if (ms < 0) return "00:00:00";
-
-  const hours = Math.floor(ms / 3600000);
-  const minutes = Math.floor((ms % 3600000) / 60000);
-  const seconds = Math.floor((ms % 60000) / 1000);
-
-  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
-    2,
-    "0"
-  )}:${String(seconds).padStart(2, "0")}`;
-};
-
+// 初始化加载
 onMounted(() => {
-  init();
-  // 启动时间更新
-  if (isUpdating.value) {
-    updateCurrentTime();
-  }
+  // 加载保存的星座设置
+  const savedZodiac = uni.getStorageSync("userZodiac");
 
-  // 加载保存的设置
-  const savedSettings = uni.getStorageSync("customSettings");
-  if (savedSettings) {
-    customSettings.value = {
-      workStartTime: savedSettings.workStartTime || "09:00",
-      workEndTime: savedSettings.workEndTime || "18:00",
-    };
-    selectedWorkDays.value = savedSettings.workDays || [1, 2, 3, 4, 5];
-    isFirstVisit.value = false; // 有缓存，不是首次访问
+  if (savedZodiac && savedZodiac.sign) {
+    currentZodiac.value = savedZodiac.sign;
+    birthDate.value = savedZodiac.birthDate || "2000-01-01";
   } else {
-    // 首次访问，显示弹窗
-    popupVisible.value = true;
+    // 如果用户没有设置星座，使用当前日期的星座
+    currentZodiac.value = getCurrentDateZodiac();
   }
+
+  // 获取星座运势数据
+  fetchZodiacData(currentZodiac.value);
 });
 
-// 修改 onUnmounted
-onUnmounted(() => {
-  // 停止更新
-  isUpdating.value = false;
+// 页面显示时刷新数据
+onShow(() => {
+  fetchZodiacData(currentZodiac.value);
 });
+
+// 当星座变化时，刷新数据
+watch(currentZodiac, (newVal) => {
+  fetchZodiacData(newVal);
+});
+
+// 获取随机图标
+const getRandomIcon = (type) => {
+  const goodIcons = [
+    "📚",
+    "👥",
+    "📝",
+    "🧘",
+    "🏃",
+    "🛌",
+    "📱",
+    "🎮",
+    "☕",
+    "🎵",
+    "🧠",
+    "✍️",
+  ];
+  const badIcons = [
+    "💳",
+    "💬",
+    "🏃",
+    "🍺",
+    "🎰",
+    "😡",
+    "💤",
+    "🚬",
+    "🍔",
+    "🎭",
+    "📺",
+    "📱",
+  ];
+
+  const icons = type === "good" ? goodIcons : badIcons;
+  return icons[Math.floor(Math.random() * icons.length)];
+};
+
+// 添加一个生成星级评分的方法
+const getStarRating = (rating = 0, maxRating = 5) => {
+  const validRating = Math.min(Math.max(Math.round(rating || 0), 0), maxRating);
+  const fullStars = "★".repeat(validRating);
+  const emptyStars = "☆".repeat(maxRating - validRating);
+  return fullStars + emptyStars;
+};
 </script>
 
 <style lang="scss">
 .container {
-  padding: 20px;
-  background-color: $theme-color;
-  min-height: 100vh;
-  height: 100vh;
-  color: $text-color;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-.header {
+.nav-bar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding: 20px;
-  box-sizing: border-box;
-  transform: translateX(-100%); // 初始位置在屏幕左侧
-  transition: transform 0.3s ease-out;
-  background-color: $theme-color;
-  border-radius: 32rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  margin: 20rpx;
-
-  &.init {
-    transition: none; // 初始状态不需要过渡动画
-  }
-
-  &.show {
-    transform: translateX(0); // 滑动到原位
-  }
-}
-
-.date-time {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.date,
-.time {
-  font-size: 16px;
-  color: $brand-color;
-}
-
-.weather {
-  font-size: 16px;
-  display: flex;
   align-items: center;
-  color: $brand-color;
-  gap: 4rpx;
+  padding: 20rpx 30rpx;
+  background-color: #fff;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
 
-  .location-icon {
-    width: 36rpx;
-    height: 36rpx;
-    display: inline-block;
-    fill: $brand-color;
-    transition: fill 0.3s ease;
+  .title-section {
+    display: flex;
+    align-items: center;
 
-    &:hover {
-      fill: darken($brand-color, 10%);
+    .icon-star {
+      color: #6366f1;
+      font-size: 40rpx;
+      margin-right: 10rpx;
+    }
+
+    .title {
+      font-size: 36rpx;
+      font-weight: bold;
+      color: #6366f1;
     }
   }
 
-  text {
-    line-height: 36rpx;
+  .action-section {
+    display: flex;
+    gap: 30rpx;
+
+    .icon-user,
+    .icon-settings {
+      font-size: 40rpx;
+      color: #666;
+    }
   }
 }
 
-.status-container {
-  text-align: center;
-  margin: 30rpx 0;
-
-  .status-text {
-    font-size: 32rpx;
-    color: $text-color-secondary;
-    margin-bottom: 20rpx;
-  }
-
-  .status-result {
-    font-size: 48rpx;
-    font-weight: bold;
-    color: $brand-color;
-    font-family: "Courier New", Courier, monospace;
-    letter-spacing: 1px;
-  }
+.content-area {
+  flex: 1;
+  padding: 30rpx 40rpx;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-.todo-list-container {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 70vh;
-  transform: translateY(100%);
-  transition: transform 0.3s ease-out;
-  background-color: $theme-color;
-  border-radius: 32rpx 32rpx 0 0;
-  padding: 20px;
-  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.1);
-
-  &.init {
-    transition: none; // 初始状态不需要过渡动画
-  }
-
-  &.show {
-    transform: translateY(10%);
-  }
-}
-
-.custom-dialog {
-  background: #fff;
-  width: 600rpx;
+.zodiac-card {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   border-radius: 24rpx;
   overflow: hidden;
+  margin: 0 4rpx 40rpx 4rpx;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+  width: calc(100% - 8rpx);
+  box-sizing: border-box;
 
-  .dialog-header {
+  .zodiac-header {
     padding: 30rpx;
-    text-align: center;
-    border-bottom: 1rpx solid #eee;
 
-    .dialog-title {
-      font-size: 32rpx;
-      font-weight: 600;
+    .zodiac-name-date {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20rpx;
+
+      .zodiac-name {
+        font-size: 40rpx;
+        font-weight: bold;
+        margin-right: 20rpx;
+      }
+
+      .zodiac-date {
+        font-size: 24rpx;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 4rpx 16rpx;
+        border-radius: 100rpx;
+      }
+    }
+
+    .zodiac-fortune {
+      margin-bottom: 20rpx;
+
+      .fortune-label {
+        font-size: 28rpx;
+        display: block;
+        margin-bottom: 8rpx;
+      }
+    }
+
+    .zodiac-description {
+      font-size: 28rpx;
+      line-height: 1.6;
+      margin-bottom: 20rpx;
+    }
+
+    .tag-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16rpx;
+      margin-top: 20rpx;
+
+      .tag {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8rpx 20rpx;
+        border-radius: 100rpx;
+        font-size: 24rpx;
+      }
+    }
+  }
+
+  .zodiac-image-section {
+    width: 100%;
+    height: 300rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20rpx;
+    margin-bottom: 30rpx;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.1);
+
+    &::before {
+      content: "";
+      position: absolute;
+      width: 170rpx;
+      height: 170rpx;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.15);
+      border: 4rpx solid rgba(255, 255, 255, 0.3);
+      z-index: 0;
+    }
+
+    .zodiac-image {
+      position: relative;
+      z-index: 1;
+      width: 100rpx;
+      height: 100rpx;
+      filter: brightness(0) invert(1); // 使SVG图标变为白色
+      opacity: 0.9;
+    }
+  }
+}
+
+.star-rating {
+  color: #f59e0b;
+  font-size: 36rpx;
+  line-height: 1;
+
+  &.small {
+    font-size: 30rpx;
+  }
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.fortune-detail-section {
+  margin-bottom: 40rpx;
+}
+
+.fortune-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.fortune-card {
+  background-color: #fff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin: 0 4rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+  width: calc(100% - 8rpx);
+  box-sizing: border-box;
+
+  &:active {
+    transform: translateY(-5rpx);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12rpx;
+
+    .card-icon {
+      width: 50rpx;
+      height: 50rpx;
+      border-radius: 50%;
+      font-size: 28rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12rpx;
+
+      &.love-icon {
+        background-color: #fee2e2;
+        color: #ef4444;
+      }
+
+      &.career-icon {
+        background-color: #dbeafe;
+        color: #3b82f6;
+      }
+
+      &.wealth-icon {
+        background-color: #fef3c7;
+        color: #f59e0b;
+      }
+
+      &.health-icon {
+        background-color: #dcfce7;
+        color: #22c55e;
+      }
+    }
+
+    .card-title {
+      font-size: 28rpx;
+      font-weight: bold;
       color: #333;
     }
   }
 
-  .dialog-content {
-    padding: 30rpx;
+  .card-description {
+    font-size: 26rpx;
+    color: #666;
+    line-height: 1.6;
+    margin-top: 12rpx;
+    padding-right: 10rpx;
+  }
+}
 
-    .input-group {
-      margin-bottom: 20rpx;
+.daily-tips-section {
+  margin-bottom: 40rpx;
+}
 
-      .label {
-        font-size: 28rpx;
-        color: #666;
-        margin-bottom: 10rpx;
-        display: block;
-      }
+.tips-container {
+  background-color: #fff;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  margin: 0 4rpx;
+  width: calc(100% - 8rpx);
+  box-sizing: border-box;
+}
 
-      .input {
-        width: 100%;
-        height: 80rpx;
-        border: 1rpx solid #eee;
-        border-radius: 12rpx;
-        padding: 0 20rpx;
-        font-size: 28rpx;
-      }
-    }
+.tips-group {
+  padding: 24rpx;
+
+  &:not(:last-child) {
+    border-bottom: 2rpx solid #f5f5f5;
   }
 
-  .dialog-footer {
+  .tips-header {
     display: flex;
-    border-top: 1rpx solid #eee;
+    align-items: center;
+    margin-bottom: 20rpx;
 
-    .btn {
-      flex: 1;
-      height: 90rpx;
-      line-height: 90rpx;
-      text-align: center;
-      font-size: 32rpx;
-      border: none;
-      background: none;
+    .tips-icon {
+      width: 40rpx;
+      height: 40rpx;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12rpx;
+      font-size: 24rpx;
 
-      &.cancel {
-        color: #666;
-        border-right: 1rpx solid #eee;
+      &.good {
+        background-color: #dcfce7;
+        color: #22c55e;
       }
 
-      &.confirm {
-        color: #007aff;
+      &.bad {
+        background-color: #fee2e2;
+        color: #ef4444;
       }
+    }
 
-      &:active {
-        background-color: #f5f5f5;
-      }
+    .tips-title {
+      font-size: 28rpx;
+      font-weight: bold;
+      color: #333;
     }
   }
 }
 
-.weekday-selector {
+.tips-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+}
+
+.tip-item {
   display: flex;
-  gap: 10rpx;
-  margin-top: 10rpx;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+
+  .tip-icon {
+    width: 60rpx;
+    height: 60rpx;
+    border-radius: 50%;
+    background-color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32rpx;
+  }
+
+  .tip-text {
+    font-size: 24rpx;
+    color: #666;
+    text-align: center;
+  }
 }
 
-.weekday-item {
-  flex: 1;
-  height: 60rpx;
-  line-height: 60rpx;
-  text-align: center;
-  border-radius: 8rpx;
-  font-size: 24rpx;
-  background-color: #f5f5f5;
-  color: #666;
-  transition: all 0.3s ease;
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50rpx 0;
 
-  &.active {
-    background-color: #007aff;
+  .loading-icon {
+    width: 60rpx;
+    height: 60rpx;
+    border: 6rpx solid rgba(255, 255, 255, 0.3);
+    border-top: 6rpx solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  .loading-text {
     color: #fff;
+    margin-top: 20rpx;
+    font-size: 28rpx;
   }
 }
 
-.picker-value {
-  height: 80rpx;
-  line-height: 80rpx;
-  padding: 0 20rpx;
-}
-
-.input,
-picker {
-  width: 100%;
-  height: 80rpx;
-  border: 1rpx solid #eee;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-}
-
-// 添加数字跳动动画
-@keyframes numberPulse {
+@keyframes spin {
   0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
+    transform: rotate(0deg);
   }
   100% {
-    transform: scale(1);
+    transform: rotate(360deg);
   }
-}
-
-.number-animate {
-  animation: numberPulse 0.5s ease-in-out;
 }
 </style>

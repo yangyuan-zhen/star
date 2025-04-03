@@ -6,9 +6,7 @@ if (!Math) {
   "./pages/note/index.js";
   "./pages/more/index.js";
   "./pages/textSnap/index.js";
-  "./pages/weather/index.js";
   "./pages/book/index.js";
-  "./pages/translation/index.js";
   "./pages/movie/index.js";
   "./pages/shopping/index.js";
 }
