@@ -1,0 +1,1 @@
+<view class="nav-bar"><view class="title-section"><text class="icon-star">★</text><text class="title">星座运势</text></view><view class="action-section"><text class="icon-settings" bindtap="{{a}}">⚙️</text></view></view>

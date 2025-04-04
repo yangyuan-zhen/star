@@ -1,10 +1,19 @@
 <template>
-  <my-popup v-model:show="visible" @update:show="onVisibleChange">
-    <view class="custom-dialog">
+  <my-popup
+    v-model:show="visible"
+    @update:show="onVisibleChange"
+    :maskClosable="!isFirstTime"
+  >
+    <view class="custom-dialog" :class="{ 'first-time': isFirstTime }">
       <view class="dialog-header">
-        <text class="dialog-title">设置你的星座</text>
+        <text class="dialog-title">{{
+          isFirstTime ? "欢迎使用" : "设置"
+        }}</text>
       </view>
       <view class="dialog-content">
+        <view v-if="isFirstTime" class="welcome-message">
+          <text>请选择您的星座，获取专属运势分析</text>
+        </view>
         <view class="input-group">
           <text class="label">选择您的星座</text>
           <picker
@@ -29,9 +38,13 @@
           </picker>
         </view>
       </view>
-      <view class="dialog-footer">
-        <button class="btn cancel" @tap="cancel">取消</button>
-        <button class="btn confirm" @tap="confirm">确定</button>
+      <view class="dialog-footer" :class="{ 'single-button': isFirstTime }">
+        <button v-if="!isFirstTime" class="btn cancel" @tap="cancel">
+          取消
+        </button>
+        <button class="btn confirm" @tap="confirm">
+          {{ isFirstTime ? "开始探索" : "确定" }}
+        </button>
       </view>
     </view>
   </my-popup>
@@ -54,6 +67,10 @@ const props = defineProps({
   birthDate: {
     type: String,
     default: "",
+  },
+  isFirstTime: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -157,11 +174,20 @@ const onBirthDateChange = (e) => {
 
 // 处理弹窗显示状态变更
 const onVisibleChange = (newVal) => {
+  // 如果是首次使用，不允许通过点击蒙层关闭弹窗
+  if (props.isFirstTime && !newVal) {
+    return;
+  }
   emit("update:show", newVal);
 };
 
 // 取消操作
 const cancel = () => {
+  // 如果是首次使用，不允许取消
+  if (props.isFirstTime) {
+    return;
+  }
+
   // 重置为原始值
   currentZodiacLocal.value = props.currentZodiac;
   birthDateLocal.value =
@@ -171,10 +197,15 @@ const cancel = () => {
 
 // 确认保存
 const confirm = () => {
-  emit("save", {
+  const userData = {
     sign: currentZodiacLocal.value,
     birthDate: birthDateLocal.value,
-  });
+  };
+
+  // 保存到本地存储
+  uni.setStorageSync("userZodiac", userData);
+
+  emit("save", userData);
   emit("update:show", false);
 };
 </script>
@@ -186,6 +217,10 @@ const confirm = () => {
   width: 600rpx;
   border-radius: 24rpx;
   overflow: hidden;
+
+  &.first-time {
+    width: 650rpx;
+  }
 
   .dialog-header {
     padding: 30rpx;
@@ -202,6 +237,14 @@ const confirm = () => {
   .dialog-content {
     padding: 30rpx;
 
+    .welcome-message {
+      text-align: center;
+      margin-bottom: 30rpx;
+      color: #666;
+      font-size: 28rpx;
+      line-height: 1.5;
+    }
+
     .input-group {
       margin-bottom: 20rpx;
 
@@ -217,6 +260,12 @@ const confirm = () => {
   .dialog-footer {
     display: flex;
     border-top: 1rpx solid #eee;
+
+    &.single-button .btn.confirm {
+      border-right: none;
+      background-color: #6366f1;
+      color: #fff;
+    }
 
     .btn {
       flex: 1;

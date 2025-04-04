@@ -3,6 +3,10 @@
   "enableShareAppMessage": true,
   "enableShareTimeline": true,
   "usingComponents": {
-    "zodiac-settings": "../../components/zodiac-settings/zodiac-settings"
+    "zodiac-settings": "../../components/zodiac-settings/zodiac-settings",
+    "zodiac-nav-bar": "../../components/zodiac-nav-bar/zodiac-nav-bar",
+    "zodiac-card": "../../components/zodiac-card/zodiac-card",
+    "fortune-details": "../../components/fortune-details/fortune-details",
+    "daily-tips": "../../components/daily-tips/daily-tips"
   }
 }

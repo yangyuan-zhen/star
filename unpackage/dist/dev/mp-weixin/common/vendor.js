@@ -6901,7 +6901,7 @@ function initOnError() {
 function initRuntimeSocketService() {
   const hosts = "192.168.31.2,169.254.203.26,127.0.0.1";
   const port = "8090";
-  const id = "mp-weixin_5WEz0B";
+  const id = "mp-weixin_7kypC9";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -9716,7 +9716,11 @@ const easycom = {
   autoscan: true,
   custom: {
     "^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
-    "^zodiac-settings$": "@/components/zodiac-settings/zodiac-settings.vue"
+    "^zodiac-settings$": "@/components/zodiac-settings/zodiac-settings.vue",
+    "^zodiac-nav-bar$": "@/components/zodiac-nav-bar/zodiac-nav-bar.vue",
+    "^zodiac-card$": "@/components/zodiac-card/zodiac-card.vue",
+    "^fortune-details$": "@/components/fortune-details/fortune-details.vue",
+    "^daily-tips$": "@/components/daily-tips/daily-tips.vue"
   }
 };
 const e = {

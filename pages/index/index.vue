@@ -1,219 +1,25 @@
 <template>
   <view class="container">
     <!-- 导航栏 -->
-    <view class="nav-bar">
-      <view class="title-section">
-        <text class="icon-star">★</text>
-        <text class="title">星座运势</text>
-      </view>
-      <view class="action-section">
-        <text class="icon-settings" @tap="showSettings">⚙️</text>
-      </view>
-    </view>
+    <zodiac-nav-bar @settings="showSettings" @share="handleShare" />
 
     <!-- 主内容区 -->
     <scroll-view scroll-y class="content-area">
       <!-- 当前星座运势卡片 -->
-      <view
-        class="zodiac-card"
-        :style="{ background: getZodiacGradient(currentZodiac) }"
-      >
-        <view v-if="loading" class="loading-container">
-          <view class="loading-icon"></view>
-          <text class="loading-text">加载中...</text>
-        </view>
-
-        <view v-else class="zodiac-header">
-          <view class="zodiac-name-date">
-            <text class="zodiac-name">{{ currentZodiac }}</text>
-            <text class="zodiac-date">{{
-              getZodiacDateRange(currentZodiac)
-            }}</text>
-          </view>
-          <view class="zodiac-fortune">
-            <text class="fortune-label">今日综合运势</text>
-            <view class="star-rating">
-              {{ getStarRating(fortuneData?.overall?.rating || 4) }}
-            </view>
-          </view>
-          <text class="zodiac-description">
-            {{
-              fortuneData?.summary ||
-              "今天你的直觉特别敏锐，适合做重要决策。人际关系方面会有意外惊喜，工作上可能遇到挑战但能顺利解决。建议保持积极心态，适当放松心情。"
-            }}
-          </text>
-          <view class="tag-container">
-            <text class="tag"
-              >🔢 幸运数字：{{ fortuneData?.luckyNumber || "7" }}</text
-            >
-            <text class="tag"
-              >🎨 幸运色：{{ fortuneData?.luckyColor || "深蓝色" }}</text
-            >
-            <text class="tag"
-              >👥 今日贵人：{{ fortuneData?.luckyZodiac || "水瓶座" }}</text
-            >
-          </view>
-        </view>
-        <!-- 星座图标 -->
-        <view class="zodiac-image-section">
-          <view class="zodiac-image-container">
-            <image
-              :src="getZodiacIconPath(currentZodiac)"
-              class="zodiac-image"
-              mode="aspectFit"
-            ></image>
-          </view>
-        </view>
-      </view>
+      <zodiac-card
+        :zodiac-name="currentZodiac"
+        :date-range="getZodiacDateRange(currentZodiac)"
+        :fortune="fortuneData"
+        :loading="loading"
+        :gradient="getZodiacGradient(currentZodiac)"
+        :icon-path="getZodiacIconPath(currentZodiac)"
+      />
 
       <!-- 详细运势 -->
-      <view class="fortune-detail-section">
-        <text class="section-title">详细运势</text>
-        <view class="fortune-cards">
-          <!-- 爱情运势 -->
-          <view class="fortune-card">
-            <view class="card-header">
-              <text class="card-icon love-icon">♥</text>
-              <text class="card-title">爱情运势</text>
-            </view>
-            <view class="star-rating small">
-              {{ getStarRating(fortuneData?.love?.rating || 4) }}
-            </view>
-            <text class="card-description">
-              {{
-                fortuneData?.love?.description ||
-                "今天是增进感情的好时机，单身者可能会遇到有趣的人，已有伴侣的人可以计划一次约会，加深彼此了解。"
-              }}
-            </text>
-          </view>
-
-          <!-- 事业运势 -->
-          <view class="fortune-card">
-            <view class="card-header">
-              <text class="card-icon career-icon">💼</text>
-              <text class="card-title">事业运势</text>
-            </view>
-            <view class="star-rating small">
-              {{ getStarRating(fortuneData?.career?.rating || 3) }}
-            </view>
-            <text class="card-description">
-              {{
-                fortuneData?.career?.description ||
-                "工作中可能会面临挑战，但你的解决问题能力很强。建议多与同事沟通，团队合作将帮助你度过难关。"
-              }}
-            </text>
-          </view>
-
-          <!-- 财运分析 -->
-          <view class="fortune-card">
-            <view class="card-header">
-              <text class="card-icon wealth-icon">💰</text>
-              <text class="card-title">财运分析</text>
-            </view>
-            <view class="star-rating small">
-              {{ getStarRating(fortuneData?.wealth?.rating || 4) }}
-            </view>
-            <text class="card-description">
-              {{
-                fortuneData?.wealth?.description ||
-                "财运不错，但要避免冲动消费。适合做长期理财计划，投资决策需谨慎，可向专业人士咨询。"
-              }}
-            </text>
-          </view>
-
-          <!-- 健康运势 -->
-          <view class="fortune-card">
-            <view class="card-header">
-              <text class="card-icon health-icon">❤️</text>
-              <text class="card-title">健康运势</text>
-            </view>
-            <view class="star-rating small">
-              {{ getStarRating(fortuneData?.health?.rating || 5) }}
-            </view>
-            <text class="card-description">
-              {{
-                fortuneData?.health?.description ||
-                "身体状况良好，但注意不要过度劳累。建议多喝水，适量运动，保持良好的作息习惯有助于提高免疫力。"
-              }}
-            </text>
-          </view>
-        </view>
-      </view>
+      <fortune-details :fortune="fortuneData" />
 
       <!-- 今日提示 -->
-      <view class="daily-tips-section">
-        <text class="section-title">今日提示</text>
-        <view class="tips-container">
-          <view class="tips-group">
-            <view class="tips-header">
-              <text class="tips-icon good">✓</text>
-              <text class="tips-title">今日宜</text>
-            </view>
-            <view class="tips-list">
-              <template v-if="fortuneData?.goodFor">
-                <view
-                  class="tip-item"
-                  v-for="(item, index) in fortuneData.goodFor.split(',')"
-                  :key="'good-' + index"
-                >
-                  <text class="tip-icon">{{
-                    getRandomIcon("good", index)
-                  }}</text>
-                  <text class="tip-text">{{ item.trim() }}</text>
-                </view>
-              </template>
-              <template v-else>
-                <view class="tip-item">
-                  <text class="tip-icon">📚</text>
-                  <text class="tip-text">学习新知识</text>
-                </view>
-                <view class="tip-item">
-                  <text class="tip-icon">👥</text>
-                  <text class="tip-text">社交活动</text>
-                </view>
-                <view class="tip-item">
-                  <text class="tip-icon">📝</text>
-                  <text class="tip-text">制定计划</text>
-                </view>
-              </template>
-            </view>
-          </view>
-          <view class="tips-group">
-            <view class="tips-header">
-              <text class="tips-icon bad">✗</text>
-              <text class="tips-title">今日忌</text>
-            </view>
-            <view class="tips-list">
-              <template v-if="fortuneData?.badFor">
-                <view
-                  class="tip-item"
-                  v-for="(item, index) in fortuneData.badFor.split(',')"
-                  :key="'bad-' + index"
-                >
-                  <text class="tip-icon">{{
-                    getRandomIcon("bad", index)
-                  }}</text>
-                  <text class="tip-text">{{ item.trim() }}</text>
-                </view>
-              </template>
-              <template v-else>
-                <view class="tip-item">
-                  <text class="tip-icon">💳</text>
-                  <text class="tip-text">冲动消费</text>
-                </view>
-                <view class="tip-item">
-                  <text class="tip-icon">💬</text>
-                  <text class="tip-text">言语冲突</text>
-                </view>
-                <view class="tip-item">
-                  <text class="tip-icon">🏃</text>
-                  <text class="tip-text">过度劳累</text>
-                </view>
-              </template>
-            </view>
-          </view>
-        </view>
-      </view>
+      <daily-tips :fortune="fortuneData" />
     </scroll-view>
 
     <!-- 使用星座设置组件 -->
@@ -221,6 +27,7 @@
       v-model:show="settingsVisible"
       :current-zodiac="currentZodiac"
       :birth-date="birthDate"
+      :is-first-time="isFirstTimeUser"
       @save="saveUserSettings"
     />
   </view>
@@ -230,6 +37,10 @@
 import { ref, onMounted, watch } from "vue";
 import { onShow, onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 import ZodiacSettings from "../../components/zodiac-settings/zodiac-settings.vue";
+import ZodiacNavBar from "../../components/zodiac-nav-bar/zodiac-nav-bar.vue";
+import ZodiacCard from "../../components/zodiac-card/zodiac-card.vue";
+import FortuneDetails from "../../components/fortune-details/fortune-details.vue";
+import DailyTips from "../../components/daily-tips/daily-tips.vue";
 
 // 星座相关数据
 const zodiacSigns = [
@@ -285,6 +96,7 @@ const birthDate = ref("2000-01-01");
 const settingsVisible = ref(false);
 const loading = ref(false);
 const fortuneData = ref(null); // 星座运势数据
+const isFirstTimeUser = ref(false);
 
 // 获取星座图标路径
 const getZodiacIconPath = (zodiac) => {
@@ -354,6 +166,14 @@ const getZodiacByDate = (month, day) => {
 // 设置相关
 const showSettings = () => {
   settingsVisible.value = true;
+};
+
+// 分享处理
+const handleShare = () => {
+  uni.showShareMenu({
+    withShareTicket: true,
+    menus: ["shareAppMessage", "shareTimeline"],
+  });
 };
 
 // 保存用户设置
@@ -453,6 +273,9 @@ onMounted(() => {
   } else {
     // 如果用户没有设置星座，使用当前日期的星座
     currentZodiac.value = getCurrentDateZodiac();
+    // 显示设置弹窗，并标记为首次使用
+    settingsVisible.value = true;
+    isFirstTimeUser.value = true;
   }
 
   // 获取星座运势数据
@@ -469,51 +292,6 @@ watch(currentZodiac, (newVal) => {
   fetchZodiacData(newVal);
 });
 
-// 替换当前的随机图标函数，添加防重复逻辑
-const getRandomIcon = (type, index = 0) => {
-  const goodIcons = [
-    "📚",
-    "👥",
-    "📝",
-    "🧘",
-    "🏃",
-    "🛌",
-    "📱",
-    "🎮",
-    "☕",
-    "🎵",
-    "🧠",
-    "✍️",
-  ];
-  const badIcons = [
-    "💳",
-    "💬",
-    "⚠️",
-    "🍺",
-    "🎰",
-    "😡",
-    "💤",
-    "🚬",
-    "🍔",
-    "🎭",
-    "📺",
-    "⏰",
-  ];
-
-  const icons = type === "good" ? goodIcons : badIcons;
-
-  // 直接使用索引来确保不重复，超出范围时循环使用
-  return icons[index % icons.length];
-};
-
-// 添加一个生成星级评分的方法
-const getStarRating = (rating = 0, maxRating = 5) => {
-  const validRating = Math.min(Math.max(Math.round(rating || 0), 0), maxRating);
-  const fullStars = "★".repeat(validRating);
-  const emptyStars = "☆".repeat(maxRating - validRating);
-  return fullStars + emptyStars;
-};
-
 // 定义页面分享行为
 onShareAppMessage(() => {
   return {
@@ -521,7 +299,7 @@ onShareAppMessage(() => {
       fortuneData.value?.overall?.level || "查看你的星座运势"
     }`,
     path: "/pages/index/index",
-    imageUrl: `/static/share/${currentZodiac.value}.jpg`, // 可选分享图片
+    imageUrl: `/static/share/${currentZodiac.value}.jpg`,
   };
 });
 
@@ -545,356 +323,10 @@ onShareTimeline(() => {
   overflow-x: hidden;
 }
 
-.nav-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20rpx 30rpx;
-  background-color: #fff;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
-
-  .title-section {
-    display: flex;
-    align-items: center;
-
-    .icon-star {
-      color: #6366f1;
-      font-size: 40rpx;
-      margin-right: 10rpx;
-    }
-
-    .title {
-      font-size: 36rpx;
-      font-weight: bold;
-      color: #6366f1;
-    }
-  }
-
-  .action-section {
-    display: flex;
-    gap: 30rpx;
-
-    .icon-user,
-    .icon-settings {
-      font-size: 40rpx;
-      color: #666;
-    }
-  }
-}
-
 .content-area {
   flex: 1;
   padding: 30rpx 40rpx;
   box-sizing: border-box;
   width: 100%;
-}
-
-.zodiac-card {
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  border-radius: 24rpx;
-  overflow: hidden;
-  margin: 0 4rpx 40rpx 4rpx;
-  color: #fff;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
-  width: calc(100% - 8rpx);
-  box-sizing: border-box;
-
-  .zodiac-header {
-    padding: 30rpx;
-
-    .zodiac-name-date {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20rpx;
-
-      .zodiac-name {
-        font-size: 40rpx;
-        font-weight: bold;
-        margin-right: 20rpx;
-      }
-
-      .zodiac-date {
-        font-size: 24rpx;
-        background: rgba(255, 255, 255, 0.2);
-        padding: 4rpx 16rpx;
-        border-radius: 100rpx;
-      }
-    }
-
-    .zodiac-fortune {
-      margin-bottom: 20rpx;
-
-      .fortune-label {
-        font-size: 28rpx;
-        display: block;
-        margin-bottom: 8rpx;
-      }
-    }
-
-    .zodiac-description {
-      font-size: 28rpx;
-      line-height: 1.6;
-      margin-bottom: 20rpx;
-    }
-
-    .tag-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16rpx;
-      margin-top: 20rpx;
-
-      .tag {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 8rpx 20rpx;
-        border-radius: 100rpx;
-        font-size: 24rpx;
-      }
-    }
-  }
-
-  .zodiac-image-section {
-    width: 100%;
-    height: 300rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 20rpx;
-    margin-bottom: 30rpx;
-    position: relative;
-    background-color: rgba(0, 0, 0, 0.1);
-
-    &::before {
-      content: "";
-      position: absolute;
-      width: 170rpx;
-      height: 170rpx;
-      border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.15);
-      border: 4rpx solid rgba(255, 255, 255, 0.3);
-      z-index: 0;
-    }
-
-    .zodiac-image {
-      position: relative;
-      z-index: 1;
-      width: 100rpx;
-      height: 100rpx;
-      filter: brightness(0) invert(1); // 使SVG图标变为白色
-      opacity: 0.9;
-    }
-  }
-}
-
-.star-rating {
-  color: #f59e0b;
-  font-size: 36rpx;
-  line-height: 1;
-
-  &.small {
-    font-size: 30rpx;
-  }
-}
-
-.section-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 20rpx;
-  display: block;
-}
-
-.fortune-detail-section {
-  margin-bottom: 40rpx;
-}
-
-.fortune-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-
-.fortune-card {
-  background-color: #fff;
-  border-radius: 20rpx;
-  padding: 30rpx;
-  margin: 0 4rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
-  width: calc(100% - 8rpx);
-  box-sizing: border-box;
-
-  &:active {
-    transform: translateY(-5rpx);
-  }
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 12rpx;
-
-    .card-icon {
-      width: 50rpx;
-      height: 50rpx;
-      border-radius: 50%;
-      font-size: 28rpx;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 12rpx;
-
-      &.love-icon {
-        background-color: #fee2e2;
-        color: #ef4444;
-      }
-
-      &.career-icon {
-        background-color: #dbeafe;
-        color: #3b82f6;
-      }
-
-      &.wealth-icon {
-        background-color: #fef3c7;
-        color: #f59e0b;
-      }
-
-      &.health-icon {
-        background-color: #dcfce7;
-        color: #22c55e;
-      }
-    }
-
-    .card-title {
-      font-size: 28rpx;
-      font-weight: bold;
-      color: #333;
-    }
-  }
-
-  .card-description {
-    font-size: 26rpx;
-    color: #666;
-    line-height: 1.6;
-    margin-top: 12rpx;
-    padding-right: 10rpx;
-  }
-}
-
-.daily-tips-section {
-  margin-bottom: 40rpx;
-}
-
-.tips-container {
-  background-color: #fff;
-  border-radius: 20rpx;
-  overflow: hidden;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
-  margin: 0 4rpx;
-  width: calc(100% - 8rpx);
-  box-sizing: border-box;
-}
-
-.tips-group {
-  padding: 24rpx;
-
-  &:not(:last-child) {
-    border-bottom: 2rpx solid #f5f5f5;
-  }
-
-  .tips-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20rpx;
-
-    .tips-icon {
-      width: 40rpx;
-      height: 40rpx;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 12rpx;
-      font-size: 24rpx;
-
-      &.good {
-        background-color: #dcfce7;
-        color: #22c55e;
-      }
-
-      &.bad {
-        background-color: #fee2e2;
-        color: #ef4444;
-      }
-    }
-
-    .tips-title {
-      font-size: 28rpx;
-      font-weight: bold;
-      color: #333;
-    }
-  }
-}
-
-.tips-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16rpx;
-}
-
-.tip-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
-
-  .tip-icon {
-    width: 60rpx;
-    height: 60rpx;
-    border-radius: 50%;
-    background-color: #f5f5f5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32rpx;
-  }
-
-  .tip-text {
-    font-size: 24rpx;
-    color: #666;
-    text-align: center;
-  }
-}
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 50rpx 0;
-
-  .loading-icon {
-    width: 60rpx;
-    height: 60rpx;
-    border: 6rpx solid rgba(255, 255, 255, 0.3);
-    border-top: 6rpx solid #ffffff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  .loading-text {
-    color: #fff;
-    margin-top: 20rpx;
-    font-size: 28rpx;
-  }
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 </style>

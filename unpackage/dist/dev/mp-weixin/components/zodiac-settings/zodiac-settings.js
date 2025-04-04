@@ -18,6 +18,10 @@ const _sfc_main = {
     birthDate: {
       type: String,
       default: ""
+    },
+    isFirstTime: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ["update:show", "save"],
@@ -103,37 +107,55 @@ const _sfc_main = {
       currentZodiacLocal.value = getZodiacByDate(month, day);
     };
     const onVisibleChange = (newVal) => {
+      if (props.isFirstTime && !newVal) {
+        return;
+      }
       emit("update:show", newVal);
     };
     const cancel = () => {
+      if (props.isFirstTime) {
+        return;
+      }
       currentZodiacLocal.value = props.currentZodiac;
       birthDateLocal.value = props.birthDate || (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
       emit("update:show", false);
     };
     const confirm = () => {
-      emit("save", {
+      const userData = {
         sign: currentZodiacLocal.value,
         birthDate: birthDateLocal.value
-      });
+      };
+      common_vendor.index.setStorageSync("userZodiac", userData);
+      emit("save", userData);
       emit("update:show", false);
     };
     return (_ctx, _cache) => {
-      return {
-        a: common_vendor.t(currentZodiacLocal.value),
-        b: zodiacSigns,
-        c: zodiacIndex.value,
-        d: common_vendor.o(onZodiacChange),
-        e: common_vendor.t(birthDateLocal.value),
-        f: birthDateLocal.value,
-        g: common_vendor.o(onBirthDateChange),
-        h: common_vendor.o(cancel),
-        i: common_vendor.o(confirm),
-        j: common_vendor.o(onVisibleChange),
-        k: common_vendor.o(($event) => visible.value = $event),
-        l: common_vendor.p({
+      return common_vendor.e({
+        a: common_vendor.t(__props.isFirstTime ? "欢迎使用" : "设置"),
+        b: __props.isFirstTime
+      }, __props.isFirstTime ? {} : {}, {
+        c: common_vendor.t(currentZodiacLocal.value),
+        d: zodiacSigns,
+        e: zodiacIndex.value,
+        f: common_vendor.o(onZodiacChange),
+        g: common_vendor.t(birthDateLocal.value),
+        h: birthDateLocal.value,
+        i: common_vendor.o(onBirthDateChange),
+        j: !__props.isFirstTime
+      }, !__props.isFirstTime ? {
+        k: common_vendor.o(cancel)
+      } : {}, {
+        l: common_vendor.t(__props.isFirstTime ? "开始探索" : "确定"),
+        m: common_vendor.o(confirm),
+        n: __props.isFirstTime ? 1 : "",
+        o: __props.isFirstTime ? 1 : "",
+        p: common_vendor.o(onVisibleChange),
+        q: common_vendor.o(($event) => visible.value = $event),
+        r: common_vendor.p({
+          maskClosable: !__props.isFirstTime,
           show: visible.value
         })
-      };
+      });
     };
   }
 };
