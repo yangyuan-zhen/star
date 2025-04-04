@@ -1,12 +1,13 @@
 <template>
   <view class="container">
     <!-- 导航栏 -->
-    <zodiac-nav-bar @settings="showSettings" @share="handleShare" />
+    <zodiac-nav-bar @settings="showSettings" />
 
     <!-- 主内容区 -->
     <scroll-view scroll-y class="content-area">
       <!-- 当前星座运势卡片 -->
       <zodiac-card
+        ref="zodiacCardRef"
         :zodiac-name="currentZodiac"
         :date-range="getZodiacDateRange(currentZodiac)"
         :fortune="fortuneData"
@@ -30,11 +31,19 @@
       :is-first-time="isFirstTimeUser"
       @save="saveUserSettings"
     />
+
+    <!-- 修改canvas元素，确保能正确渲染 -->
+    <canvas
+      type="2d"
+      id="shareCanvas"
+      canvas-id="shareCanvas"
+      style="width: 300px; height: 400px; position: fixed; top: -9999px"
+    ></canvas>
   </view>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 import { onShow, onShareAppMessage, onShareTimeline } from "@dcloudio/uni-app";
 import ZodiacSettings from "../../components/zodiac-settings/zodiac-settings.vue";
 import ZodiacNavBar from "../../components/zodiac-nav-bar/zodiac-nav-bar.vue";
@@ -97,6 +106,8 @@ const settingsVisible = ref(false);
 const loading = ref(false);
 const fortuneData = ref(null); // 星座运势数据
 const isFirstTimeUser = ref(false);
+const shareImageUrl = ref("");
+const zodiacCardRef = ref(null);
 
 // 获取星座图标路径
 const getZodiacIconPath = (zodiac) => {
@@ -106,6 +117,14 @@ const getZodiacIconPath = (zodiac) => {
 // 获取星座日期范围
 const getZodiacDateRange = (zodiac) => {
   return zodiacDateRanges[zodiac] || "";
+};
+
+// 添加星级评分生成函数
+const getStarRating = (rating = 0, maxRating = 5) => {
+  const validRating = Math.min(Math.max(Math.round(rating || 0), 0), maxRating);
+  const fullStars = "★".repeat(validRating);
+  const emptyStars = "☆".repeat(maxRating - validRating);
+  return fullStars + emptyStars;
 };
 
 // 根据星座元素获取渐变色
@@ -168,12 +187,53 @@ const showSettings = () => {
   settingsVisible.value = true;
 };
 
-// 分享处理
-const handleShare = () => {
-  uni.showShareMenu({
-    withShareTicket: true,
-    menus: ["shareAppMessage", "shareTimeline"],
-  });
+// 简化的分享图片生成方案 - 不使用复杂的Canvas绘制
+const generateShareImage = async () => {
+  try {
+    return new Promise((resolve) => {
+      const ctx = uni.createCanvasContext("shareCanvas");
+
+      // 简单纯色背景
+      const element = zodiacElements[currentZodiac.value];
+      let bgColor = "#6366f1"; // 默认紫色
+
+      if (element === "fire") bgColor = "#ff7700";
+      else if (element === "earth") bgColor = "#77aa33";
+      else if (element === "air") bgColor = "#33ccff";
+
+      // 绘制背景和文字
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, 300, 400);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 24px sans-serif";
+      ctx.fillText(currentZodiac.value, 30, 50);
+      ctx.font = "18px sans-serif";
+      ctx.fillText("今日运势", 30, 90);
+
+      // 简单绘制运势等级
+      ctx.font = "bold 20px sans-serif";
+      ctx.fillText(fortuneData.value?.overall?.level || "普通", 30, 140);
+
+      // 执行绘制
+      ctx.draw(false, () => {
+        uni.canvasToTempFilePath({
+          canvasId: "shareCanvas",
+          success: (res) => {
+            console.log("生成分享图片成功:", res.tempFilePath);
+            resolve(res.tempFilePath);
+          },
+          fail: (err) => {
+            console.error("生成分享图片失败:", err);
+            resolve(`/static/share/${currentZodiac.value}.png`);
+          },
+        });
+      });
+    });
+  } catch (e) {
+    console.error("分享图片生成错误:", e);
+    return `/static/share/${currentZodiac.value}.png`;
+  }
 };
 
 // 保存用户设置
@@ -236,6 +296,14 @@ const fetchZodiacData = async (zodiacName = null) => {
       };
 
       console.log("获取星座运势成功:", fortuneData.value);
+
+      // 数据加载完成后可以尝试预生成分享图片，但不要依赖它
+      nextTick(() => {
+        // 尝试生成分享图片，但不要阻塞其他功能
+        generateShareImage().catch(() => {
+          console.log("预生成分享图片失败，将使用静态图片");
+        });
+      });
     } else {
       console.error("获取星座运势失败:", result.message);
       uni.showToast({
@@ -262,7 +330,7 @@ const getRandomZodiac = (currentZodiac) => {
   return otherZodiacs[Math.floor(Math.random() * otherZodiacs.length)];
 };
 
-// 初始化加载
+// 在页面加载时就开启分享选项
 onMounted(() => {
   // 加载保存的星座设置
   const savedZodiac = uni.getStorageSync("userZodiac");
@@ -278,6 +346,12 @@ onMounted(() => {
     isFirstTimeUser.value = true;
   }
 
+  // 启用分享功能
+  uni.showShareMenu({
+    withShareTicket: true,
+    menus: ["shareAppMessage", "shareTimeline"],
+  });
+
   // 获取星座运势数据
   fetchZodiacData(currentZodiac.value);
 });
@@ -292,23 +366,23 @@ watch(currentZodiac, (newVal) => {
   fetchZodiacData(newVal);
 });
 
-// 定义页面分享行为
+// 修改分享函数
 onShareAppMessage(() => {
   return {
     title: `${currentZodiac.value}今日运势 - ${
       fortuneData.value?.overall?.level || "查看你的星座运势"
     }`,
     path: "/pages/index/index",
-    imageUrl: `/static/share/${currentZodiac.value}.jpg`,
+    imageUrl: `/static/share/${currentZodiac.value}.png`, // 确保路径正确
   };
 });
 
-// 添加分享朋友圈功能
+// 分享到朋友圈
 onShareTimeline(() => {
   return {
     title: `${currentZodiac.value}今日运势分析 - 星座运势`,
     query: `zodiac=${encodeURIComponent(currentZodiac.value)}`,
-    imageUrl: `/static/share/${currentZodiac.value}.jpg`,
+    imageUrl: `/static/share/${currentZodiac.value}.png`, // 确保路径正确
   };
 });
 </script>

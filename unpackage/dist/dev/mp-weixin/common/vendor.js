@@ -5131,6 +5131,10 @@ function vFor(source, renderItem) {
   }
   return ret;
 }
+function setRef(ref2, id, opts = {}) {
+  const { $templateRefs } = getCurrentInstance();
+  $templateRefs.push({ i: id, r: ref2, k: opts.k, f: opts.f });
+}
 const o$1 = (value, key) => vOn(value, key);
 const f$1 = (source, renderItem) => vFor(source, renderItem);
 const e$1 = (target, ...sources) => extend(target, ...sources);
@@ -5138,6 +5142,7 @@ const h$1 = (str) => hyphenate(str);
 const n$1 = (value) => normalizeClass(value);
 const t$1 = (val) => toDisplayString(val);
 const p$1 = (props) => renderProps(props);
+const sr = (ref2, id, opts) => setRef(ref2, id, opts);
 function createApp$1(rootComponent, rootProps = null) {
   rootComponent && (rootComponent.mpType = "app");
   return createVueApp(rootComponent, rootProps).use(plugin);
@@ -12576,6 +12581,7 @@ exports.e = e$1;
 exports.f = f$1;
 exports.index = index;
 exports.n = n$1;
+exports.nextTick$1 = nextTick$1;
 exports.nr = nr;
 exports.o = o$1;
 exports.onLaunch = onLaunch;
@@ -12585,6 +12591,7 @@ exports.onShareTimeline = onShareTimeline;
 exports.onShow = onShow;
 exports.p = p$1;
 exports.ref = ref;
+exports.sr = sr;
 exports.t = t$1;
 exports.watch = watch;
 //# sourceMappingURL=../../.sourcemap/mp-weixin/common/vendor.js.map

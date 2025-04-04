@@ -14,7 +14,9 @@
               v-for="(item, index) in fortune.goodFor.split(',')"
               :key="'good-' + index"
             >
-              <text class="tip-icon">{{ getRandomIcon("good", index) }}</text>
+              <text class="tip-icon">{{
+                getRandomIcon("good", index, item.trim())
+              }}</text>
               <text class="tip-text">{{ item.trim() }}</text>
             </view>
           </template>
@@ -46,7 +48,9 @@
               v-for="(item, index) in fortune.badFor.split(',')"
               :key="'bad-' + index"
             >
-              <text class="tip-icon">{{ getRandomIcon("bad", index) }}</text>
+              <text class="tip-icon">{{
+                getRandomIcon("bad", index, item.trim())
+              }}</text>
               <text class="tip-text">{{ item.trim() }}</text>
             </view>
           </template>
@@ -75,39 +79,67 @@ defineProps({
   fortune: { type: Object, default: () => ({}) },
 });
 
-// 获取随机图标函数
-const getRandomIcon = (type, index = 0) => {
-  const goodIcons = [
-    "📚",
-    "👥",
-    "📝",
-    "🧘",
-    "🏃",
-    "🛌",
-    "📱",
-    "🎮",
-    "☕",
-    "🎵",
-    "🧠",
-    "✍️",
-  ];
-  const badIcons = [
-    "💳",
-    "💬",
-    "⚠️",
-    "🍺",
-    "🎰",
-    "😡",
-    "💤",
-    "🚬",
-    "🍔",
-    "🎭",
-    "📺",
-    "⏰",
-  ];
+// 获取图标函数 - 基于关键词匹配而不是随机
+const getRandomIcon = (type, index, text) => {
+  // 通用图标作为后备
+  const goodIcons = ["📝", "🧘", "🏃", "📱", "🎮", "☕", "🎵", "🧠", "✍️"];
+  const badIcons = ["💳", "💬", "⚠️", "🍺", "🎰", "😡", "💤", "🚬", "🍔"];
 
-  const icons = type === "good" ? goodIcons : badIcons;
-  return icons[index % icons.length];
+  // 常见活动的图标映射
+  const goodKeywords = {
+    创作: "✍️",
+    写作: "✍️",
+    学习: "📚",
+    阅读: "📚",
+    思考: "🧠",
+    独处: "🧠",
+    运动: "🏃",
+    锻炼: "🏃",
+    健身: "💪",
+    冥想: "🧘",
+    放松: "🛌",
+    社交: "👥",
+    聚会: "🎉",
+    旅行: "🧳",
+    工作: "💼",
+    计划: "📝",
+    整理: "📋",
+    购物: "🛍️",
+    约会: "❤️",
+  };
+
+  const badKeywords = {
+    酒: "🍺",
+    喝酒: "🍺",
+    酗酒: "🍺",
+    熬夜: "💤",
+    赌博: "🎰",
+    争吵: "😡",
+    争执: "😡",
+    吵架: "😡",
+    冲动: "💢",
+    消费: "💳",
+    购物: "💳",
+    暴饮暴食: "🍔",
+    油炸: "🍟",
+    抱怨: "💬",
+    懒惰: "🛋️",
+    拖延: "⏰",
+  };
+
+  // 查找关键词匹配
+  const keywords = type === "good" ? goodKeywords : badKeywords;
+  const defaultIcons = type === "good" ? goodIcons : badIcons;
+
+  // 检查文本中是否包含关键词
+  for (const [keyword, icon] of Object.entries(keywords)) {
+    if (text && text.includes(keyword)) {
+      return icon;
+    }
+  }
+
+  // 没有找到匹配的关键词，使用默认图标
+  return defaultIcons[index % defaultIcons.length];
 };
 </script>
 

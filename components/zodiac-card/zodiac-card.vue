@@ -1,5 +1,5 @@
 <template>
-  <view class="zodiac-card" :style="{ background: gradient }">
+  <view class="zodiac-card" :style="{ background: gradient }" ref="cardRef">
     <view v-if="loading" class="loading-container">
       <view class="loading-icon"></view>
       <text class="loading-text">加载中...</text>

@@ -59,6 +59,8 @@ const _sfc_main = {
     const loading = common_vendor.ref(false);
     const fortuneData = common_vendor.ref(null);
     const isFirstTimeUser = common_vendor.ref(false);
+    common_vendor.ref("");
+    const zodiacCardRef = common_vendor.ref(null);
     const getZodiacIconPath = (zodiac) => {
       return `/static/stars/${zodiac}.svg`;
     };
@@ -116,11 +118,46 @@ const _sfc_main = {
     const showSettings = () => {
       settingsVisible.value = true;
     };
-    const handleShare = () => {
-      common_vendor.index.showShareMenu({
-        withShareTicket: true,
-        menus: ["shareAppMessage", "shareTimeline"]
-      });
+    const generateShareImage = async () => {
+      try {
+        return new Promise((resolve) => {
+          var _a, _b;
+          const ctx = common_vendor.index.createCanvasContext("shareCanvas");
+          const element = zodiacElements[currentZodiac.value];
+          let bgColor = "#6366f1";
+          if (element === "fire")
+            bgColor = "#ff7700";
+          else if (element === "earth")
+            bgColor = "#77aa33";
+          else if (element === "air")
+            bgColor = "#33ccff";
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, 0, 300, 400);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 24px sans-serif";
+          ctx.fillText(currentZodiac.value, 30, 50);
+          ctx.font = "18px sans-serif";
+          ctx.fillText("今日运势", 30, 90);
+          ctx.font = "bold 20px sans-serif";
+          ctx.fillText(((_b = (_a = fortuneData.value) == null ? void 0 : _a.overall) == null ? void 0 : _b.level) || "普通", 30, 140);
+          ctx.draw(false, () => {
+            common_vendor.index.canvasToTempFilePath({
+              canvasId: "shareCanvas",
+              success: (res) => {
+                common_vendor.index.__f__("log", "at pages/index/index.vue:223", "生成分享图片成功:", res.tempFilePath);
+                resolve(res.tempFilePath);
+              },
+              fail: (err) => {
+                common_vendor.index.__f__("error", "at pages/index/index.vue:227", "生成分享图片失败:", err);
+                resolve(`/static/share/${currentZodiac.value}.png`);
+              }
+            });
+          });
+        });
+      } catch (e) {
+        common_vendor.index.__f__("error", "at pages/index/index.vue:234", "分享图片生成错误:", e);
+        return `/static/share/${currentZodiac.value}.png`;
+      }
     };
     const saveUserSettings = (settings) => {
       currentZodiac.value = settings.sign;
@@ -173,16 +210,21 @@ const _sfc_main = {
             goodFor: fortune.goodFor || "",
             badFor: fortune.badFor || ""
           };
-          common_vendor.index.__f__("log", "at pages/index/index.vue:238", "获取星座运势成功:", fortuneData.value);
+          common_vendor.index.__f__("log", "at pages/index/index.vue:298", "获取星座运势成功:", fortuneData.value);
+          common_vendor.nextTick$1(() => {
+            generateShareImage().catch(() => {
+              common_vendor.index.__f__("log", "at pages/index/index.vue:304", "预生成分享图片失败，将使用静态图片");
+            });
+          });
         } else {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:240", "获取星座运势失败:", result.message);
+          common_vendor.index.__f__("error", "at pages/index/index.vue:308", "获取星座运势失败:", result.message);
           common_vendor.index.showToast({
             title: "获取星座运势失败: " + result.message,
             icon: "none"
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:247", "获取星座运势出错:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:315", "获取星座运势出错:", error);
         common_vendor.index.showToast({
           title: "网络异常，请稍后再试",
           icon: "none"
@@ -205,6 +247,10 @@ const _sfc_main = {
         settingsVisible.value = true;
         isFirstTimeUser.value = true;
       }
+      common_vendor.index.showShareMenu({
+        withShareTicket: true,
+        menus: ["shareAppMessage", "shareTimeline"]
+      });
       fetchZodiacData(currentZodiac.value);
     });
     common_vendor.onShow(() => {
@@ -218,20 +264,24 @@ const _sfc_main = {
       return {
         title: `${currentZodiac.value}今日运势 - ${((_b = (_a = fortuneData.value) == null ? void 0 : _a.overall) == null ? void 0 : _b.level) || "查看你的星座运势"}`,
         path: "/pages/index/index",
-        imageUrl: `/static/share/${currentZodiac.value}.jpg`
+        imageUrl: `/static/share/${currentZodiac.value}.png`
+        // 确保路径正确
       };
     });
     common_vendor.onShareTimeline(() => {
       return {
         title: `${currentZodiac.value}今日运势分析 - 星座运势`,
         query: `zodiac=${encodeURIComponent(currentZodiac.value)}`,
-        imageUrl: `/static/share/${currentZodiac.value}.jpg`
+        imageUrl: `/static/share/${currentZodiac.value}.png`
+        // 确保路径正确
       };
     });
     return (_ctx, _cache) => {
       return {
         a: common_vendor.o(showSettings),
-        b: common_vendor.o(handleShare),
+        b: common_vendor.sr(zodiacCardRef, "75df3941-1", {
+          "k": "zodiacCardRef"
+        }),
         c: common_vendor.p({
           ["zodiac-name"]: currentZodiac.value,
           ["date-range"]: getZodiacDateRange(currentZodiac.value),
