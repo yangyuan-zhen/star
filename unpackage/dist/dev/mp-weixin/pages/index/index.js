@@ -173,11 +173,33 @@ const _sfc_main = {
       loading.value = true;
       try {
         const zodiacToFetch = zodiacName || currentZodiac.value;
-        const { result } = await common_vendor.nr.callFunction({
-          name: "getZodiacFortune",
-          data: { zodiac: zodiacToFetch }
-        });
-        if (result.code === 0 && result.data) {
+        common_vendor.index.__f__("log", "at pages/index/index.vue:258", "开始获取星座数据:", zodiacToFetch);
+        let retryCount = 0;
+        const maxRetry = 2;
+        let result = null;
+        while (retryCount <= maxRetry) {
+          try {
+            const callResult = await common_vendor.nr.callFunction({
+              name: "getZodiacFortune",
+              data: {
+                zodiac: zodiacToFetch,
+                zodiacSign: zodiacToFetch
+                // 同时提供两个参数名以兼容不同环境
+              }
+            });
+            result = callResult.result;
+            common_vendor.index.__f__("log", "at pages/index/index.vue:276", "云函数返回结果:", result);
+            break;
+          } catch (callError) {
+            common_vendor.index.__f__("error", "at pages/index/index.vue:279", `第${retryCount + 1}次调用失败:`, callError);
+            retryCount++;
+            if (retryCount > maxRetry) {
+              throw callError;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 1e3));
+          }
+        }
+        if (result && result.code === 0 && result.data) {
           const { zodiacInfo, fortune } = result.data;
           fortuneData.value = {
             date: fortune.date,
@@ -210,24 +232,30 @@ const _sfc_main = {
             goodFor: fortune.goodFor || "",
             badFor: fortune.badFor || ""
           };
-          common_vendor.index.__f__("log", "at pages/index/index.vue:298", "获取星座运势成功:", fortuneData.value);
+          common_vendor.index.__f__("log", "at pages/index/index.vue:326", "获取星座运势成功:", fortuneData.value);
           common_vendor.nextTick$1(() => {
             generateShareImage().catch(() => {
-              common_vendor.index.__f__("log", "at pages/index/index.vue:304", "预生成分享图片失败，将使用静态图片");
+              common_vendor.index.__f__("log", "at pages/index/index.vue:332", "预生成分享图片失败，将使用静态图片");
             });
           });
         } else {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:308", "获取星座运势失败:", result.message);
+          common_vendor.index.__f__("error", "at pages/index/index.vue:336", "获取星座运势失败:", result.message);
           common_vendor.index.showToast({
             title: "获取星座运势失败: " + result.message,
             icon: "none"
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:315", "获取星座运势出错:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:343", "获取星座运势出错:", error);
+        let errorMsg = "网络异常，请稍后再试";
+        if (error && error.message) {
+          errorMsg += "(" + error.message + ")";
+          common_vendor.index.__f__("log", "at pages/index/index.vue:348", "详细错误信息:", JSON.stringify(error));
+        }
         common_vendor.index.showToast({
-          title: "网络异常，请稍后再试",
-          icon: "none"
+          title: errorMsg,
+          icon: "none",
+          duration: 3e3
         });
       } finally {
         loading.value = false;

@@ -45,9 +45,9 @@
   "uniCloud": {
     "debug": true,
     "provider": "alipay",
-    "spaceId": "env-00jxhk9ji189",
+    "spaceId": "mp-b1f97aa8-ada2-488f-aa8a-ba14a2991d5e",
     "clientSecret": "hkXUWkBWPoaRk7GP",
-    "endpoint": "https://env-00jxhk9ji189.api-hz.cloudbasefunction.cn",
+    "endpoint": "https://api.next.bspapp.com",
     "functionMode": {
       "service": true
     },

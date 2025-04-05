@@ -255,12 +255,40 @@ const fetchZodiacData = async (zodiacName = null) => {
   try {
     const zodiacToFetch = zodiacName || currentZodiac.value;
 
-    const { result } = await uniCloud.callFunction({
-      name: "getZodiacFortune",
-      data: { zodiac: zodiacToFetch },
-    });
+    console.log("开始获取星座数据:", zodiacToFetch);
 
-    if (result.code === 0 && result.data) {
+    // 增加重试逻辑
+    let retryCount = 0;
+    const maxRetry = 2;
+    let result = null;
+
+    while (retryCount <= maxRetry) {
+      try {
+        const callResult = await uniCloud.callFunction({
+          name: "getZodiacFortune",
+          data: {
+            zodiac: zodiacToFetch,
+            zodiacSign: zodiacToFetch, // 同时提供两个参数名以兼容不同环境
+          },
+        });
+
+        result = callResult.result;
+        console.log("云函数返回结果:", result);
+        break; // 成功则跳出重试循环
+      } catch (callError) {
+        console.error(`第${retryCount + 1}次调用失败:`, callError);
+        retryCount++;
+
+        if (retryCount > maxRetry) {
+          throw callError; // 重试次数用完仍失败，抛出错误
+        }
+
+        // 等待一秒后重试
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+
+    if (result && result.code === 0 && result.data) {
       // 适配新的数据结构
       const { zodiacInfo, fortune } = result.data;
 
@@ -313,9 +341,16 @@ const fetchZodiacData = async (zodiacName = null) => {
     }
   } catch (error) {
     console.error("获取星座运势出错:", error);
+    // 增加更详细的错误信息
+    let errorMsg = "网络异常，请稍后再试";
+    if (error && error.message) {
+      errorMsg += "(" + error.message + ")";
+      console.log("详细错误信息:", JSON.stringify(error));
+    }
     uni.showToast({
-      title: "网络异常，请稍后再试",
+      title: errorMsg,
       icon: "none",
+      duration: 3000,
     });
   } finally {
     loading.value = false;

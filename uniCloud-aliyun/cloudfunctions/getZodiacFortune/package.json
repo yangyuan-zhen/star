@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {},
   "cloudfunction-config": {
-    "memorySize": 128,
-    "timeout": 5
+    "memorySize": 256,
+    "timeout": 10
   }
 }

@@ -111,6 +111,9 @@ const getStarRating = (rating = 0, maxRating = 5) => {
       font-size: 28rpx;
       line-height: 1.6;
       margin-bottom: 20rpx;
+      word-break: break-word;
+      white-space: normal;
+      text-overflow: initial;
     }
 
     .tag-container {

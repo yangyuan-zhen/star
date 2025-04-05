@@ -1,8 +1,12 @@
 'use strict';
 
 exports.main = async (event, context) => {
+    console.log('云函数开始执行, 环境信息:', context);
+    console.log('传入参数:', event);
+
     const db = uniCloud.database();
-    const zodiacSign = event.zodiacSign || '白羊座'; // 默认白羊座
+    // 同时支持两种参数名，兼容测试和生产环境
+    const zodiacSign = event.zodiacSign || event.zodiac || '白羊座'; // 默认白羊座
 
     // 星座名称映射表（中文到英文字段名）
     const zodiacFieldMap = {
@@ -33,10 +37,13 @@ exports.main = async (event, context) => {
 
     try {
         // 查询星座数据
+        console.log('正在查询星座:', zodiacSign, '字段名:', fieldName);
         const result = await db.collection('star_signs').field({
             [fieldName]: 1,
             daily_luck: 1
         }).get();
+
+        console.log('查询结果:', JSON.stringify(result));
 
         if (result.data && result.data.length > 0) {
             // 获取星座数据
