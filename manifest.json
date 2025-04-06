@@ -44,7 +44,7 @@
   "vueVersion": "3",
   "uniCloud": {
     "debug": true,
-    "provider": "alipay",
+    "provider": "aliyun",
     "spaceId": "mp-b1f97aa8-ada2-488f-aa8a-ba14a2991d5e",
     "clientSecret": "hkXUWkBWPoaRk7GP",
     "endpoint": "https://api.next.bspapp.com",
@@ -53,7 +53,7 @@
     },
     "mp": {
       "useCloud": true,
-      "cloudProvider": "alipay"
+      "cloudProvider": "aliyun"
     }
   }
 }

@@ -195,30 +195,65 @@ exports.main = async (event, context) => {
     const starSignsCollection = db.collection('star_signs');
 
     try {
-        // 获取记录
-        const starSignsResult = await starSignsCollection.get();
-        if (!starSignsResult.data || starSignsResult.data.length === 0) {
-            return {
-                code: 1,
-                message: '未找到星座数据',
-                data: null
-            };
+        // 获取所有星座基本信息
+        const zodiacNames = [
+            '白羊座', '金牛座', '双子座', '巨蟹座',
+            '狮子座', '处女座', '天秤座', '天蝎座',
+            '射手座', '摩羯座', '水瓶座', '双鱼座'
+        ];
+
+        const zodiacElements = {
+            '白羊座': '火象', '狮子座': '火象', '射手座': '火象',
+            '金牛座': '土象', '处女座': '土象', '摩羯座': '土象',
+            '双子座': '风象', '天秤座': '风象', '水瓶座': '风象',
+            '巨蟹座': '水象', '天蝎座': '水象', '双鱼座': '水象'
+        };
+
+        // 生成当天所有星座的运势
+        const date = new Date().toISOString().split('T')[0]; // 当前日期，格式：YYYY-MM-DD
+        const batchUpdates = [];
+
+        // 为每个星座生成一条运势数据
+        for (const zodiacName of zodiacNames) {
+            const fortune = generateLuck({ name: zodiacName, element: zodiacElements[zodiacName] });
+
+            // 查询是否已存在该星座的数据
+            const existingDoc = await starSignsCollection.where({
+                name: zodiacName
+            }).get();
+
+            if (existingDoc.data && existingDoc.data.length > 0) {
+                // 更新已有记录
+                batchUpdates.push(
+                    starSignsCollection.doc(existingDoc.data[0]._id).update({
+                        daily_luck: fortune,
+                        updated_at: new Date()
+                    })
+                );
+            } else {
+                // 创建新记录
+                batchUpdates.push(
+                    starSignsCollection.add({
+                        name: zodiacName,
+                        element: zodiacElements[zodiacName],
+                        date_range: getDateRange(zodiacName),
+                        traits: getTraits(zodiacName),
+                        daily_luck: fortune,
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    })
+                );
+            }
         }
 
-        // 生成运势并更新
-        const dailyLuck = generateLuck(starSignsResult.data[0]);
-
-        // 更新daily_luck字段
-        await starSignsCollection.doc(starSignsResult.data[0]._id).update({
-            daily_luck: dailyLuck,
-            updated_at: new Date()
-        });
+        // 执行批量更新
+        await Promise.all(batchUpdates);
 
         return {
             code: 0,
             message: '星座运势更新成功',
             data: {
-                date: new Date().toISOString().split('T')[0]
+                date: date
             }
         };
     } catch (error) {
@@ -229,4 +264,42 @@ exports.main = async (event, context) => {
             data: null
         };
     }
-}; 
+};
+
+// 获取星座日期范围
+function getDateRange(zodiacName) {
+    const dateRanges = {
+        '白羊座': '3月21日 - 4月19日',
+        '金牛座': '4月20日 - 5月20日',
+        '双子座': '5月21日 - 6月20日',
+        '巨蟹座': '6月21日 - 7月22日',
+        '狮子座': '7月23日 - 8月22日',
+        '处女座': '8月23日 - 9月22日',
+        '天秤座': '9月23日 - 10月22日',
+        '天蝎座': '10月23日 - 11月21日',
+        '射手座': '11月22日 - 12月21日',
+        '摩羯座': '12月22日 - 1月19日',
+        '水瓶座': '1月20日 - 2月18日',
+        '双鱼座': '2月19日 - 3月20日'
+    };
+    return dateRanges[zodiacName] || '';
+}
+
+// 获取星座特质
+function getTraits(zodiacName) {
+    const traits = {
+        '白羊座': ['热情', '冲动', '有领导力'],
+        '金牛座': ['稳重', '固执', '可靠'],
+        '双子座': ['好奇', '多变', '聪明'],
+        '巨蟹座': ['敏感', '情感丰富', '有同情心'],
+        '狮子座': ['自信', '慷慨', '有创造力'],
+        '处女座': ['细心', '完美主义', '实际'],
+        '天秤座': ['公正', '优雅', '和谐'],
+        '天蝎座': ['热情', '神秘', '有洞察力'],
+        '射手座': ['乐观', '自由', '冒险'],
+        '摩羯座': ['务实', '坚韧', '有责任感'],
+        '水瓶座': ['独立', '创新', '人道主义'],
+        '双鱼座': ['富有同情心', '直觉', '艺术气质']
+    };
+    return traits[zodiacName] || [];
+} 

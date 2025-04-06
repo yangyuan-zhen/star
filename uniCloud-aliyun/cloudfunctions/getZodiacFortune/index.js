@@ -8,47 +8,23 @@ exports.main = async (event, context) => {
     // 同时支持两种参数名，兼容测试和生产环境
     const zodiacSign = event.zodiacSign || event.zodiac || '白羊座'; // 默认白羊座
 
-    // 星座名称映射表（中文到英文字段名）
-    const zodiacFieldMap = {
-        '白羊座': 'aries',
-        '金牛座': 'taurus',
-        '双子座': 'gemini',
-        '巨蟹座': 'cancer',
-        '狮子座': 'leo',
-        '处女座': 'virgo',
-        '天秤座': 'libra',
-        '天蝎座': 'scorpio',
-        '射手座': 'sagittarius',
-        '摩羯座': 'capricorn',
-        '水瓶座': 'aquarius',
-        '双鱼座': 'pisces'
-    };
-
-    // 获取对应的英文字段名
-    const fieldName = zodiacFieldMap[zodiacSign];
-
-    if (!fieldName) {
-        return {
-            code: 1,
-            message: '无效的星座名称',
-            data: null
-        };
-    }
-
     try {
-        // 查询星座数据
-        console.log('正在查询星座:', zodiacSign, '字段名:', fieldName);
-        const result = await db.collection('star_signs').field({
-            [fieldName]: 1,
-            daily_luck: 1
-        }).get();
+        console.log('正在查询星座:', zodiacSign);
+
+        // 使用新的数据结构查询
+        const result = await db.collection('star_signs')
+            .where({
+                name: zodiacSign
+            })
+            .limit(1)
+            .get();
 
         console.log('查询结果:', JSON.stringify(result));
 
         if (result.data && result.data.length > 0) {
             // 获取星座数据
-            const starSign = result.data[0][fieldName];
-            const dailyLuck = result.data[0].daily_luck;
+            const starSign = result.data[0];
+            const dailyLuck = starSign.daily_luck || {};
 
             if (!starSign) {
                 return {
@@ -73,6 +49,7 @@ exports.main = async (event, context) => {
                 }
             };
         } else {
+            console.log('未找到星座数据:', zodiacSign);
             return {
                 code: 1,
                 message: '未找到星座数据',
