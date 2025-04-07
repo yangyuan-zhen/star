@@ -257,6 +257,19 @@ const fetchZodiacData = async (zodiacName = null) => {
 
     console.log("开始获取星座数据:", zodiacToFetch);
 
+    // 检查本地缓存 - 添加缓存逻辑
+    const currentDate = new Date().toISOString().split("T")[0]; // 当前日期
+    const cacheKey = `zodiac_fortune_${zodiacToFetch}_${currentDate}`;
+    const cachedData = uni.getStorageSync(cacheKey);
+
+    // 如果有当天的缓存数据，直接使用
+    if (cachedData) {
+      console.log("使用缓存数据:", zodiacToFetch);
+      fortuneData.value = JSON.parse(cachedData);
+      loading.value = false;
+      return;
+    }
+
     // 增加重试逻辑
     let retryCount = 0;
     const maxRetry = 2;
@@ -322,6 +335,9 @@ const fetchZodiacData = async (zodiacName = null) => {
         goodFor: fortune.goodFor || "",
         badFor: fortune.badFor || "",
       };
+
+      // 将数据存入本地缓存，有效期为当天
+      uni.setStorageSync(cacheKey, JSON.stringify(fortuneData.value));
 
       console.log("获取星座运势成功:", fortuneData.value);
 
