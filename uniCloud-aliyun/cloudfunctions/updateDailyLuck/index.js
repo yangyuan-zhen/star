@@ -211,9 +211,11 @@ exports.main = async (event, context) => {
 
         // 生成当天所有星座的运势
         const date = new Date().toISOString().split('T')[0]; // 当前日期，格式：YYYY-MM-DD
-        const batchUpdates = [];
 
-        // 为每个星座生成一条运势数据
+        // 准备批量更新的数据
+        const batchData = [];
+
+        // 为每个星座生成运势数据
         for (const zodiacName of zodiacNames) {
             const fortune = generateLuck({ name: zodiacName, element: zodiacElements[zodiacName] });
 
@@ -224,36 +226,35 @@ exports.main = async (event, context) => {
 
             if (existingDoc.data && existingDoc.data.length > 0) {
                 // 更新已有记录
-                batchUpdates.push(
-                    starSignsCollection.doc(existingDoc.data[0]._id).update({
-                        daily_luck: fortune,
-                        updated_at: new Date()
-                    })
-                );
+                await starSignsCollection.doc(existingDoc.data[0]._id).update({
+                    daily_luck: fortune,
+                    updated_at: new Date()
+                });
             } else {
-                // 创建新记录
-                batchUpdates.push(
-                    starSignsCollection.add({
-                        name: zodiacName,
-                        element: zodiacElements[zodiacName],
-                        date_range: getDateRange(zodiacName),
-                        traits: getTraits(zodiacName),
-                        daily_luck: fortune,
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    })
-                );
+                // 添加到批量插入数据中
+                batchData.push({
+                    name: zodiacName,
+                    element: zodiacElements[zodiacName],
+                    date_range: getDateRange(zodiacName),
+                    traits: getTraits(zodiacName),
+                    daily_luck: fortune,
+                    created_at: new Date(),
+                    updated_at: new Date()
+                });
             }
         }
 
-        // 执行批量更新
-        await Promise.all(batchUpdates);
+        // 如果有新数据需要插入，执行批量插入
+        if (batchData.length > 0) {
+            await starSignsCollection.add(batchData);
+        }
 
         return {
             code: 0,
             message: '星座运势更新成功',
             data: {
-                date: date
+                date: date,
+                updatedCount: batchData.length
             }
         };
     } catch (error) {

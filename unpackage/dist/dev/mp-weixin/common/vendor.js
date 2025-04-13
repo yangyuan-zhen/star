@@ -6904,9 +6904,9 @@ function initOnError() {
   };
 }
 function initRuntimeSocketService() {
-  const hosts = "192.168.31.2,169.254.203.26,127.0.0.1";
+  const hosts = "192.168.31.2,127.0.0.1";
   const port = "8090";
-  const id = "mp-weixin__JMKtE";
+  const id = "mp-weixin_zeWjdw";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -10024,7 +10024,7 @@ class v {
 function I(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const S = true, b = "mp-weixin", T = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), A = b, P = I('{"address":["127.0.0.1","192.168.31.2","169.254.203.26"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), C = I('[{"provider":"aliyun","spaceName":"constellation","spaceId":"mp-b1f97aa8-ada2-488f-aa8a-ba14a2991d5e","clientSecret":"+OZPmoT3ztr6hG4yG+BBvQ==","endpoint":"https://api.next.bspapp.com"}]') || [];
+const S = true, b = "mp-weixin", T = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), A = b, P = I('{"address":["127.0.0.1","192.168.31.2"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), C = I('[{"provider":"aliyun","spaceName":"constellation","spaceId":"mp-b1f97aa8-ada2-488f-aa8a-ba14a2991d5e","clientSecret":"+OZPmoT3ztr6hG4yG+BBvQ==","endpoint":"https://api.next.bspapp.com"}]') || [];
 let O = "";
 try {
   O = "__UNI__920B084";
