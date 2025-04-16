@@ -59,8 +59,12 @@ const _sfc_main = {
     const loading = common_vendor.ref(false);
     const fortuneData = common_vendor.ref(null);
     const isFirstTimeUser = common_vendor.ref(false);
-    common_vendor.ref("");
     const zodiacCardRef = common_vendor.ref(null);
+    const themeColors = common_vendor.ref({
+      primary: "#6366f1",
+      background: "#f5f5f5",
+      text: "#333333"
+    });
     const getZodiacIconPath = (zodiac) => {
       return `/static/stars/${zodiac}.svg`;
     };
@@ -118,47 +122,6 @@ const _sfc_main = {
     const showSettings = () => {
       settingsVisible.value = true;
     };
-    const generateShareImage = async () => {
-      try {
-        return new Promise((resolve) => {
-          var _a, _b;
-          const ctx = common_vendor.index.createCanvasContext("shareCanvas");
-          const element = zodiacElements[currentZodiac.value];
-          let bgColor = "#6366f1";
-          if (element === "fire")
-            bgColor = "#ff7700";
-          else if (element === "earth")
-            bgColor = "#77aa33";
-          else if (element === "air")
-            bgColor = "#33ccff";
-          ctx.fillStyle = bgColor;
-          ctx.fillRect(0, 0, 300, 400);
-          ctx.fillStyle = "#ffffff";
-          ctx.font = "bold 24px sans-serif";
-          ctx.fillText(currentZodiac.value, 30, 50);
-          ctx.font = "18px sans-serif";
-          ctx.fillText("今日运势", 30, 90);
-          ctx.font = "bold 20px sans-serif";
-          ctx.fillText(((_b = (_a = fortuneData.value) == null ? void 0 : _a.overall) == null ? void 0 : _b.level) || "普通", 30, 140);
-          ctx.draw(false, () => {
-            common_vendor.index.canvasToTempFilePath({
-              canvasId: "shareCanvas",
-              success: (res) => {
-                common_vendor.index.__f__("log", "at pages/index/index.vue:223", "生成分享图片成功:", res.tempFilePath);
-                resolve(res.tempFilePath);
-              },
-              fail: (err) => {
-                common_vendor.index.__f__("error", "at pages/index/index.vue:227", "生成分享图片失败:", err);
-                resolve(`/static/share/${currentZodiac.value}.png`);
-              }
-            });
-          });
-        });
-      } catch (e) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:234", "分享图片生成错误:", e);
-        return `/static/share/${currentZodiac.value}.png`;
-      }
-    };
     const saveUserSettings = (settings) => {
       currentZodiac.value = settings.sign;
       birthDate.value = settings.birthDate;
@@ -173,13 +136,17 @@ const _sfc_main = {
       loading.value = true;
       try {
         const zodiacToFetch = zodiacName || currentZodiac.value;
-        common_vendor.index.__f__("log", "at pages/index/index.vue:258", "开始获取星座数据:", zodiacToFetch);
+        common_vendor.index.__f__("log", "at pages/index/index.vue:209", "开始获取星座数据:", zodiacToFetch);
         const currentDate = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
         const cacheKey = `zodiac_fortune_${zodiacToFetch}_${currentDate}`;
         const cachedData = common_vendor.index.getStorageSync(cacheKey);
         if (cachedData) {
-          common_vendor.index.__f__("log", "at pages/index/index.vue:267", "使用缓存数据:", zodiacToFetch);
-          fortuneData.value = JSON.parse(cachedData);
+          common_vendor.index.__f__("log", "at pages/index/index.vue:218", "使用缓存数据:", zodiacToFetch);
+          if (typeof cachedData === "string") {
+            fortuneData.value = JSON.parse(cachedData);
+          } else {
+            fortuneData.value = cachedData;
+          }
           loading.value = false;
           return;
         }
@@ -197,10 +164,10 @@ const _sfc_main = {
               }
             });
             result = callResult.result;
-            common_vendor.index.__f__("log", "at pages/index/index.vue:289", "云函数返回结果:", result);
+            common_vendor.index.__f__("log", "at pages/index/index.vue:245", "云函数返回结果:", result);
             break;
           } catch (callError) {
-            common_vendor.index.__f__("error", "at pages/index/index.vue:292", `第${retryCount + 1}次调用失败:`, callError);
+            common_vendor.index.__f__("error", "at pages/index/index.vue:248", `第${retryCount + 1}次调用失败:`, callError);
             retryCount++;
             if (retryCount > maxRetry) {
               throw callError;
@@ -241,26 +208,21 @@ const _sfc_main = {
             goodFor: fortune.goodFor || "",
             badFor: fortune.badFor || ""
           };
-          common_vendor.index.setStorageSync(cacheKey, JSON.stringify(fortuneData.value));
-          common_vendor.index.__f__("log", "at pages/index/index.vue:342", "获取星座运势成功:", fortuneData.value);
-          common_vendor.nextTick$1(() => {
-            generateShareImage().catch(() => {
-              common_vendor.index.__f__("log", "at pages/index/index.vue:348", "预生成分享图片失败，将使用静态图片");
-            });
-          });
+          common_vendor.index.setStorageSync(cacheKey, fortuneData.value);
+          common_vendor.index.__f__("log", "at pages/index/index.vue:298", "获取星座运势成功:", fortuneData.value);
         } else {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:352", "获取星座运势失败:", result.message);
+          common_vendor.index.__f__("error", "at pages/index/index.vue:300", "获取星座运势失败:", result.message);
           common_vendor.index.showToast({
             title: "获取星座运势失败: " + result.message,
             icon: "none"
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:359", "获取星座运势出错:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:307", "获取星座运势出错:", error);
         let errorMsg = "网络异常，请稍后再试";
         if (error && error.message) {
           errorMsg += "(" + error.message + ")";
-          common_vendor.index.__f__("log", "at pages/index/index.vue:364", "详细错误信息:", JSON.stringify(error));
+          common_vendor.index.__f__("log", "at pages/index/index.vue:312", "详细错误信息:", JSON.stringify(error));
         }
         common_vendor.index.showToast({
           title: errorMsg,
@@ -292,7 +254,12 @@ const _sfc_main = {
       fetchZodiacData(currentZodiac.value);
     });
     common_vendor.onShow(() => {
-      fetchZodiacData(currentZodiac.value);
+      const currentDate = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+      const cacheKey = `zodiac_fortune_${currentZodiac.value}_${currentDate}`;
+      const cachedData = common_vendor.index.getStorageSync(cacheKey);
+      if (!cachedData) {
+        fetchZodiacData(currentZodiac.value);
+      }
     });
     common_vendor.watch(currentZodiac, (newVal) => {
       fetchZodiacData(newVal);
@@ -302,25 +269,25 @@ const _sfc_main = {
       return {
         title: `${currentZodiac.value}今日运势 - ${((_b = (_a = fortuneData.value) == null ? void 0 : _a.overall) == null ? void 0 : _b.level) || "查看你的星座运势"}`,
         path: "/pages/index/index",
-        imageUrl: `/static/share/${currentZodiac.value}.png`
-        // 确保路径正确
+        imageUrl: `/static/tabs/starLogo.png`
       };
     });
     common_vendor.onShareTimeline(() => {
+      const zodiacName = currentZodiac.value;
       return {
-        title: `${currentZodiac.value}今日运势分析 - 星座运势`,
-        query: `zodiac=${encodeURIComponent(currentZodiac.value)}`,
-        imageUrl: `/static/share/${currentZodiac.value}.png`
-        // 确保路径正确
+        title: `${zodiacName}今日运势分析 - 星座运势`,
+        query: `zodiac=${encodeURIComponent(zodiacName)}`,
+        imageUrl: `/static/tabs/starLogo.png`
       };
     });
     return (_ctx, _cache) => {
       return {
         a: common_vendor.o(showSettings),
-        b: common_vendor.sr(zodiacCardRef, "75df3941-1", {
+        b: common_vendor.o(showSettings),
+        c: common_vendor.sr(zodiacCardRef, "3afacddf-1", {
           "k": "zodiacCardRef"
         }),
-        c: common_vendor.p({
+        d: common_vendor.p({
           ["zodiac-name"]: currentZodiac.value,
           ["date-range"]: getZodiacDateRange(currentZodiac.value),
           fortune: fortuneData.value,
@@ -328,20 +295,21 @@ const _sfc_main = {
           gradient: getZodiacGradient(currentZodiac.value),
           ["icon-path"]: getZodiacIconPath(currentZodiac.value)
         }),
-        d: common_vendor.p({
-          fortune: fortuneData.value
-        }),
         e: common_vendor.p({
           fortune: fortuneData.value
         }),
-        f: common_vendor.o(saveUserSettings),
-        g: common_vendor.o(($event) => settingsVisible.value = $event),
-        h: common_vendor.p({
+        f: common_vendor.p({
+          fortune: fortuneData.value
+        }),
+        g: common_vendor.o(saveUserSettings),
+        h: common_vendor.o(($event) => settingsVisible.value = $event),
+        i: common_vendor.p({
           ["current-zodiac"]: currentZodiac.value,
           ["birth-date"]: birthDate.value,
           ["is-first-time"]: isFirstTimeUser.value,
           show: settingsVisible.value
-        })
+        }),
+        j: themeColors.value.background
       };
     };
   }

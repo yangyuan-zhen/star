@@ -5,7 +5,7 @@
       <text class="title">星座运势</text>
     </view>
     <view class="action-section">
-      <text class="icon-settings" @tap="onSettings">⚙️</text>
+      <slot name="action"></slot>
     </view>
   </view>
 </template>

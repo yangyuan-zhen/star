@@ -2,6 +2,23 @@
 node_modules
 /dist
 
+# 小程序和uni-app特有
+/unpackage/dist/
+/unpackage/dist/dev/
+/unpackage/release/
+/unpackage/.automator/
+.hbuilderx/
+# 临时文件
+.temp/
+.rn_temp/
+# 编译产物
+app-plus/
+h5/
+mp-weixin/
+mp-alipay/
+mp-baidu/
+mp-toutiao/
+mp-qq/
 
 # local env files
 .env.local

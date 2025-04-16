@@ -34,5 +34,8 @@
       "^fortune-details$": "@/components/fortune-details/fortune-details.vue",
       "^daily-tips$": "@/components/daily-tips/daily-tips.vue"
     }
+  },
+  "usingComponents": {
+    "ShareImageGenerator": "/components/share-image-generator/ShareImageGenerator"
   }
 }

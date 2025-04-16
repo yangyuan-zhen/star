@@ -6904,9 +6904,9 @@ function initOnError() {
   };
 }
 function initRuntimeSocketService() {
-  const hosts = "192.168.31.2,127.0.0.1";
+  const hosts = "192.168.31.2,169.254.203.26,127.0.0.1";
   const port = "8090";
-  const id = "mp-weixin_zeWjdw";
+  const id = "mp-weixin_EkN5Aw";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -8954,193 +8954,6 @@ function sendAPIQuery(target, query, callback) {
   }
   return redundancy.query(query, send2, callback)().abort;
 }
-const browserCacheVersion = "iconify2";
-const browserCachePrefix = "iconify";
-const browserCacheCountKey = browserCachePrefix + "-count";
-const browserCacheVersionKey = browserCachePrefix + "-version";
-const browserStorageHour = 36e5;
-const browserStorageCacheExpiration = 168;
-const browserStorageLimit = 50;
-function getStoredItem(func, key) {
-  try {
-    return func.getItem(key);
-  } catch (err) {
-  }
-}
-function setStoredItem(func, key, value) {
-  try {
-    func.setItem(key, value);
-    return true;
-  } catch (err) {
-  }
-}
-function removeStoredItem(func, key) {
-  try {
-    func.removeItem(key);
-  } catch (err) {
-  }
-}
-function setBrowserStorageItemsCount(storage2, value) {
-  return setStoredItem(storage2, browserCacheCountKey, value.toString());
-}
-function getBrowserStorageItemsCount(storage2) {
-  return parseInt(getStoredItem(storage2, browserCacheCountKey)) || 0;
-}
-const browserStorageConfig = {
-  local: true,
-  session: true
-};
-const browserStorageEmptyItems = {
-  local: /* @__PURE__ */ new Set(),
-  session: /* @__PURE__ */ new Set()
-};
-let browserStorageStatus = false;
-function setBrowserStorageStatus(status) {
-  browserStorageStatus = status;
-}
-let _window = typeof window === "undefined" ? {} : window;
-function getBrowserStorage(key) {
-  const attr = key + "Storage";
-  try {
-    if (_window && _window[attr] && typeof _window[attr].length === "number") {
-      return _window[attr];
-    }
-  } catch (err) {
-  }
-  browserStorageConfig[key] = false;
-}
-function iterateBrowserStorage(key, callback) {
-  const func = getBrowserStorage(key);
-  if (!func) {
-    return;
-  }
-  const version2 = getStoredItem(func, browserCacheVersionKey);
-  if (version2 !== browserCacheVersion) {
-    if (version2) {
-      const total2 = getBrowserStorageItemsCount(func);
-      for (let i2 = 0; i2 < total2; i2++) {
-        removeStoredItem(func, browserCachePrefix + i2.toString());
-      }
-    }
-    setStoredItem(func, browserCacheVersionKey, browserCacheVersion);
-    setBrowserStorageItemsCount(func, 0);
-    return;
-  }
-  const minTime = Math.floor(Date.now() / browserStorageHour) - browserStorageCacheExpiration;
-  const parseItem = (index2) => {
-    const name = browserCachePrefix + index2.toString();
-    const item = getStoredItem(func, name);
-    if (typeof item !== "string") {
-      return;
-    }
-    try {
-      const data = JSON.parse(item);
-      if (typeof data === "object" && typeof data.cached === "number" && data.cached > minTime && typeof data.provider === "string" && typeof data.data === "object" && typeof data.data.prefix === "string" && // Valid item: run callback
-      callback(data, index2)) {
-        return true;
-      }
-    } catch (err) {
-    }
-    removeStoredItem(func, name);
-  };
-  let total = getBrowserStorageItemsCount(func);
-  for (let i2 = total - 1; i2 >= 0; i2--) {
-    if (!parseItem(i2)) {
-      if (i2 === total - 1) {
-        total--;
-        setBrowserStorageItemsCount(func, total);
-      } else {
-        browserStorageEmptyItems[key].add(i2);
-      }
-    }
-  }
-}
-function initBrowserStorage() {
-  if (browserStorageStatus) {
-    return;
-  }
-  setBrowserStorageStatus(true);
-  for (const key in browserStorageConfig) {
-    iterateBrowserStorage(key, (item) => {
-      const iconSet = item.data;
-      const provider = item.provider;
-      const prefix = iconSet.prefix;
-      const storage2 = getStorage(
-        provider,
-        prefix
-      );
-      if (!addIconSet(storage2, iconSet).length) {
-        return false;
-      }
-      const lastModified = iconSet.lastModified || -1;
-      storage2.lastModifiedCached = storage2.lastModifiedCached ? Math.min(storage2.lastModifiedCached, lastModified) : lastModified;
-      return true;
-    });
-  }
-}
-function updateLastModified(storage2, lastModified) {
-  const lastValue = storage2.lastModifiedCached;
-  if (
-    // Matches or newer
-    lastValue && lastValue >= lastModified
-  ) {
-    return lastValue === lastModified;
-  }
-  storage2.lastModifiedCached = lastModified;
-  if (lastValue) {
-    for (const key in browserStorageConfig) {
-      iterateBrowserStorage(key, (item) => {
-        const iconSet = item.data;
-        return item.provider !== storage2.provider || iconSet.prefix !== storage2.prefix || iconSet.lastModified === lastModified;
-      });
-    }
-  }
-  return true;
-}
-function storeInBrowserStorage(storage2, data) {
-  if (!browserStorageStatus) {
-    initBrowserStorage();
-  }
-  function store(key) {
-    let func;
-    if (!browserStorageConfig[key] || !(func = getBrowserStorage(key))) {
-      return;
-    }
-    const set2 = browserStorageEmptyItems[key];
-    let index2;
-    if (set2.size) {
-      set2.delete(index2 = Array.from(set2).shift());
-    } else {
-      index2 = getBrowserStorageItemsCount(func);
-      if (index2 >= browserStorageLimit || !setBrowserStorageItemsCount(func, index2 + 1)) {
-        return;
-      }
-    }
-    const item = {
-      cached: Math.floor(Date.now() / browserStorageHour),
-      provider: storage2.provider,
-      data
-    };
-    return setStoredItem(
-      func,
-      browserCachePrefix + index2.toString(),
-      JSON.stringify(item)
-    );
-  }
-  if (data.lastModified && !updateLastModified(storage2, data.lastModified)) {
-    return;
-  }
-  if (!Object.keys(data.icons).length) {
-    return;
-  }
-  if (data.not_found) {
-    data = Object.assign({}, data);
-    delete data.not_found;
-  }
-  if (!store("local")) {
-    store("session");
-  }
-}
 function emptyCallback() {
 }
 function loadedNewIcons(storage2) {
@@ -9163,7 +8976,7 @@ function checkIconNamesForAPI(icons) {
     invalid
   };
 }
-function parseLoaderResponse(storage2, icons, data, isAPIResponse) {
+function parseLoaderResponse(storage2, icons, data) {
   function checkMissing() {
     const pending = storage2.pendingIcons;
     icons.forEach((name) => {
@@ -9182,11 +8995,8 @@ function parseLoaderResponse(storage2, icons, data, isAPIResponse) {
         checkMissing();
         return;
       }
-      if (isAPIResponse) {
-        storeInBrowserStorage(storage2, data);
-      }
     } catch (err) {
-      index.__f__("error", "at node_modules/@iconify/vue/dist/iconify.mjs:1415", err);
+      index.__f__("error", "at node_modules/@iconify/vue/dist/iconify.mjs:1217", err);
     }
   }
   checkMissing();
@@ -9224,7 +9034,7 @@ function loadNewIcons(storage2, icons) {
         parsePossiblyAsyncResponse(
           storage2.loadIcons(icons2, prefix, provider),
           (data) => {
-            parseLoaderResponse(storage2, icons2, data, false);
+            parseLoaderResponse(storage2, icons2, data);
           }
         );
         return;
@@ -9239,27 +9049,27 @@ function loadNewIcons(storage2, icons) {
                 [name]: data
               }
             } : null;
-            parseLoaderResponse(storage2, [name], iconSet, false);
+            parseLoaderResponse(storage2, [name], iconSet);
           });
         });
         return;
       }
       const { valid, invalid } = checkIconNamesForAPI(icons2);
       if (invalid.length) {
-        parseLoaderResponse(storage2, invalid, null, false);
+        parseLoaderResponse(storage2, invalid, null);
       }
       if (!valid.length) {
         return;
       }
       const api = prefix.match(matchIconName) ? getAPIModule(provider) : null;
       if (!api) {
-        parseLoaderResponse(storage2, valid, null, false);
+        parseLoaderResponse(storage2, valid, null);
         return;
       }
       const params = api.prepare(provider, prefix, valid);
       params.forEach((item) => {
         sendAPIQuery(provider, item, (data) => {
-          parseLoaderResponse(storage2, item.icons, data, true);
+          parseLoaderResponse(storage2, item.icons, data);
         });
       });
     });
@@ -9539,10 +9349,9 @@ const render = (icon, props) => {
 allowSimpleNames(true);
 setAPIModule("", fetchAPIModule);
 if (typeof document !== "undefined" && typeof window !== "undefined") {
-  initBrowserStorage();
-  const _window2 = window;
-  if (_window2.IconifyPreload !== void 0) {
-    const preload = _window2.IconifyPreload;
+  const _window = window;
+  if (_window.IconifyPreload !== void 0) {
+    const preload = _window.IconifyPreload;
     const err = "Invalid IconifyPreload syntax.";
     if (typeof preload === "object" && preload !== null) {
       (preload instanceof Array ? preload : [preload]).forEach((item) => {
@@ -9553,16 +9362,16 @@ if (typeof document !== "undefined" && typeof window !== "undefined") {
             typeof item.icons !== "object" || typeof item.prefix !== "string" || // Add icon set
             !addCollection(item)
           ) {
-            index.__f__("error", "at node_modules/@iconify/vue/dist/iconify.mjs:1913", err);
+            index.__f__("error", "at node_modules/@iconify/vue/dist/iconify.mjs:1703", err);
           }
         } catch (e2) {
-          index.__f__("error", "at node_modules/@iconify/vue/dist/iconify.mjs:1917", err);
+          index.__f__("error", "at node_modules/@iconify/vue/dist/iconify.mjs:1707", err);
         }
       });
     }
   }
-  if (_window2.IconifyProviders !== void 0) {
-    const providers = _window2.IconifyProviders;
+  if (_window.IconifyProviders !== void 0) {
+    const providers = _window.IconifyProviders;
     if (typeof providers === "object" && providers !== null) {
       for (let key in providers) {
         const err = "IconifyProviders[" + key + "] is invalid.";
@@ -9572,10 +9381,10 @@ if (typeof document !== "undefined" && typeof window !== "undefined") {
             continue;
           }
           if (!addAPIProvider(key, value)) {
-            index.__f__("error", "at node_modules/@iconify/vue/dist/iconify.mjs:1936", err);
+            index.__f__("error", "at node_modules/@iconify/vue/dist/iconify.mjs:1726", err);
           }
         } catch (e2) {
-          index.__f__("error", "at node_modules/@iconify/vue/dist/iconify.mjs:1940", err);
+          index.__f__("error", "at node_modules/@iconify/vue/dist/iconify.mjs:1730", err);
         }
       }
     }
@@ -9728,12 +9537,16 @@ const easycom = {
     "^daily-tips$": "@/components/daily-tips/daily-tips.vue"
   }
 };
+const usingComponents = {
+  ShareImageGenerator: "/components/share-image-generator/ShareImageGenerator"
+};
 const e = {
   pages,
   globalStyle,
   permission,
   requiredPrivateInfos,
-  easycom
+  easycom,
+  usingComponents
 };
 var define_process_env_UNI_SECURE_NETWORK_CONFIG_default = [];
 function t(e2) {
@@ -10024,7 +9837,7 @@ class v {
 function I(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const S = true, b = "mp-weixin", T = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), A = b, P = I('{"address":["127.0.0.1","192.168.31.2"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), C = I('[{"provider":"aliyun","spaceName":"constellation","spaceId":"mp-b1f97aa8-ada2-488f-aa8a-ba14a2991d5e","clientSecret":"+OZPmoT3ztr6hG4yG+BBvQ==","endpoint":"https://api.next.bspapp.com"}]') || [];
+const S = true, b = "mp-weixin", T = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), A = b, P = I('{"address":["127.0.0.1","192.168.31.2","169.254.203.26"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/360极速浏览器下载/HBuilderX.4.29.2024093009/HBuilderX/plugins/unicloud/**/*.js"]}'), C = I('[{"provider":"aliyun","spaceName":"constellation","spaceId":"mp-b1f97aa8-ada2-488f-aa8a-ba14a2991d5e","clientSecret":"+OZPmoT3ztr6hG4yG+BBvQ==","endpoint":"https://api.next.bspapp.com"}]') || [];
 let O = "";
 try {
   O = "__UNI__920B084";
@@ -12581,7 +12394,6 @@ exports.e = e$1;
 exports.f = f$1;
 exports.index = index;
 exports.n = n$1;
-exports.nextTick$1 = nextTick$1;
 exports.nr = nr;
 exports.o = o$1;
 exports.onLaunch = onLaunch;

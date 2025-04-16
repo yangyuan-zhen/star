@@ -70,3 +70,8 @@
   box-sizing: border-box;
   width: 100%;
 }
+.icon-settings {
+  font-size: 40rpx;
+  color: #666;
+  cursor: pointer;
+}
