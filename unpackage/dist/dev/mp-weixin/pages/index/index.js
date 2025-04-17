@@ -65,6 +65,7 @@ const _sfc_main = {
       background: "#f5f5f5",
       text: "#333333"
     });
+    const showSubscribeBadge = common_vendor.ref(false);
     const getZodiacIconPath = (zodiac) => {
       return `/static/stars/${zodiac}.svg`;
     };
@@ -136,12 +137,12 @@ const _sfc_main = {
       loading.value = true;
       try {
         const zodiacToFetch = zodiacName || currentZodiac.value;
-        common_vendor.index.__f__("log", "at pages/index/index.vue:209", "开始获取星座数据:", zodiacToFetch);
+        common_vendor.index.__f__("log", "at pages/index/index.vue:218", "开始获取星座数据:", zodiacToFetch);
         const currentDate = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
         const cacheKey = `zodiac_fortune_${zodiacToFetch}_${currentDate}`;
         const cachedData = common_vendor.index.getStorageSync(cacheKey);
         if (cachedData) {
-          common_vendor.index.__f__("log", "at pages/index/index.vue:218", "使用缓存数据:", zodiacToFetch);
+          common_vendor.index.__f__("log", "at pages/index/index.vue:227", "使用缓存数据:", zodiacToFetch);
           if (typeof cachedData === "string") {
             fortuneData.value = JSON.parse(cachedData);
           } else {
@@ -164,10 +165,10 @@ const _sfc_main = {
               }
             });
             result = callResult.result;
-            common_vendor.index.__f__("log", "at pages/index/index.vue:245", "云函数返回结果:", result);
+            common_vendor.index.__f__("log", "at pages/index/index.vue:254", "云函数返回结果:", result);
             break;
           } catch (callError) {
-            common_vendor.index.__f__("error", "at pages/index/index.vue:248", `第${retryCount + 1}次调用失败:`, callError);
+            common_vendor.index.__f__("error", "at pages/index/index.vue:257", `第${retryCount + 1}次调用失败:`, callError);
             retryCount++;
             if (retryCount > maxRetry) {
               throw callError;
@@ -209,20 +210,20 @@ const _sfc_main = {
             badFor: fortune.badFor || ""
           };
           common_vendor.index.setStorageSync(cacheKey, fortuneData.value);
-          common_vendor.index.__f__("log", "at pages/index/index.vue:298", "获取星座运势成功:", fortuneData.value);
+          common_vendor.index.__f__("log", "at pages/index/index.vue:307", "获取星座运势成功:", fortuneData.value);
         } else {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:300", "获取星座运势失败:", result.message);
+          common_vendor.index.__f__("error", "at pages/index/index.vue:309", "获取星座运势失败:", result.message);
           common_vendor.index.showToast({
             title: "获取星座运势失败: " + result.message,
             icon: "none"
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:307", "获取星座运势出错:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:316", "获取星座运势出错:", error);
         let errorMsg = "网络异常，请稍后再试";
         if (error && error.message) {
           errorMsg += "(" + error.message + ")";
-          common_vendor.index.__f__("log", "at pages/index/index.vue:312", "详细错误信息:", JSON.stringify(error));
+          common_vendor.index.__f__("log", "at pages/index/index.vue:321", "详细错误信息:", JSON.stringify(error));
         }
         common_vendor.index.showToast({
           title: errorMsg,
@@ -260,6 +261,11 @@ const _sfc_main = {
       if (!cachedData) {
         fetchZodiacData(currentZodiac.value);
       }
+      const lastSubscribeDate = common_vendor.index.getStorageSync("lastSubscribeDate");
+      const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+      if (lastSubscribeDate !== today && !isFirstTimeUser.value) {
+        showSubscribeBadge.value = true;
+      }
     });
     common_vendor.watch(currentZodiac, (newVal) => {
       fetchZodiacData(newVal);
@@ -280,14 +286,80 @@ const _sfc_main = {
         imageUrl: `/static/tabs/starLogo.png`
       };
     });
+    const requestSubscribe = () => {
+      common_vendor.index.showModal({
+        title: "每日运势订阅",
+        content: "根据微信规则，订阅消息为一次性订阅，仅会推送一次。如需持续收到运势提醒，请每天点击订阅按钮。",
+        confirmText: "去订阅",
+        success: (res) => {
+          if (res.confirm) {
+            common_vendor.index.requestSubscribeMessage({
+              tmplIds: ["4Z-MQULVPsg5IeFzS7X6MSrjAs8FihGfoV7FuxG5FcM"],
+              success: async (subscribeRes) => {
+                var _a;
+                if (subscribeRes["4Z-MQULVPsg5IeFzS7X6MSrjAs8FihGfoV7FuxG5FcM"] === "accept") {
+                  try {
+                    const loginResult = await common_vendor.index.login({ provider: "weixin" });
+                    const saveResult = await common_vendor.nr.callFunction({
+                      name: "saveSubscription",
+                      data: {
+                        code: loginResult.code,
+                        zodiacName: currentZodiac.value,
+                        subscribeDate: (/* @__PURE__ */ new Date()).toISOString().split("T")[0]
+                      }
+                    });
+                    if (saveResult.result && saveResult.result.success) {
+                      common_vendor.index.showToast({
+                        title: "订阅成功！明天将为您推送星座运势",
+                        icon: "none",
+                        duration: 3e3
+                      });
+                      const tomorrow = /* @__PURE__ */ new Date();
+                      tomorrow.setDate(tomorrow.getDate() + 1);
+                      const subscribedDate = tomorrow.toISOString().split("T")[0];
+                      common_vendor.index.setStorageSync("lastSubscribeDate", subscribedDate);
+                      showSubscribeBadge.value = false;
+                    } else {
+                      throw new Error(
+                        ((_a = saveResult.result) == null ? void 0 : _a.message) || "保存订阅信息失败"
+                      );
+                    }
+                  } catch (error) {
+                    common_vendor.index.__f__("error", "at pages/index/index.vue:469", "保存订阅信息失败:", error);
+                    common_vendor.index.showToast({
+                      title: `订阅失败：${error.message || "请稍后再试"}`,
+                      icon: "none"
+                    });
+                  }
+                } else {
+                  common_vendor.index.showToast({
+                    title: "您已取消订阅",
+                    icon: "none"
+                  });
+                }
+              },
+              fail: (err) => {
+                common_vendor.index.__f__("error", "at pages/index/index.vue:483", "订阅消息失败", err);
+                common_vendor.index.showToast({
+                  title: "订阅失败，请稍后再试",
+                  icon: "none"
+                });
+              }
+            });
+          }
+        }
+      });
+    };
     return (_ctx, _cache) => {
       return {
-        a: common_vendor.o(showSettings),
-        b: common_vendor.o(showSettings),
-        c: common_vendor.sr(zodiacCardRef, "3afacddf-1", {
+        a: showSubscribeBadge.value ? 1 : "",
+        b: common_vendor.o(requestSubscribe),
+        c: common_vendor.o(showSettings),
+        d: common_vendor.o(showSettings),
+        e: common_vendor.sr(zodiacCardRef, "3afacddf-1", {
           "k": "zodiacCardRef"
         }),
-        d: common_vendor.p({
+        f: common_vendor.p({
           ["zodiac-name"]: currentZodiac.value,
           ["date-range"]: getZodiacDateRange(currentZodiac.value),
           fortune: fortuneData.value,
@@ -295,21 +367,21 @@ const _sfc_main = {
           gradient: getZodiacGradient(currentZodiac.value),
           ["icon-path"]: getZodiacIconPath(currentZodiac.value)
         }),
-        e: common_vendor.p({
+        g: common_vendor.p({
           fortune: fortuneData.value
         }),
-        f: common_vendor.p({
+        h: common_vendor.p({
           fortune: fortuneData.value
         }),
-        g: common_vendor.o(saveUserSettings),
-        h: common_vendor.o(($event) => settingsVisible.value = $event),
-        i: common_vendor.p({
+        i: common_vendor.o(saveUserSettings),
+        j: common_vendor.o(($event) => settingsVisible.value = $event),
+        k: common_vendor.p({
           ["current-zodiac"]: currentZodiac.value,
           ["birth-date"]: birthDate.value,
           ["is-first-time"]: isFirstTimeUser.value,
           show: settingsVisible.value
         }),
-        j: themeColors.value.background
+        l: themeColors.value.background
       };
     };
   }
