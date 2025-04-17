@@ -413,8 +413,21 @@ onShareTimeline(() => {
   };
 });
 
-const requestSubscribe = () => {
-  // 先显示提示，说明这是一次性订阅
+const requestSubscribe = async () => {
+  // 先获取用户的订阅状态
+  const lastSubscribeDate = uni.getStorageSync("lastSubscribeDate");
+  const today = new Date().toISOString().split("T")[0];
+
+  // 如果今天已经订阅过，提示用户
+  if (lastSubscribeDate === today) {
+    uni.showToast({
+      title: "您今天已经订阅过运势了！",
+      icon: "none",
+    });
+    return; // 直接返回，不再执行后续逻辑
+  }
+
+  // 继续执行订阅逻辑
   uni.showModal({
     title: "每日运势订阅",
     content:
@@ -440,7 +453,7 @@ const requestSubscribe = () => {
                   data: {
                     code: loginResult.code,
                     zodiacName: currentZodiac.value,
-                    subscribeDate: new Date().toISOString().split("T")[0],
+                    subscribeDate: today,
                   },
                 });
 
@@ -452,14 +465,8 @@ const requestSubscribe = () => {
                     duration: 3000,
                   });
 
-                  // 记录用户已订阅的日期，用于前端提示
-                  const tomorrow = new Date();
-                  tomorrow.setDate(tomorrow.getDate() + 1);
-                  const subscribedDate = tomorrow.toISOString().split("T")[0];
-                  uni.setStorageSync("lastSubscribeDate", subscribedDate);
-
-                  // 移除订阅提醒红点
-                  showSubscribeBadge.value = false;
+                  // 记录用户已订阅的日期
+                  uni.setStorageSync("lastSubscribeDate", today);
                 } else {
                   throw new Error(
                     saveResult.result?.message || "保存订阅信息失败"

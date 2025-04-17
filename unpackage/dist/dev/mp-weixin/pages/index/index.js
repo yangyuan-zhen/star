@@ -286,7 +286,16 @@ const _sfc_main = {
         imageUrl: `/static/tabs/starLogo.png`
       };
     });
-    const requestSubscribe = () => {
+    const requestSubscribe = async () => {
+      const lastSubscribeDate = common_vendor.index.getStorageSync("lastSubscribeDate");
+      const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+      if (lastSubscribeDate === today) {
+        common_vendor.index.showToast({
+          title: "您今天已经订阅过运势了！",
+          icon: "none"
+        });
+        return;
+      }
       common_vendor.index.showModal({
         title: "每日运势订阅",
         content: "根据微信规则，订阅消息为一次性订阅，仅会推送一次。如需持续收到运势提醒，请每天点击订阅按钮。",
@@ -305,7 +314,7 @@ const _sfc_main = {
                       data: {
                         code: loginResult.code,
                         zodiacName: currentZodiac.value,
-                        subscribeDate: (/* @__PURE__ */ new Date()).toISOString().split("T")[0]
+                        subscribeDate: today
                       }
                     });
                     if (saveResult.result && saveResult.result.success) {
@@ -314,18 +323,14 @@ const _sfc_main = {
                         icon: "none",
                         duration: 3e3
                       });
-                      const tomorrow = /* @__PURE__ */ new Date();
-                      tomorrow.setDate(tomorrow.getDate() + 1);
-                      const subscribedDate = tomorrow.toISOString().split("T")[0];
-                      common_vendor.index.setStorageSync("lastSubscribeDate", subscribedDate);
-                      showSubscribeBadge.value = false;
+                      common_vendor.index.setStorageSync("lastSubscribeDate", today);
                     } else {
                       throw new Error(
                         ((_a = saveResult.result) == null ? void 0 : _a.message) || "保存订阅信息失败"
                       );
                     }
                   } catch (error) {
-                    common_vendor.index.__f__("error", "at pages/index/index.vue:469", "保存订阅信息失败:", error);
+                    common_vendor.index.__f__("error", "at pages/index/index.vue:476", "保存订阅信息失败:", error);
                     common_vendor.index.showToast({
                       title: `订阅失败：${error.message || "请稍后再试"}`,
                       icon: "none"
@@ -339,7 +344,7 @@ const _sfc_main = {
                 }
               },
               fail: (err) => {
-                common_vendor.index.__f__("error", "at pages/index/index.vue:483", "订阅消息失败", err);
+                common_vendor.index.__f__("error", "at pages/index/index.vue:490", "订阅消息失败", err);
                 common_vendor.index.showToast({
                   title: "订阅失败，请稍后再试",
                   icon: "none"
