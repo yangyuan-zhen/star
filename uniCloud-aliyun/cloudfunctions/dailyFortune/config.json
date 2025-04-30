@@ -1,9 +1,0 @@
-{
-  "triggers": [
-    {
-      "name": "dailyFortuneTimer",
-      "type": "timer",
-      "config": "0 0 8 * * *"
-    }
-  ]
-}

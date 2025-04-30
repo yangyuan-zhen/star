@@ -3,15 +3,7 @@
     <!-- 导航栏 -->
     <zodiac-nav-bar @settings="showSettings">
       <template #action>
-        <view class="action-buttons">
-          <text
-            class="icon-subscribe"
-            :class="{ 'need-subscribe': showSubscribeBadge }"
-            @tap="requestSubscribe"
-            >🔔</text
-          >
-          <text class="icon-settings" @tap="showSettings">⚙️</text>
-        </view>
+        <text class="icon-settings" @tap="showSettings">⚙️</text>
       </template>
     </zodiac-nav-bar>
 
@@ -116,7 +108,6 @@ const themeColors = ref({
   background: "#f5f5f5",
   text: "#333333",
 });
-const showSubscribeBadge = ref(false);
 
 // 获取星座图标路径
 const getZodiacIconPath = (zodiac) => {
@@ -375,16 +366,6 @@ onShow(() => {
   if (!cachedData) {
     fetchZodiacData(currentZodiac.value);
   }
-
-  // 检查上次订阅日期
-  const lastSubscribeDate = uni.getStorageSync("lastSubscribeDate");
-  const today = new Date().toISOString().split("T")[0];
-
-  // 如果今天没有订阅过，且不是首次使用，可以显示订阅提醒小红点
-  if (lastSubscribeDate !== today && !isFirstTimeUser.value) {
-    // 这里可以添加视觉提示，比如在订阅按钮上显示小红点
-    showSubscribeBadge.value = true;
-  }
 });
 
 // 当星座变化时，刷新数据
@@ -412,92 +393,6 @@ onShareTimeline(() => {
     imageUrl: `/static/tabs/starLogo.png`,
   };
 });
-
-const requestSubscribe = async () => {
-  // 先获取用户的订阅状态
-  const lastSubscribeDate = uni.getStorageSync("lastSubscribeDate");
-  const today = new Date().toISOString().split("T")[0];
-
-  // 如果今天已经订阅过，提示用户
-  if (lastSubscribeDate === today) {
-    uni.showToast({
-      title: "您今天已经订阅过运势了！",
-      icon: "none",
-    });
-    return; // 直接返回，不再执行后续逻辑
-  }
-
-  // 继续执行订阅逻辑
-  uni.showModal({
-    title: "每日运势订阅",
-    content:
-      "根据微信规则，订阅消息为一次性订阅，仅会推送一次。如需持续收到运势提醒，请每天点击订阅按钮。",
-    confirmText: "去订阅",
-    success: (res) => {
-      if (res.confirm) {
-        // 用户点击确认，发起订阅请求
-        uni.requestSubscribeMessage({
-          tmplIds: ["4Z-MQULVPsg5IeFzS7X6MSrjAs8FihGfoV7FuxG5FcM"],
-          success: async (subscribeRes) => {
-            if (
-              subscribeRes["4Z-MQULVPsg5IeFzS7X6MSrjAs8FihGfoV7FuxG5FcM"] ===
-              "accept"
-            ) {
-              try {
-                // 获取登录凭证
-                const loginResult = await uni.login({ provider: "weixin" });
-
-                // 调用云函数保存订阅信息
-                const saveResult = await uniCloud.callFunction({
-                  name: "saveSubscription",
-                  data: {
-                    code: loginResult.code,
-                    zodiacName: currentZodiac.value,
-                    subscribeDate: today,
-                  },
-                });
-
-                if (saveResult.result && saveResult.result.success) {
-                  // 订阅成功
-                  uni.showToast({
-                    title: "订阅成功！明天将为您推送星座运势",
-                    icon: "none",
-                    duration: 3000,
-                  });
-
-                  // 记录用户已订阅的日期
-                  uni.setStorageSync("lastSubscribeDate", today);
-                } else {
-                  throw new Error(
-                    saveResult.result?.message || "保存订阅信息失败"
-                  );
-                }
-              } catch (error) {
-                console.error("保存订阅信息失败:", error);
-                uni.showToast({
-                  title: `订阅失败：${error.message || "请稍后再试"}`,
-                  icon: "none",
-                });
-              }
-            } else {
-              uni.showToast({
-                title: "您已取消订阅",
-                icon: "none",
-              });
-            }
-          },
-          fail: (err) => {
-            console.error("订阅消息失败", err);
-            uni.showToast({
-              title: "订阅失败，请稍后再试",
-              icon: "none",
-            });
-          },
-        });
-      }
-    },
-  });
-};
 </script>
 
 <style lang="scss">
@@ -515,31 +410,6 @@ const requestSubscribe = async () => {
   padding: 30rpx 40rpx;
   box-sizing: border-box;
   width: 100%;
-}
-
-.action-buttons {
-  display: flex;
-  align-items: center;
-}
-
-.icon-subscribe {
-  font-size: 40rpx;
-  color: #666;
-  cursor: pointer;
-  margin-right: 30rpx;
-  position: relative;
-}
-
-/* 可以添加小红点提示用户需要重新订阅 */
-.icon-subscribe.need-subscribe:after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: -4rpx;
-  width: 16rpx;
-  height: 16rpx;
-  background-color: #ff4757;
-  border-radius: 50%;
 }
 
 .icon-settings {

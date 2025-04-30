@@ -70,29 +70,6 @@
   box-sizing: border-box;
   width: 100%;
 }
-.action-buttons {
-  display: flex;
-  align-items: center;
-}
-.icon-subscribe {
-  font-size: 40rpx;
-  color: #666;
-  cursor: pointer;
-  margin-right: 30rpx;
-  position: relative;
-}
-
-/* 可以添加小红点提示用户需要重新订阅 */
-.icon-subscribe.need-subscribe:after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: -4rpx;
-  width: 16rpx;
-  height: 16rpx;
-  background-color: #ff4757;
-  border-radius: 50%;
-}
 .icon-settings {
   font-size: 40rpx;
   color: #666;
